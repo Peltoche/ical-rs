@@ -16,9 +16,9 @@ fn run_file(in_path_vcf: &Path, res_path_json: &Path) {
     let res_file = File::open(res_path_json).unwrap();
     let mut res_reader = BufReader::new(res_file).lines();
 
-    let file_reader = Parser::from_file(in_path_vcf).unwrap();
+    let parser = Parser::from_file(in_path_vcf).unwrap();
 
-    for elem in file_reader {
+    for elem in parser {
         let expected = res_reader.next().unwrap().unwrap();
         let output = elem.unwrap().to_json();
 

@@ -7,5 +7,4 @@ mod value;
 
 mod design;
 mod param;
-mod reader;
 

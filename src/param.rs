@@ -4,15 +4,16 @@ use rustc_serialize::json::{ToJson, Json, Object};
 
 use ::parser::ParserError;
 use ::property::*;
-use ::design::DesignElem;
+use ::design::*;
 use ::value::{ValueContainer, Value, parse_value};
-use ::design::{unescaped_find, rfc_6868_escape};
+
 
 #[derive(Debug)]
 pub enum ParamSet {
     None,
     Some(HashMap<ParamName, ValueContainer>)
 }
+
 
 impl ToJson for ParamSet {
     fn to_json(&self) -> Json {
@@ -30,28 +31,6 @@ impl ToJson for ParamSet {
         }
     }
 }
-
-/// Regroup all the rules (`ParamDesignElem`) for a type of file (VCard / ICal).
-pub type ParamDesignSet = HashMap<ParamName, ParamDesignElem>;
-
-
-/// Represent the set of rules for a parameter. It contain the expected format
-/// for the value or the list of possible values.
-#[derive(Debug)]
-pub struct ParamDesignElem {
-    /// If it's a 'open' parameter (not closed to a list of predetermined
-    /// choises), the values is parsed by a `DesignSet` structur.
-    pub design:             Option<DesignElem>,
-
-    /// If it's a 'closed' parameter (choices restricted to a predetermined
-    /// list), all the possible values a listed her.
-    pub allowed_values:     Option<Vec<&'static str>>,
-
-
-    pub allow_name:         bool,
-    pub allow_iana_token:   bool,
-}
-
 
 
 

@@ -4,11 +4,16 @@ use std::collections::HashMap;
 
 use value::ValueType;
 use property::PropertyType;
+use param::{ParamName};
+
 
 
 /// A list of `DesignSet`. It list all the possible properties and their
 /// format.
 pub type DesignSet = HashMap<PropertyType, DesignElem>;
+
+/// Regroup all the rules (`ParamDesignElem`) for a type of file (VCard / ICal).
+pub type ParamDesignSet = HashMap<ParamName, ParamDesignElem>;
 
 
 /// A element of the HashMap `DesignSet`. It represent a the properties of an
@@ -30,6 +35,23 @@ pub struct DesignElem {
     /// An attribute value can be structured on several 'sub-values'.
     /// `structured_value` contain the char used to split this elements.
     pub structured_value:   Option<char>,
+}
+
+/// Represent the set of rules for a parameter. It contain the expected format
+/// for the value or the list of possible values.
+#[derive(Debug)]
+pub struct ParamDesignElem {
+    /// If it's a 'open' parameter (not closed to a list of predetermined
+    /// choises), the values is parsed by a `DesignSet` structur.
+    pub design:             Option<DesignElem>,
+
+    /// If it's a 'closed' parameter (choices restricted to a predetermined
+    /// list), all the possible values a listed her.
+    pub allowed_values:     Option<Vec<&'static str>>,
+
+
+    pub allow_name:         bool,
+    pub allow_iana_token:   bool,
 }
 
 /// Identical to `find` but will only match values when they are not

@@ -4,8 +4,8 @@ use rustc_serialize::json::{ToJson, Json, Object};
 use std::collections::HashMap;
 
 use ::value::{ValueType, ValueContainer};
-use ::design::{DesignSet, DesignElem};
-use ::param::{ParamDesignSet, ParamDesignElem, ParamName, ParamSet};
+use ::design::*;
+use ::param::{ParamName, ParamSet};
 use ::parser::ParserError;
 
 #[derive(Debug)]
