@@ -58,12 +58,14 @@ pub enum ParamName {
     Language,
     Value,
     Pref,
+    AltId,
     Pid,
     Type,
+    Mediatype,
+    Calscale,
+    SortAs,
     Geo,
     Tz,
-    SortAs,
-    CalScale,
     //Any(String),
 }
 
@@ -75,13 +77,15 @@ impl ParamName {
         match input.to_lowercase().as_str() {
             "language"  => Some(ParamName::Language),
             "value"     => Some(ParamName::Value),
+            "atltid"    => Some(ParamName::AltId),
             "pref"      => Some(ParamName::Pref),
             "pid"       => Some(ParamName::Pid),
             "type"      => Some(ParamName::Type),
+            "mediatype" => Some(ParamName::Mediatype),
+            "calscale"  => Some(ParamName::Calscale),
+            "sortas"    => Some(ParamName::SortAs),
             "geo"       => Some(ParamName::Geo),
             "tz"        => Some(ParamName::Tz),
-            "sortas"    => Some(ParamName::SortAs),
-            "calscale"  => Some(ParamName::CalScale),
             _           => None,
         }
     }
@@ -90,15 +94,17 @@ impl ParamName {
     fn to_string(&self) -> String {
 
         let res = match self {
-           &ParamName::Language => "language",
-           &ParamName::Value    => "value",
-           &ParamName::Pref     => "pref",
-           &ParamName::Pid      => "pid",
-           &ParamName::Type     => "type",
-           &ParamName::Geo      => "geo",
-           &ParamName::Tz       => "tz",
-           &ParamName::SortAs   => "sortas",
-           &ParamName::CalScale => "calscale",
+           &ParamName::Language     => "LANGUAGE",
+           &ParamName::Value        => "VALUE",
+           &ParamName::Pref         => "PREF",
+           &ParamName::AltId        => "ALTID",
+           &ParamName::Pid          => "PID",
+           &ParamName::Type         => "TYPE",
+           &ParamName::Mediatype    => "MEDIATYPE",
+           &ParamName::Calscale     => "CALSCALE",
+           &ParamName::SortAs       => "SORTAS",
+           &ParamName::Geo          => "GEO",
+           &ParamName::Tz           => "TZ",
         };
 
         res.to_string()

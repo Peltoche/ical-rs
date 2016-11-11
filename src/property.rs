@@ -34,7 +34,7 @@ pub enum PropertyType {
     Adr,
     Anniversary,
     Bday,
-    Caladuri,
+    Caladruri,
     Caluri,
     Clientpidmap,
     Email,
@@ -78,7 +78,7 @@ impl PropertyType {
             "adr"           => Ok(PropertyType::Adr),
             "anniversary"   => Ok(PropertyType::Anniversary),
             "bday"          => Ok(PropertyType::Bday),
-            "caladuri"      => Ok(PropertyType::Caladuri),
+            "caladruri"     => Ok(PropertyType::Caladruri),
             "caluri"        => Ok(PropertyType::Caluri),
             "clientpidmap"  => Ok(PropertyType::Clientpidmap),
             "email"         => Ok(PropertyType::Email),
@@ -118,7 +118,7 @@ impl PropertyType {
            &PropertyType::Adr           => "ADR",
            &PropertyType::Anniversary   => "ANNIVERSARY",
            &PropertyType::Bday          => "BDAY",
-           &PropertyType::Caladuri      => "CALADURI",
+           &PropertyType::Caladruri     => "CALADRURI",
            &PropertyType::Caluri        => "CALURI",
            &PropertyType::Clientpidmap  => "CLIENTPIDMAP",
            &PropertyType::Email         => "EMAIL",
@@ -166,25 +166,25 @@ pub const DEFAULT_TYPE_TEXT: DesignElem = DesignElem {
 };
 
 pub const DEFAULT_TYPE_TEXT_MULTI: DesignElem = DesignElem {
-    value_type:       ValueType::Text,
+    value_type:         ValueType::Text,
     multi_value:        Some(','),
     allowed_types:      None,
     structured_value:   None,
 };
 
 pub const DEFAULT_TYPE_TEXT_STRUCTURED : DesignElem = DesignElem {
-    value_type:       ValueType::Text,
+    value_type:         ValueType::Text,
     multi_value:        None,
     allowed_types:      None,
     structured_value:   Some(';'),
 };
 
-//pub const DEFAULT_TYPE_INTEGER: DesignElem = DesignElem {
-    //value_type:       ValueType::Integer,
-    //multi_value:        None,
-    //allowed_types:      None,
-    //structured_value:   None,
-//};
+pub const DEFAULT_TYPE_INTEGER: DesignElem = DesignElem {
+    value_type:       ValueType::Integer,
+    multi_value:        None,
+    allowed_types:      None,
+    structured_value:   None,
+};
 
 //pub const DEFAULT_TYPE_DATETIME: DesignElem = DesignElem {
     //value_type:       ValueType::DateTime,
@@ -194,7 +194,7 @@ pub const DEFAULT_TYPE_TEXT_STRUCTURED : DesignElem = DesignElem {
 //};
 
 pub const DEFAULT_TYPE_URI: DesignElem = DesignElem {
-    value_type:       ValueType::Uri,
+    value_type:         ValueType::Uri,
     multi_value:        None,
     allowed_types:      None,
     structured_value:   None,
@@ -209,7 +209,7 @@ pub const DEFAULT_TYPE_URI: DesignElem = DesignElem {
 
 
 
-pub fn get_vcard_properties() -> (DesignSet, ParamDesignSet) {
+pub fn get_vcard_properties() -> DesignSet {
     let mut v_design = HashMap::with_capacity(31);
 
     v_design.insert(PropertyType::Adr, DesignElem {
@@ -230,7 +230,7 @@ pub fn get_vcard_properties() -> (DesignSet, ParamDesignSet) {
         allowed_types:      Some(vec![ValueType::DateTime, ValueType::Date, ValueType::Text]),
         structured_value:   None,
     });
-    v_design.insert(PropertyType::Caladuri, DEFAULT_TYPE_URI);
+    v_design.insert(PropertyType::Caladruri, DEFAULT_TYPE_URI);
     v_design.insert(PropertyType::Caluri, DEFAULT_TYPE_URI);
     v_design.insert(PropertyType::Clientpidmap, DEFAULT_TYPE_TEXT_STRUCTURED);
     v_design.insert(PropertyType::Email, DEFAULT_TYPE_TEXT);
@@ -289,16 +289,21 @@ pub fn get_vcard_properties() -> (DesignSet, ParamDesignSet) {
     });
     v_design.insert(PropertyType::Xml, DEFAULT_TYPE_TEXT);
 
+    v_design
+}
+
+
+
+pub fn get_vcard_param_properties() -> ParamDesignSet {
 
     let mut p_design = HashMap::new();
 
-    p_design.insert(ParamName::Type, ParamDesignElem {
-        design:             Some(DEFAULT_TYPE_TEXT_MULTI),
+    p_design.insert(ParamName::Language, ParamDesignElem{
+        design:             Some(DEFAULT_TYPE_TEXT),
         allowed_values:     None,
         allow_name:         false,
         allow_iana_token:   false,
     });
-
     p_design.insert(ParamName::Value, ParamDesignElem {
         design:             None,
         allowed_values:     Some(
@@ -309,7 +314,38 @@ pub fn get_vcard_properties() -> (DesignSet, ParamDesignSet) {
         allow_name: true,
         allow_iana_token: true,
     });
+    p_design.insert(ParamName::Pref, ParamDesignElem {
+        design:             Some(DEFAULT_TYPE_INTEGER),
+        allowed_values:     None,
+        allow_name: true,
+        allow_iana_token: true,
+    });
+    p_design.insert(ParamName::AltId, ParamDesignElem {
+        design:             Some(DEFAULT_TYPE_TEXT),
+        allowed_values:     None,
+        allow_name: true,
+        allow_iana_token: true,
+    });
+    p_design.insert(ParamName::Type, ParamDesignElem {
+        design:             Some(DEFAULT_TYPE_TEXT_MULTI),
+        allowed_values:     None,
+        allow_name:         false,
+        allow_iana_token:   false,
+    });
+    p_design.insert(ParamName::Mediatype, ParamDesignElem {
+        design:             Some(DEFAULT_TYPE_TEXT),
+        allowed_values:     None,
+        allow_name: true,
+        allow_iana_token: true,
+    });
+    p_design.insert(ParamName::Calscale, ParamDesignElem {
+        design:             Some(DEFAULT_TYPE_TEXT),
+        allowed_values:     None,
+        allow_name: true,
+        allow_iana_token: true,
+    });
 
 
-    (v_design, p_design)
+
+    p_design
 }

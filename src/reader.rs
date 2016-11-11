@@ -37,7 +37,8 @@ impl Iterator for Reader {
     fn next(&mut self) -> Option<Result<Property, ParserError>> {
         let mut new_line = String::new();
 
-        let (v_design, p_design)= get_vcard_properties();
+        let v_design = get_vcard_properties();
+        let p_design = get_vcard_param_properties();
 
         // If during the last iteration a new line have been saved, start with.
         if let Some(start) = self.next_start.clone() {
@@ -103,6 +104,7 @@ fn parse_line(line: &str, v_design: &DesignSet, p_design: &ParamDesignSet) -> Re
 
     let (value_position, param_position) = split_line(line);
 
+    // There is some parameters, handle them
     if let Some(param_position) = param_position {
         // The use is safe because the param_position come from the
         // 'find' method.
@@ -117,7 +119,8 @@ fn parse_line(line: &str, v_design: &DesignSet, p_design: &ParamDesignSet) -> Re
             Ok(val)       => val,
             Err(err)    => return Err(err),
         };
-    } else if value_position.is_none() {
+
+    } else if value_position.is_some() {
         // Line without parameters (BEGIN:VCARD, CLASS:PUBLIC)
         params = ParamSet::None;
 
@@ -130,6 +133,8 @@ fn parse_line(line: &str, v_design: &DesignSet, p_design: &ParamDesignSet) -> Re
 
         // If its not begin/end, then this is a property with an empty value,
         // which should be considered valid.
+
+    // Missing VALUE_DELIMITER, the line is invalid.
     } else {
         return Err(ParserError::new(format!("Invalid line (no token ';' or ':'): {}", line)));
     }
@@ -409,6 +414,7 @@ fn value_to_typed(value: &str, design: &DesignElem) -> Option<Value> {
 
     match design.value_type {
         ValueType::Text     => Some(Value::Text(value.to_string())),
+        ValueType::Uri      => Some(Value::Uri(value.to_string())),
         _                   => None,
     }
 }

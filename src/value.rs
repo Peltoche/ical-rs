@@ -11,7 +11,7 @@ pub enum ValueContainer {
 impl ToJson for ValueContainer {
     fn to_json(&self) -> Json {
         match self {
-            &ValueContainer::None           => Json::Null,
+            &ValueContainer::None               => Json::Null,
             &ValueContainer::Single(ref val)    => val.to_json(),
             &ValueContainer::Multi(ref list)    => {
                 let mut res = Array::new();
@@ -29,14 +29,14 @@ impl ToJson for ValueContainer {
 #[derive(Debug, PartialEq, Eq)]
 pub enum Value {
     Text(String),
-    //Uri,
+    Uri(String),
     //Date,
     //Time,
     //DateTime,
     //DateAndOrTime,
     //Timestamp,
     //Boolean,
-    //Integer,
+    //Integer(i32),
     //Float,
     //UtcOffset,
     //LanguageTag,
@@ -45,7 +45,9 @@ pub enum Value {
 impl ToJson for Value {
     fn to_json(&self) -> Json {
         match self {
-            &Value::Text(ref val) => Json::String(val.clone()),
+            &Value::Text(ref val)       => Json::String(val.clone()),
+            &Value::Uri(ref val)        => Json::String(val.clone()),
+            //&Value::Integer(ref val)    => Json::String(val as String),
         }
     }
 }
