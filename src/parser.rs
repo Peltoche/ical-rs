@@ -5,7 +5,6 @@ use std::fmt;
 use std::error::Error;
 
 use ::reader::Reader;
-use ::property::Property;
 
 /// Parser is the main parser struct. It handle the parsing of all the filetypes.
 pub struct Parser;

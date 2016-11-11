@@ -1,6 +1,10 @@
 
 use rustc_serialize::json::{ToJson, Json, Array};
 
+use ::design::DesignElem;
+use ::design::unescaped_find;
+
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum ValueContainer {
     Single(Value),
@@ -57,15 +61,70 @@ pub enum ValueType{
     Text,
     Uri,
     Date,
-    Time,
+    //Time,
     DateTime,
     DateAndOrTime,
     Timestamp,
-    Boolean,
+    //Boolean,
     Integer,
-    Float,
+    //Float,
     UtcOffset,
     LanguageTag,
 }
 
 
+
+
+/// Parse a value string.
+pub fn parse_value(buffer: &str, design: &DesignElem) -> ValueContainer {
+    let mut value: &str;
+    let mut result = Vec::new();
+
+    // If this is a multi value string.
+    if let Some(delimiter) = design.multi_value {
+        let mut last_pos = 0;
+
+        // Split each pieces.
+        while let Some(pos) = unescaped_find(buffer, last_pos, delimiter) {
+            // Save use of slice_unchecked. last_pos and pos come from the
+            // buffer find method.
+            unsafe {
+                value = buffer.slice_unchecked(last_pos, pos);
+            }
+
+            if let Some(res) = value_to_typed(value, design) {
+                result.push(res);
+            }
+
+            last_pos = pos + 1;
+        }
+
+        // On the last piece take the rest of the string.
+        value = buffer.split_at(last_pos).1;
+    } else {
+        value = buffer;
+    }
+
+    if let Some(res) = value_to_typed(value, design) {
+        result.push(res);
+    }
+
+    match result.len() {
+        0   => ValueContainer::None,
+        1   => ValueContainer::Single(result.pop().unwrap()),
+        _   => ValueContainer::Multi(result),
+    }
+}
+
+fn value_to_typed(value: &str, design: &DesignElem) -> Option<Value> {
+    if value.len() == 0 {
+        return None
+    }
+
+
+    match design.value_type {
+        ValueType::Text     => Some(Value::Text(value.to_string())),
+        ValueType::Uri      => Some(Value::Uri(value.to_string())),
+        _                   => None,
+    }
+}

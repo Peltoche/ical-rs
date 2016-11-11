@@ -213,19 +213,19 @@ pub fn get_vcard_properties() -> DesignSet {
     let mut v_design = HashMap::with_capacity(31);
 
     v_design.insert(PropertyType::Adr, DesignElem {
-        value_type:       ValueType::Text,
+        value_type:         ValueType::Text,
         multi_value:        Some(','),
         allowed_types:      None,
         structured_value:   Some(';'),
     });
     v_design.insert(PropertyType::Anniversary, DesignElem {
-        value_type:       ValueType::DateAndOrTime,
+        value_type:         ValueType::DateAndOrTime,
         multi_value:        None,
         allowed_types:      Some(vec![ValueType::DateTime, ValueType::Date, ValueType::Text]),
         structured_value:   None,
     });
     v_design.insert(PropertyType::Bday, DesignElem {
-        value_type:       ValueType::DateAndOrTime,
+        value_type:         ValueType::DateAndOrTime,
         multi_value:        None,
         allowed_types:      Some(vec![ValueType::DateTime, ValueType::Date, ValueType::Text]),
         structured_value:   None,
@@ -242,7 +242,7 @@ pub fn get_vcard_properties() -> DesignSet {
     v_design.insert(PropertyType::Key, DEFAULT_TYPE_URI);
     v_design.insert(PropertyType::Kind, DEFAULT_TYPE_TEXT);
     v_design.insert(PropertyType::Lang, DesignElem{
-        value_type:       ValueType::LanguageTag,
+        value_type:         ValueType::LanguageTag,
         multi_value:        None,
         allowed_types:      None,
         structured_value:   None,
@@ -250,7 +250,7 @@ pub fn get_vcard_properties() -> DesignSet {
     v_design.insert(PropertyType::Logo, DEFAULT_TYPE_URI);
     v_design.insert(PropertyType::Member, DEFAULT_TYPE_URI);
     v_design.insert(PropertyType::N, DesignElem{
-        value_type:       ValueType::Text,
+        value_type:         ValueType::Text,
         multi_value:        Some(','),
         allowed_types:      None,
         structured_value:   Some(';'),
@@ -258,7 +258,7 @@ pub fn get_vcard_properties() -> DesignSet {
     v_design.insert(PropertyType::Nickname, DEFAULT_TYPE_TEXT_MULTI);
     v_design.insert(PropertyType::Note, DEFAULT_TYPE_TEXT);
     v_design.insert(PropertyType::Org, DesignElem{
-        value_type:       ValueType::Text,
+        value_type:         ValueType::Text,
         multi_value:        None,
         allowed_types:      None,
         structured_value:   Some(';'),
@@ -266,7 +266,7 @@ pub fn get_vcard_properties() -> DesignSet {
     v_design.insert(PropertyType::Photo, DEFAULT_TYPE_URI);
     v_design.insert(PropertyType::Related, DEFAULT_TYPE_URI);
     v_design.insert(PropertyType::Rev, DesignElem{
-        value_type:       ValueType::Timestamp,
+        value_type:         ValueType::Timestamp,
         multi_value:        None,
         allowed_types:      None,
         structured_value:   None,
@@ -275,14 +275,14 @@ pub fn get_vcard_properties() -> DesignSet {
     v_design.insert(PropertyType::Sound, DEFAULT_TYPE_URI);
     v_design.insert(PropertyType::Source, DEFAULT_TYPE_URI);
     v_design.insert(PropertyType::Tel, DesignElem{
-        value_type:       ValueType::Uri,
+        value_type:         ValueType::Uri,
         multi_value:        None,
         allowed_types:      Some(vec![ValueType::Uri, ValueType::Text]),
         structured_value:   None,
     });
     v_design.insert(PropertyType::Title, DEFAULT_TYPE_TEXT);
     v_design.insert(PropertyType::Tz, DesignElem{
-        value_type:       ValueType::Text,
+        value_type:         ValueType::Text,
         multi_value:        None,
         allowed_types:      Some(vec![ValueType::Uri, ValueType::Text, ValueType::UtcOffset]),
         structured_value:   None,
@@ -296,7 +296,7 @@ pub fn get_vcard_properties() -> DesignSet {
 
 pub fn get_vcard_param_properties() -> ParamDesignSet {
 
-    let mut p_design = HashMap::new();
+    let mut p_design = HashMap::with_capacity(7);
 
     p_design.insert(ParamName::Language, ParamDesignElem{
         design:             Some(DEFAULT_TYPE_TEXT),

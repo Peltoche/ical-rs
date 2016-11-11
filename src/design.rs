@@ -55,3 +55,23 @@ pub fn unescaped_find(buffer: &str, start: usize, pat: char) -> Option<usize> {
         None
     }
 }
+
+
+/// Internal helper for rfc6868.
+pub fn rfc_6868_escape(input: &str) -> String {
+    let mut s = input.to_string();
+
+    if s.contains("^'") {
+        s = s.replace("^'", "\"");
+    }
+
+    if s.contains("^n") {
+        s = s.replace("^n", "\n");
+    }
+
+    if s.contains("^^") {
+        s = s.replace("^^", "^");
+    }
+
+    s
+}
