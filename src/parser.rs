@@ -51,7 +51,7 @@ impl Iterator for Parser {
 
             // This is the first iteration, net_start isn't been filled yet.
         } else {
-            if self.reader.by_ref().read_line(&mut new_line) == None {
+            if self.reader.by_ref().read_line(&mut new_line).is_err() {
                 return None;
             }
 
