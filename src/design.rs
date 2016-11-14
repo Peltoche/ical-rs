@@ -57,9 +57,9 @@ pub struct ParamDesignElem {
 /// Identical to `find` but will only match values when they are not
 /// preceded by a backslash character.
 pub fn unescaped_find(buffer: &str, start: usize, pat: char) -> Option<usize> {
-    let buf_chars = buffer.char_indices();
 
-    let res = buf_chars
+    //let res = buf_chars
+    buffer.char_indices()
         .skip(start)
         .find(|&(index, value)| {
             if value == pat {
@@ -69,13 +69,11 @@ pub fn unescaped_find(buffer: &str, start: usize, pat: char) -> Option<usize> {
             }
 
             return false;
-        });
+        })
+    .and_then(|(index, _)| {
+       Some(index)
+    })
 
-    if let Some(index_char) = res {
-       Some(index_char.0)
-    } else {
-        None
-    }
 }
 
 

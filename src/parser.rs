@@ -94,14 +94,22 @@ impl Parser {
 
         let reader = BufReader::new(file);
 
-        let parser = Parser{
+        let mut parser = Parser{
             reader: reader,
             next_start: None,
         };
 
-        //parser.retrieve_specs();
+        parser.retrieve_specs();
 
         Ok(parser)
+    }
+
+
+    fn retrieve_specs(&mut self) {
+        let mut line = self.next();
+        println!("Line: {:?}", line);
+        line = self.next();
+        println!("Line: {:?}", line);
     }
 }
 

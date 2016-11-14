@@ -1,3 +1,5 @@
+BEGIN:VCARD
+VERSION:4.0
 ADR;TYPE=work:pobox;apt;street;city;state;zipcode;country
 ANNIVERSARY:19960415
 BDAY:--0203
