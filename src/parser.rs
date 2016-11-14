@@ -51,10 +51,10 @@ impl Iterator for Parser {
 
             // This is the first iteration, net_start isn't been filled yet.
         } else {
-            match self.reader.by_ref().read_line(&mut new_line) {
-                Ok(_)       => {},
-                Err(_)      => return None,
+            if self.reader.by_ref().read_line(&mut new_line).is_err() {
+                return None;
             }
+
             new_line = new_line.trim_right().to_string();
         }
 
@@ -169,7 +169,6 @@ fn parse_line(line: &str, v_design: &DesignSet, p_design: &ParamDesignSet) -> Re
     } else {
         unimplemented!()
     }
-
 
 
     //let value = parse_value(value, multi_value, ptype);
