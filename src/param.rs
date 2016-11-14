@@ -75,8 +75,7 @@ impl ParamName {
 
 
     fn to_string(&self) -> String {
-
-        let res = match self {
+        match self {
            &ParamName::Language     => "LANGUAGE",
            &ParamName::Value        => "VALUE",
            &ParamName::Pref         => "PREF",
@@ -88,9 +87,7 @@ impl ParamName {
            &ParamName::SortAs       => "SORTAS",
            &ParamName::Geo          => "GEO",
            &ParamName::Tz           => "TZ",
-        };
-
-        res.to_string()
+        }.to_string()
     }
 }
 
@@ -110,7 +107,7 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
         let p_design_elem: &ParamDesignElem;
         let value_str: &str;
         let value: ValueContainer;
-        let name: &str;
+        let name: ParamName;
 
         let value_pos: usize;
 
@@ -123,27 +120,26 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
 
         // Unsafe slice is secure. last_param and pos come from the find method
         // on line.
+        let name_str: &str;
         unsafe {
             // The +1 are used to remove the separator charactere ';'.
-            name = line.slice_unchecked(last_param + 1, pos);
+            name_str = line.slice_unchecked(last_param + 1, pos);
         }
 
-        if name.is_empty() {
+        if name_str.is_empty() {
             return Err(ParamError::MissingName);
         }
 
-        let name = match ParamName::from_str(name) {
+        name = match ParamName::from_str(name_str) {
             Some(val)   => val,
             None        => return Err(ParamError::UnknownType),
         };
 
         // Looking for the corresponding set of rules
-        if let Some(elem) = p_design.get(&name) {
-            p_design_elem = elem
-        } else {
-            return Err(ParamError::NotForProperty);
-        }
-
+        p_design_elem = match p_design.get(&name) {
+            Some(val)   => val,
+            None        => return Err(ParamError::NotForProperty),
+        };
 
         // Retrieve the param value.
 
@@ -175,9 +171,8 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
             }
 
 
-            match unescaped_find(line, pos, PARAM_DELIMITER) {
-                Some(_)     => {},
-                None        => have_params = false,
+            if unescaped_find(line, pos, PARAM_DELIMITER) == None {
+                have_params = false;
             };
 
             // 2.
