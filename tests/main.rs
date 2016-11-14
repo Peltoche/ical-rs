@@ -3,8 +3,8 @@ extern crate vcard_ical;
 extern crate rustc_serialize;
 
 use std::path::Path;
-use std::error::Error;
 use std::fs::File;
+use std::error::Error;
 use std::io::{BufReader, BufRead};
 
 use rustc_serialize::json::ToJson;
@@ -32,7 +32,7 @@ fn invalid_path() {
 
     match Parser::from_file(path) {
         Ok(_)        => assert!(false, "File should be invalid"),
-        Err(err)     => assert_eq!(err.description(), "Invalid file"),
+        Err(err)     => assert_eq!(err.description(), "entity not found"),
     }
 }
 
