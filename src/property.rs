@@ -2,11 +2,12 @@
 
 use rustc_serialize::json::{ToJson, Json, Object};
 use std::collections::HashMap;
+use std::fmt;
+use std::error::Error;
 
 use ::value::{ValueType, ValueContainer};
 use ::design::*;
 use ::param::{ParamName, ParamSet};
-use ::parser::ParserError;
 
 #[derive(Debug)]
 /// Main struct returning the parsed content of a line.
@@ -73,7 +74,7 @@ impl ToJson for PropertyType {
 
 impl PropertyType {
     /// Match a string an return the  corresponding `PropertyType`.
-    pub fn from_str(input: &str) -> Result<PropertyType, ParserError> {
+    pub fn from_str(input: &str) -> Result<PropertyType, PropertyError> {
         match input.to_lowercase().as_str() {
             "adr"           => Ok(PropertyType::Adr),
             "anniversary"   => Ok(PropertyType::Anniversary),
@@ -106,9 +107,7 @@ impl PropertyType {
             "title"         => Ok(PropertyType::Title),
             "tz"            => Ok(PropertyType::Tz),
             "xml"           => Ok(PropertyType::Xml),
-            _               => Err(ParserError::new(
-                    format!("Unknow property type: {}", input)
-                    )),
+            _               => Err(PropertyError::UnknownProperty),
         }
     }
 
@@ -348,4 +347,29 @@ pub fn get_vcard_param_properties() -> ParamDesignSet {
 
 
     p_design
+}
+
+
+/// ParamError handler all the param parsing error.
+#[derive(Debug)]
+pub enum PropertyError {
+    UnknownProperty,
+}
+
+impl fmt::Display for PropertyError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Property error: {}",  self.description())
+    }
+}
+
+impl Error for PropertyError {
+    fn description(&self) -> &str {
+        match *self {
+            PropertyError::UnknownProperty => "Unknow property.",
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        None
+    }
 }

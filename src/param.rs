@@ -1,8 +1,9 @@
 
 use std::collections::HashMap;
 use rustc_serialize::json::{ToJson, Json, Object};
+use std::fmt;
+use std::error::Error;
 
-use ::parser::ParserError;
 use ::property::*;
 use ::design::*;
 use ::value::{ValueContainer, Value, parse_value};
@@ -96,16 +97,11 @@ impl ParamName {
 
 
 /// Parse the parameters from a string to an object. The start
-pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> Result<ParamSet, ParserError> {
+pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> Result<ParamSet, ParamError> {
     let mut params = HashMap::new();
     let mut last_param: usize = start;
     let mut have_params: bool = true;
 
-    if start > line.len() {
-        return Err(ParserError::new(
-                format!("Start value out of range -> start: {} / line length: {}", start, line)
-                ));
-    }
 
     // Loop as long as it find a PARAM_NAME_DELIMITER announcing a new parameter
     // key.
@@ -133,23 +129,19 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
         }
 
         if name.is_empty() {
-            return Err(ParserError::new(
-                    format!("Empty parameter name in '{}'", line)
-                    ));
+            return Err(ParamError::MissingName);
         }
 
         let name = match ParamName::from_str(name) {
             Some(val)   => val,
-            None        => return Err(ParserError::new(
-                    format!("Unknown parameter type: {}", name)
-                    )),
+            None        => return Err(ParamError::UnknownType),
         };
 
         // Looking for the corresponding set of rules
         if let Some(elem) = p_design.get(&name) {
             p_design_elem = elem
         } else {
-            return Err(ParserError::new(format!("Invalid parameter `{:?}`: {}", name, line)));
+            return Err(ParamError::NotForProperty);
         }
 
 
@@ -161,9 +153,7 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
         // 2. Find other letter -> this a 'raw' value
         let next_char = match line.bytes().nth(pos + 1) {
             Some(val)   => val,
-            None        => return Err(ParserError::new(
-                    format!("Invalid param format in line `{}`", line)
-                    )),
+            None        => return Err(ParamError::InvalidFormat),
         };
 
         // 1.
@@ -173,9 +163,7 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
 
             pos = match unescaped_find(line, value_pos, '\"') {
                 Some(val)   => val,
-                None        => return Err(ParserError::new(
-                        format!("Invalid line (no matching double quote): {}", line)
-                        )),
+                None        => return Err(ParamError::InvalidFormat),
             };
 
 
@@ -231,16 +219,13 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
 
         } else if let Some(ref allowed_values) = p_design_elem.allowed_values {
             if !allowed_values.contains(&value_str) {
-                return Err(ParserError::new(
-                        format!("Invalid value for parameter {:?} : {}", name, line))
-                    );
-
+                return Err(ParamError::InvalidValue);
             } else {
                 value = ValueContainer::Single(Value::Text(value_str.to_string()));
             }
 
         } else {
-            return Err(ParserError::new(format!("Invalid design for value (no design set): {}", line)));
+            return Err(ParamError::Internal);
         }
 
         params.insert(name, value);
@@ -250,3 +235,37 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
     Ok(ParamSet::Some(params))
 }
 
+
+/// ParamError handler all the param parsing error.
+#[derive(Debug)]
+pub enum ParamError {
+    MissingName,
+    UnknownType,
+    NotForProperty,
+    InvalidFormat,
+    InvalidValue,
+    Internal,
+}
+
+impl fmt::Display for ParamError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Param error: {}",  self.description())
+    }
+}
+
+impl Error for ParamError {
+    fn description(&self) -> &str {
+        match *self {
+            ParamError::MissingName => "Missing a name to property parameter.",
+            ParamError::UnknownType => "Unknow parameter type.",
+            ParamError::NotForProperty => "Parameter not handled by this property.",
+            ParamError::InvalidFormat => "Invalid format for.",
+            ParamError::InvalidValue => "Invalid value.",
+            ParamError::Internal => "Internal error.",
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        None
+    }
+}

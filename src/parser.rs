@@ -8,6 +8,7 @@ use std::io::{BufReader, BufRead, Read};
 use ::property::*;
 use ::value::{parse_value, ValueContainer};
 use ::design::*;
+use ::VcardIcalError;
 use ::param::{parse_parameters, ParamSet};
 
 /// Parser is the main parser struct. It handle the parsing of all the filetypes.
@@ -22,8 +23,10 @@ pub struct Parser {
     next_start: Option<String>,
 }
 
+
+
 impl Iterator for Parser {
-    type Item = Result<Property, ParserError>;
+    type Item = Result<Property, VcardIcalError>;
 
     /// A property can be split over mutliple lines.
     ///
@@ -35,7 +38,7 @@ impl Iterator for Parser {
     /// Note the additional space at the second line.
     /// This method takes a `BufReader` and merge every lines of a property
     /// into one.
-    fn next(&mut self) -> Option<Result<Property, ParserError>> {
+    fn next(&mut self) -> Option<Result<Property, VcardIcalError>> {
         let mut new_line = String::new();
 
         let v_design = get_vcard_properties();
@@ -84,12 +87,10 @@ impl Iterator for Parser {
 impl Parser {
     /// parse_vcard_file take a `Path` to a VCard file and parse the content
     /// into a vector of contact.
-    pub fn from_file(path: &Path) -> Result<Parser, ParserError>{
+    pub fn from_file(path: &Path) -> Result<Parser, VcardIcalError>{
         let file = match File::open(path) {
             Ok(file)    => file,
-            Err(_)      => {
-                return Err(ParserError::new("Invalid file".to_string()));
-            }
+            Err(err)      => return Err(VcardIcalError::File(err)),
         };
 
         let reader = BufReader::new(file);
@@ -113,7 +114,7 @@ impl Parser {
     }
 }
 
-fn parse_line(line: &str, v_design: &DesignSet, p_design: &ParamDesignSet) -> Result<Property, ParserError> {
+fn parse_line(line: &str, v_design: &DesignSet, p_design: &ParamDesignSet) -> Result<Property, VcardIcalError> {
 
     let name: PropertyType;
     let params: ParamSet;
@@ -129,13 +130,13 @@ fn parse_line(line: &str, v_design: &DesignSet, p_design: &ParamDesignSet) -> Re
         unsafe {
             name = match PropertyType::from_str(line.slice_unchecked(0, param_position)) {
                 Ok(val)     => val,
-                Err(err)    => return Err(err),
+                Err(err)    => return Err(VcardIcalError::Property(err)),
             };
         }
 
         params = match parse_parameters(line, param_position, p_design) {
             Ok(val)       => val,
-            Err(err)    => return Err(err),
+            Err(err)    => return Err(VcardIcalError::Param(err)),
         };
 
     } else if value_position.is_some() {
@@ -145,7 +146,7 @@ fn parse_line(line: &str, v_design: &DesignSet, p_design: &ParamDesignSet) -> Re
         unsafe {
             name = match PropertyType::from_str(line.slice_unchecked(0, value_position.unwrap())) {
                 Ok(val)     => val,
-                Err(err)    => return Err(err),
+                Err(err)    => return Err(VcardIcalError::Property(err)),
             };
         }
 
@@ -154,7 +155,7 @@ fn parse_line(line: &str, v_design: &DesignSet, p_design: &ParamDesignSet) -> Re
 
     // Missing VALUE_DELIMITER, the line is invalid.
     } else {
-        return Err(ParserError::new(format!("Invalid line (no token ';' or ':'): {}", line)));
+        return Err(VcardIcalError::Parser(ParserError::InvalidFormat));
     }
 
     let value_str;
@@ -166,7 +167,7 @@ fn parse_line(line: &str, v_design: &DesignSet, p_design: &ParamDesignSet) -> Re
     if let Some(value_design_elem) = v_design.get(&name) {
         value = parse_value(value_str, value_design_elem);
     } else {
-        return Err(ParserError::new("value: value choosing value not implemented".to_string()))
+        unimplemented!()
     }
 
 
@@ -209,31 +210,26 @@ fn split_line(line: &str) -> (Option<usize>, Option<usize>) {
 
 /// ParserError handler all the parsing error. It take a `ParserErrorCode`.
 #[derive(Debug)]
-pub struct ParserError {
-    description: String,
+pub enum ParserError {
+    InvalidFormat,
 }
 
 impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description)
+        write!(f, "Parser error: {}",  self.description())
     }
 }
 
 impl Error for ParserError {
     fn description(&self) -> &str {
-        self.description.as_str()
+        match *self {
+            ParserError::InvalidFormat => "Invalid line format.",
+        }
     }
 
     fn cause(&self) -> Option<&Error> {
-        None
-    }
-}
-
-
-impl ParserError {
-    pub fn new(description: String) -> ParserError {
-        ParserError{
-            description: description.clone(),
+        match *self {
+            ParserError::InvalidFormat => None,
         }
     }
 }
