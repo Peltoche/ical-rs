@@ -4,23 +4,46 @@ use rustc_serialize::json::{ToJson, Json, Object};
 use std::fmt;
 use std::error::Error;
 
-use ::property::*;
-use ::design::*;
-use ::value::{ValueContainer, Value, parse_value};
+use ::{PARAM_DELIMITER, VALUE_DELIMITER, PARAM_NAME_DELIMITER};
+use ::value;
+use ::parser;
 
 
+
+/// Regroup all the rules (`DesignElem`) for a type of file (VCard / ICal).
+pub type DesignSet = HashMap<Name, DesignElem>;
+
+
+/// Represent the set of rules for a parameter. It contain the expected format
+/// for the value or the list of possible values.
 #[derive(Debug)]
-pub enum ParamSet {
-    None,
-    Some(HashMap<ParamName, ValueContainer>)
+pub struct DesignElem {
+    /// If it's a 'open' parameter (not closed to a list of predetermined
+    /// choises), the values is parsed by a `ValueDesignSet` structur.
+    pub design:             Option<value::DesignElem>,
+
+    /// If it's a 'closed' parameter (choices restricted to a predetermined
+    /// list), all the possible values a listed her.
+    pub allowed_values:     Option<Vec<&'static str>>,
+
+
+    pub allow_name:         bool,
+    pub allow_iana_token:   bool,
 }
 
 
-impl ToJson for ParamSet {
+#[derive(Debug)]
+pub enum Container {
+    None,
+    Some(HashMap<Name, value::Container>)
+}
+
+
+impl ToJson for Container {
     fn to_json(&self) -> Json {
         match self {
-            &ParamSet::None    => Json::Null,
-            &ParamSet::Some(ref list)    => {
+            &Container::None    => Json::Null,
+            &Container::Some(ref list)    => {
                 let mut res = Object::new();
 
                 for (key, val) in list {
@@ -37,7 +60,7 @@ impl ToJson for ParamSet {
 
 /// Regroupe all the possible arguments accepted.
 #[derive(Debug, PartialEq, Hash, Eq, Clone, Copy)]
-pub enum ParamName {
+pub enum Name {
     Language,
     Value,
     Pref,
@@ -52,23 +75,23 @@ pub enum ParamName {
     //Any(String),
 }
 
-impl ParamName {
-    /// Match a string an return the corresponding `ParamName`. The string
+impl Name {
+    /// Match a string an return the corresponding `Name`. The string
     /// is move to lowercase before matching.
-    pub fn from_str(input: &str) -> Option<ParamName> {
+    pub fn from_str(input: &str) -> Option<Name> {
 
         match input.to_lowercase().as_str() {
-            "language"  => Some(ParamName::Language),
-            "value"     => Some(ParamName::Value),
-            "atltid"    => Some(ParamName::AltId),
-            "pref"      => Some(ParamName::Pref),
-            "pid"       => Some(ParamName::Pid),
-            "type"      => Some(ParamName::Type),
-            "mediatype" => Some(ParamName::Mediatype),
-            "calscale"  => Some(ParamName::Calscale),
-            "sortas"    => Some(ParamName::SortAs),
-            "geo"       => Some(ParamName::Geo),
-            "tz"        => Some(ParamName::Tz),
+            "language"  => Some(Name::Language),
+            "value"     => Some(Name::Value),
+            "atltid"    => Some(Name::AltId),
+            "pref"      => Some(Name::Pref),
+            "pid"       => Some(Name::Pid),
+            "type"      => Some(Name::Type),
+            "mediatype" => Some(Name::Mediatype),
+            "calscale"  => Some(Name::Calscale),
+            "sortas"    => Some(Name::SortAs),
+            "geo"       => Some(Name::Geo),
+            "tz"        => Some(Name::Tz),
             _           => None,
         }
     }
@@ -76,17 +99,17 @@ impl ParamName {
 
     fn to_string(&self) -> String {
         match self {
-           &ParamName::Language     => "LANGUAGE",
-           &ParamName::Value        => "VALUE",
-           &ParamName::Pref         => "PREF",
-           &ParamName::AltId        => "ALTID",
-           &ParamName::Pid          => "PID",
-           &ParamName::Type         => "TYPE",
-           &ParamName::Mediatype    => "MEDIATYPE",
-           &ParamName::Calscale     => "CALSCALE",
-           &ParamName::SortAs       => "SORTAS",
-           &ParamName::Geo          => "GEO",
-           &ParamName::Tz           => "TZ",
+           &Name::Language     => "LANGUAGE",
+           &Name::Value        => "VALUE",
+           &Name::Pref         => "PREF",
+           &Name::AltId        => "ALTID",
+           &Name::Pid          => "PID",
+           &Name::Type         => "TYPE",
+           &Name::Mediatype    => "MEDIATYPE",
+           &Name::Calscale     => "CALSCALE",
+           &Name::SortAs       => "SORTAS",
+           &Name::Geo          => "GEO",
+           &Name::Tz           => "TZ",
         }.to_string()
     }
 }
@@ -94,7 +117,7 @@ impl ParamName {
 
 
 /// Parse the parameters from a string to an object. The start
-pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> Result<ParamSet, ParamError> {
+pub fn parse(line: &str, start: usize, p_design: &DesignSet) -> Result<Container, ParamError> {
     let mut params = HashMap::new();
     let mut last_param: usize = start;
     let mut have_params: bool = true;
@@ -102,12 +125,12 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
 
     // Loop as long as it find a PARAM_NAME_DELIMITER announcing a new parameter
     // key.
-    while let Some(mut pos) = unescaped_find(line, last_param + 1, PARAM_NAME_DELIMITER) {
+    while let Some(mut pos) = parser::unescaped_find(line, last_param + 1, PARAM_NAME_DELIMITER) {
 
-        let p_design_elem: &ParamDesignElem;
+        let p_design_elem: &DesignElem;
         let value_str: &str;
-        let value: ValueContainer;
-        let name: ParamName;
+        let value: value::Container;
+        let name: Name;
 
         let value_pos: usize;
 
@@ -130,7 +153,7 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
             return Err(ParamError::MissingName);
         }
 
-        name = match ParamName::from_str(name_str) {
+        name = match Name::from_str(name_str) {
             Some(val)   => val,
             None        => return Err(ParamError::UnknownType),
         };
@@ -157,7 +180,7 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
             // Jump the PARAM_NAME_DELIMITER and the close dquote
             value_pos = pos + 2;
 
-            pos = match unescaped_find(line, value_pos, '\"') {
+            pos = match parser::unescaped_find(line, value_pos, '\"') {
                 Some(val)   => val,
                 None        => return Err(ParamError::InvalidFormat),
             };
@@ -171,7 +194,7 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
             }
 
 
-            if unescaped_find(line, pos, PARAM_DELIMITER) == None {
+            if parser::unescaped_find(line, pos, PARAM_DELIMITER) == None {
                 have_params = false;
             };
 
@@ -180,8 +203,8 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
             value_pos = pos + 1;
 
 
-            let next_param_pos = unescaped_find(line, value_pos, PARAM_DELIMITER);
-            let prop_value_pos = unescaped_find(line, value_pos, VALUE_DELIMITER);
+            let next_param_pos = parser::unescaped_find(line, value_pos, PARAM_DELIMITER);
+            let prop_value_pos = parser::unescaped_find(line, value_pos, VALUE_DELIMITER);
             let next_pos;
 
             if prop_value_pos.is_some() && next_param_pos.is_some() && next_param_pos.unwrap() > prop_value_pos.unwrap() {
@@ -210,13 +233,13 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
         }
 
         if let Some(ref design) = p_design_elem.design {
-            value = parse_value(rfc_6868_escape(value_str).as_str(), &design);
+            value = design.parse(parser::rfc_6868_escape(value_str).as_str());
 
         } else if let Some(ref allowed_values) = p_design_elem.allowed_values {
             if !allowed_values.contains(&value_str) {
                 return Err(ParamError::InvalidValue);
             } else {
-                value = ValueContainer::Single(Value::Text(value_str.to_string()));
+                value = value::Container::Single(value::Value::Text(value_str.to_string()));
             }
 
         } else {
@@ -227,12 +250,12 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
     }
 
 
-    Ok(ParamSet::Some(params))
+    Ok(Container::Some(params))
 }
 
 
 /// ParamError handler all the param parsing error.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum ParamError {
     MissingName,
     UnknownType,

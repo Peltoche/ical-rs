@@ -5,16 +5,16 @@ use std::collections::HashMap;
 use std::fmt;
 use std::error::Error;
 
-use ::value::{ValueType, ValueContainer};
-use ::design::*;
-use ::param::{ParamName, ParamSet};
+use ::value;
+use ::param;
+use ::property;
 
 #[derive(Debug)]
 /// Main struct returning the parsed content of a line.
 pub struct Property {
-    pub name:   PropertyType,
-    pub params: ParamSet,
-    pub value:  ValueContainer,
+    pub name:   property::Type,
+    pub params: param::Container,
+    pub value:  value::Container,
 }
 
 impl ToJson for Property {
@@ -31,7 +31,7 @@ impl ToJson for Property {
 
 /// All the accepted attributes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum PropertyType {
+pub enum Type {
     Adr,
     Anniversary,
     Bday,
@@ -65,142 +65,135 @@ pub enum PropertyType {
     Xml,
 }
 
-impl ToJson for PropertyType {
+impl ToJson for Type {
     fn to_json(&self) -> Json {
        Json::String(self.to_string())
     }
 }
 
 
-impl PropertyType {
-    /// Match a string an return the  corresponding `PropertyType`.
-    pub fn from_str(input: &str) -> Result<PropertyType, PropertyError> {
+impl Type {
+    /// Match a string an return the  corresponding `Type`.
+    pub fn from_str(input: &str) -> Result<Type, PropertyError> {
         match input.to_lowercase().as_str() {
-            "adr"           => Ok(PropertyType::Adr),
-            "anniversary"   => Ok(PropertyType::Anniversary),
-            "bday"          => Ok(PropertyType::Bday),
-            "caladruri"     => Ok(PropertyType::Caladruri),
-            "caluri"        => Ok(PropertyType::Caluri),
-            "clientpidmap"  => Ok(PropertyType::Clientpidmap),
-            "email"         => Ok(PropertyType::Email),
-            "fburl"         => Ok(PropertyType::Fburl),
-            "fn"            => Ok(PropertyType::Fn),
-            "gender"        => Ok(PropertyType::Gender),
-            "geo"           => Ok(PropertyType::Geo),
-            "impp"          => Ok(PropertyType::Impp),
-            "key"           => Ok(PropertyType::Key),
-            "kind"          => Ok(PropertyType::Kind),
-            "lang"          => Ok(PropertyType::Lang),
-            "logo"          => Ok(PropertyType::Logo),
-            "member"        => Ok(PropertyType::Member),
-            "n"             => Ok(PropertyType::N),
-            "nickname"      => Ok(PropertyType::Nickname),
-            "note"          => Ok(PropertyType::Note),
-            "org"           => Ok(PropertyType::Org),
-            "photo"         => Ok(PropertyType::Photo),
-            "related"       => Ok(PropertyType::Related),
-            "rev"           => Ok(PropertyType::Rev),
-            "role"          => Ok(PropertyType::Role),
-            "sound"         => Ok(PropertyType::Sound),
-            "source"        => Ok(PropertyType::Source),
-            "tel"           => Ok(PropertyType::Tel),
-            "title"         => Ok(PropertyType::Title),
-            "tz"            => Ok(PropertyType::Tz),
-            "xml"           => Ok(PropertyType::Xml),
+            "adr"           => Ok(Type::Adr),
+            "anniversary"   => Ok(Type::Anniversary),
+            "bday"          => Ok(Type::Bday),
+            "caladruri"     => Ok(Type::Caladruri),
+            "caluri"        => Ok(Type::Caluri),
+            "clientpidmap"  => Ok(Type::Clientpidmap),
+            "email"         => Ok(Type::Email),
+            "fburl"         => Ok(Type::Fburl),
+            "fn"            => Ok(Type::Fn),
+            "gender"        => Ok(Type::Gender),
+            "geo"           => Ok(Type::Geo),
+            "impp"          => Ok(Type::Impp),
+            "key"           => Ok(Type::Key),
+            "kind"          => Ok(Type::Kind),
+            "lang"          => Ok(Type::Lang),
+            "logo"          => Ok(Type::Logo),
+            "member"        => Ok(Type::Member),
+            "n"             => Ok(Type::N),
+            "nickname"      => Ok(Type::Nickname),
+            "note"          => Ok(Type::Note),
+            "org"           => Ok(Type::Org),
+            "photo"         => Ok(Type::Photo),
+            "related"       => Ok(Type::Related),
+            "rev"           => Ok(Type::Rev),
+            "role"          => Ok(Type::Role),
+            "sound"         => Ok(Type::Sound),
+            "source"        => Ok(Type::Source),
+            "tel"           => Ok(Type::Tel),
+            "title"         => Ok(Type::Title),
+            "tz"            => Ok(Type::Tz),
+            "xml"           => Ok(Type::Xml),
             _               => Err(PropertyError::UnknownProperty),
         }
     }
 
-    /// Match a `PropertyType `an return the  corresponding string.
+    /// Match a `Type `an return the  corresponding string.
     fn to_string(&self) -> String {
-        let res = match self {
-           &PropertyType::Adr           => "ADR",
-           &PropertyType::Anniversary   => "ANNIVERSARY",
-           &PropertyType::Bday          => "BDAY",
-           &PropertyType::Caladruri     => "CALADRURI",
-           &PropertyType::Caluri        => "CALURI",
-           &PropertyType::Clientpidmap  => "CLIENTPIDMAP",
-           &PropertyType::Email         => "EMAIL",
-           &PropertyType::Fburl         => "FBURL",
-           &PropertyType::Fn            => "FN",
-           &PropertyType::Gender        => "GENDER",
-           &PropertyType::Geo           => "GEO",
-           &PropertyType::Impp          => "IMPP",
-           &PropertyType::Key           => "KEY",
-           &PropertyType::Kind          => "KIND",
-           &PropertyType::Lang          => "LANG",
-           &PropertyType::Logo          => "LOGO",
-           &PropertyType::Member        => "MEMBER",
-           &PropertyType::N             => "N",
-           &PropertyType::Nickname      => "NICKNAME",
-           &PropertyType::Note          => "NOTE",
-           &PropertyType::Org           => "ORG",
-           &PropertyType::Photo         => "PHOTO",
-           &PropertyType::Related       => "RELATED",
-           &PropertyType::Rev           => "REV",
-           &PropertyType::Role          => "ROLE",
-           &PropertyType::Sound         => "SOUND",
-           &PropertyType::Source        => "SOURCE",
-           &PropertyType::Tel           => "TEL",
-           &PropertyType::Title         => "TITLE",
-           &PropertyType::Tz            => "TZ",
-           &PropertyType::Xml           => "XML",
-        };
-
-        res.to_string()
+        match self {
+           &Type::Adr           => "ADR",
+           &Type::Anniversary   => "ANNIVERSARY",
+           &Type::Bday          => "BDAY",
+           &Type::Caladruri     => "CALADRURI",
+           &Type::Caluri        => "CALURI",
+           &Type::Clientpidmap  => "CLIENTPIDMAP",
+           &Type::Email         => "EMAIL",
+           &Type::Fburl         => "FBURL",
+           &Type::Fn            => "FN",
+           &Type::Gender        => "GENDER",
+           &Type::Geo           => "GEO",
+           &Type::Impp          => "IMPP",
+           &Type::Key           => "KEY",
+           &Type::Kind          => "KIND",
+           &Type::Lang          => "LANG",
+           &Type::Logo          => "LOGO",
+           &Type::Member        => "MEMBER",
+           &Type::N             => "N",
+           &Type::Nickname      => "NICKNAME",
+           &Type::Note          => "NOTE",
+           &Type::Org           => "ORG",
+           &Type::Photo         => "PHOTO",
+           &Type::Related       => "RELATED",
+           &Type::Rev           => "REV",
+           &Type::Role          => "ROLE",
+           &Type::Sound         => "SOUND",
+           &Type::Source        => "SOURCE",
+           &Type::Tel           => "TEL",
+           &Type::Title         => "TITLE",
+           &Type::Tz            => "TZ",
+           &Type::Xml           => "XML",
+        }.to_string()
     }
 }
 
-//pub const MULTIVALUE_DELIMITER: char = ',';
-pub const VALUE_DELIMITER: char = ':';
-pub const PARAM_DELIMITER: char = ';';
-pub const PARAM_NAME_DELIMITER: char = '=';
 
-
-pub const DEFAULT_TYPE_TEXT: DesignElem = DesignElem {
-    value_type:         ValueType::Text,
+pub const DEFAULT_TYPE_TEXT: value::DesignElem = value::DesignElem {
+    value_type:         value::Type::Text,
     multi_value:        None,
     allowed_types:      None,
     structured_value:   None,
 };
 
-pub const DEFAULT_TYPE_TEXT_MULTI: DesignElem = DesignElem {
-    value_type:         ValueType::Text,
+pub const DEFAULT_TYPE_TEXT_MULTI: value::DesignElem = value::DesignElem {
+    value_type:         value::Type::Text,
     multi_value:        Some(','),
     allowed_types:      None,
     structured_value:   None,
 };
 
-pub const DEFAULT_TYPE_TEXT_STRUCTURED : DesignElem = DesignElem {
-    value_type:         ValueType::Text,
+pub const DEFAULT_TYPE_TEXT_STRUCTURED : value::DesignElem = value::DesignElem {
+    value_type:         value::Type::Text,
     multi_value:        None,
     allowed_types:      None,
     structured_value:   Some(';'),
 };
 
-pub const DEFAULT_TYPE_INTEGER: DesignElem = DesignElem {
-    value_type:       ValueType::Integer,
+pub const DEFAULT_TYPE_INTEGER: value::DesignElem = value::DesignElem {
+    value_type:       value::Type::Integer,
     multi_value:        None,
     allowed_types:      None,
     structured_value:   None,
 };
 
 //pub const DEFAULT_TYPE_DATETIME: DesignElem = DesignElem {
-    //value_type:       ValueType::DateTime,
+    //value_type:       value::Type::DateTime,
     //multi_value:        None,
     //allowed_types:      None,
     //structured_value:   None,
 //};
 
-pub const DEFAULT_TYPE_URI: DesignElem = DesignElem {
-    value_type:         ValueType::Uri,
+pub const DEFAULT_TYPE_URI: value::DesignElem = value::DesignElem {
+    value_type:         value::Type::Uri,
     multi_value:        None,
     allowed_types:      None,
     structured_value:   None,
 };
 
 //pub const DEFAULT_TYPE_UTC_OFFSET: DesignElem = DesignElem {
-    //value_type:       ValueType::UtcOffset,
+    //value_type:       value::Type::UtcOffset,
     //multi_value:        None,
     //allowed_types:      None,
     //structured_value:   None,
@@ -208,102 +201,102 @@ pub const DEFAULT_TYPE_URI: DesignElem = DesignElem {
 
 
 
-pub fn get_vcard_properties() -> DesignSet {
+pub fn get_vcard_properties() -> value::Design {
     let mut v_design = HashMap::with_capacity(31);
 
-    v_design.insert(PropertyType::Adr, DesignElem {
-        value_type:         ValueType::Text,
+    v_design.insert(Type::Adr, value::DesignElem {
+        value_type:         value::Type::Text,
         multi_value:        Some(','),
         allowed_types:      None,
         structured_value:   Some(';'),
     });
-    v_design.insert(PropertyType::Anniversary, DesignElem {
-        value_type:         ValueType::DateAndOrTime,
+    v_design.insert(Type::Anniversary, value::DesignElem {
+        value_type:         value::Type::DateAndOrTime,
         multi_value:        None,
-        allowed_types:      Some(vec![ValueType::DateTime, ValueType::Date, ValueType::Text]),
+        allowed_types:      Some(vec![value::Type::DateTime, value::Type::Date, value::Type::Text]),
         structured_value:   None,
     });
-    v_design.insert(PropertyType::Bday, DesignElem {
-        value_type:         ValueType::DateAndOrTime,
+    v_design.insert(Type::Bday, value::DesignElem {
+        value_type:         value::Type::DateAndOrTime,
         multi_value:        None,
-        allowed_types:      Some(vec![ValueType::DateTime, ValueType::Date, ValueType::Text]),
+        allowed_types:      Some(vec![value::Type::DateTime, value::Type::Date, value::Type::Text]),
         structured_value:   None,
     });
-    v_design.insert(PropertyType::Caladruri, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::Caluri, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::Clientpidmap, DEFAULT_TYPE_TEXT_STRUCTURED);
-    v_design.insert(PropertyType::Email, DEFAULT_TYPE_TEXT);
-    v_design.insert(PropertyType::Fburl, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::Fn, DEFAULT_TYPE_TEXT);
-    v_design.insert(PropertyType::Gender, DEFAULT_TYPE_TEXT_STRUCTURED);
-    v_design.insert(PropertyType::Geo, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::Impp, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::Key, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::Kind, DEFAULT_TYPE_TEXT);
-    v_design.insert(PropertyType::Lang, DesignElem{
-        value_type:         ValueType::LanguageTag,
+    v_design.insert(Type::Caladruri, DEFAULT_TYPE_URI);
+    v_design.insert(Type::Caluri, DEFAULT_TYPE_URI);
+    v_design.insert(Type::Clientpidmap, DEFAULT_TYPE_TEXT_STRUCTURED);
+    v_design.insert(Type::Email, DEFAULT_TYPE_TEXT);
+    v_design.insert(Type::Fburl, DEFAULT_TYPE_URI);
+    v_design.insert(Type::Fn, DEFAULT_TYPE_TEXT);
+    v_design.insert(Type::Gender, DEFAULT_TYPE_TEXT_STRUCTURED);
+    v_design.insert(Type::Geo, DEFAULT_TYPE_URI);
+    v_design.insert(Type::Impp, DEFAULT_TYPE_URI);
+    v_design.insert(Type::Key, DEFAULT_TYPE_URI);
+    v_design.insert(Type::Kind, DEFAULT_TYPE_TEXT);
+    v_design.insert(Type::Lang, value::DesignElem{
+        value_type:         value::Type::LanguageTag,
         multi_value:        None,
         allowed_types:      None,
         structured_value:   None,
     });
-    v_design.insert(PropertyType::Logo, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::Member, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::N, DesignElem{
-        value_type:         ValueType::Text,
+    v_design.insert(Type::Logo, DEFAULT_TYPE_URI);
+    v_design.insert(Type::Member, DEFAULT_TYPE_URI);
+    v_design.insert(Type::N, value::DesignElem{
+        value_type:         value::Type::Text,
         multi_value:        Some(','),
         allowed_types:      None,
         structured_value:   Some(';'),
     });
-    v_design.insert(PropertyType::Nickname, DEFAULT_TYPE_TEXT_MULTI);
-    v_design.insert(PropertyType::Note, DEFAULT_TYPE_TEXT);
-    v_design.insert(PropertyType::Org, DesignElem{
-        value_type:         ValueType::Text,
+    v_design.insert(Type::Nickname, DEFAULT_TYPE_TEXT_MULTI);
+    v_design.insert(Type::Note, DEFAULT_TYPE_TEXT);
+    v_design.insert(Type::Org, value::DesignElem{
+        value_type:         value::Type::Text,
         multi_value:        None,
         allowed_types:      None,
         structured_value:   Some(';'),
     });
-    v_design.insert(PropertyType::Photo, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::Related, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::Rev, DesignElem{
-        value_type:         ValueType::Timestamp,
+    v_design.insert(Type::Photo, DEFAULT_TYPE_URI);
+    v_design.insert(Type::Related, DEFAULT_TYPE_URI);
+    v_design.insert(Type::Rev, value::DesignElem{
+        value_type:         value::Type::Timestamp,
         multi_value:        None,
         allowed_types:      None,
         structured_value:   None,
     });
-    v_design.insert(PropertyType::Role, DEFAULT_TYPE_TEXT);
-    v_design.insert(PropertyType::Sound, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::Source, DEFAULT_TYPE_URI);
-    v_design.insert(PropertyType::Tel, DesignElem{
-        value_type:         ValueType::Uri,
+    v_design.insert(Type::Role, DEFAULT_TYPE_TEXT);
+    v_design.insert(Type::Sound, DEFAULT_TYPE_URI);
+    v_design.insert(Type::Source, DEFAULT_TYPE_URI);
+    v_design.insert(Type::Tel, value::DesignElem{
+        value_type:         value::Type::Uri,
         multi_value:        None,
-        allowed_types:      Some(vec![ValueType::Uri, ValueType::Text]),
+        allowed_types:      Some(vec![value::Type::Uri, value::Type::Text]),
         structured_value:   None,
     });
-    v_design.insert(PropertyType::Title, DEFAULT_TYPE_TEXT);
-    v_design.insert(PropertyType::Tz, DesignElem{
-        value_type:         ValueType::Text,
+    v_design.insert(Type::Title, DEFAULT_TYPE_TEXT);
+    v_design.insert(Type::Tz, value::DesignElem{
+        value_type:         value::Type::Text,
         multi_value:        None,
-        allowed_types:      Some(vec![ValueType::Uri, ValueType::Text, ValueType::UtcOffset]),
+        allowed_types:      Some(vec![value::Type::Uri, value::Type::Text, value::Type::UtcOffset]),
         structured_value:   None,
     });
-    v_design.insert(PropertyType::Xml, DEFAULT_TYPE_TEXT);
+    v_design.insert(Type::Xml, DEFAULT_TYPE_TEXT);
 
     v_design
 }
 
 
 
-pub fn get_vcard_param_properties() -> ParamDesignSet {
+pub fn get_vcard_param_properties() -> param::DesignSet {
 
     let mut p_design = HashMap::with_capacity(7);
 
-    p_design.insert(ParamName::Language, ParamDesignElem{
+    p_design.insert(param::Name::Language, param::DesignElem{
         design:             Some(DEFAULT_TYPE_TEXT),
         allowed_values:     None,
         allow_name:         false,
         allow_iana_token:   false,
     });
-    p_design.insert(ParamName::Value, ParamDesignElem {
+    p_design.insert(param::Name::Value, param::DesignElem {
         design:             None,
         allowed_values:     Some(
             vec!["text", "uri", "date", "time", "date-time",
@@ -313,31 +306,31 @@ pub fn get_vcard_param_properties() -> ParamDesignSet {
         allow_name: true,
         allow_iana_token: true,
     });
-    p_design.insert(ParamName::Pref, ParamDesignElem {
+    p_design.insert(param::Name::Pref, param::DesignElem {
         design:             Some(DEFAULT_TYPE_INTEGER),
         allowed_values:     None,
         allow_name: true,
         allow_iana_token: true,
     });
-    p_design.insert(ParamName::AltId, ParamDesignElem {
+    p_design.insert(param::Name::AltId, param::DesignElem {
         design:             Some(DEFAULT_TYPE_TEXT),
         allowed_values:     None,
         allow_name: true,
         allow_iana_token: true,
     });
-    p_design.insert(ParamName::Type, ParamDesignElem {
+    p_design.insert(param::Name::Type, param::DesignElem {
         design:             Some(DEFAULT_TYPE_TEXT_MULTI),
         allowed_values:     None,
         allow_name:         false,
         allow_iana_token:   false,
     });
-    p_design.insert(ParamName::Mediatype, ParamDesignElem {
+    p_design.insert(param::Name::Mediatype, param::DesignElem {
         design:             Some(DEFAULT_TYPE_TEXT),
         allowed_values:     None,
         allow_name: true,
         allow_iana_token: true,
     });
-    p_design.insert(ParamName::Calscale, ParamDesignElem {
+    p_design.insert(param::Name::Calscale, param::DesignElem {
         design:             Some(DEFAULT_TYPE_TEXT),
         allowed_values:     None,
         allow_name: true,
