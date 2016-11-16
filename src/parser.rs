@@ -25,8 +25,8 @@ pub struct Parser {
     //Protocol: Protocol,
     //Version: Version,
 
-    value_design: value::ValueDesignSet,
-    param_design: param::ParamDesignSet,
+    value_design: value::Design,
+    param_design: param::DesignSet,
 }
 
 
@@ -111,9 +111,9 @@ impl Parser {
                 line.remove(0);
                 new_line.push_str(line.trim_right())
 
-                    // This is a new attribute so it need to be saved it for
-                    // the next iteration.
             } else {
+                // This is a new attribute so it need to be saved it for
+                // the next iteration.
                 self.next_start = Some(line.trim().to_string());
                 break;
             }
@@ -164,9 +164,9 @@ impl Parser {
 
     fn parse_line(&mut self, line: &str) -> Result<property::Property, VcardIcalError> {
 
-        let name: property::PropertyType;
-        let params: param::ParamSet;
-        let value: value::ValueContainer;
+        let name: property::Type;
+        let params: param::Container;
+        let value: value::Container;
 
 
         let (value_position, param_position) = split_line(line);
@@ -176,17 +176,17 @@ impl Parser {
             // The use is safe because the param_position come from the
             // 'find' method.
             unsafe {
-                name = property::PropertyType::from_str(line.slice_unchecked(0, param_position))?;
+                name = property::Type::from_str(line.slice_unchecked(0, param_position))?;
             }
 
-            params = param::parse_parameters(line, param_position, &self.param_design)?;
+            params = param::parse(line, param_position, &self.param_design)?;
 
         } else if value_position.is_some() {
             // Line without parameters (BEGIN:VCARD, CLASS:PUBLIC)
-            params = param::ParamSet::None;
+            params = param::Container::None;
 
             unsafe {
-                name = property::PropertyType::from_str(line.slice_unchecked(0, value_position.unwrap()))?;
+                name = property::Type::from_str(line.slice_unchecked(0, value_position.unwrap()))?;
             }
 
         } else {
@@ -200,8 +200,8 @@ impl Parser {
             value_str = line.slice_unchecked(value_position.unwrap() + 1, line.len());
         }
 
-        if let Some(value_design_elem) = self.value_design.get(&name) {
-            value = value::parse_value(value_str, value_design_elem);
+        if let Some(v_design_elem) = self.value_design.get(&name) {
+            value = v_design_elem.parse(value_str);
         } else {
             unimplemented!()
         }
