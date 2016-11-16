@@ -1,8 +1,35 @@
 
 use rustc_serialize::json::{ToJson, Json, Array};
+use std::collections::HashMap;
 
-use ::design::DesignElem;
-use ::design::unescaped_find;
+use ::property;
+use ::parser;
+
+/// A list of `DesignSet`. It list all the possible properties and their
+/// format.
+pub type ValueDesignSet = HashMap<property::PropertyType, ValueDesignElem>;
+
+
+/// A element of the HashMap `DesignSet`. It represent a the properties of an
+/// attribute.
+#[derive(Debug)]
+pub struct ValueDesignElem {
+    /// The default `ValueType` for the attribute.
+    pub value_type:         ValueType,
+
+    /// An attribute can have several values. If this is the case `multi_value`
+    /// contain the char used to split the elements.
+    pub multi_value:        Option<char>,
+
+    /// An attribute can accept several `ValueType`. In the case allowed_types
+    /// take a list of all allowed elements. The value_type attribute will be
+    /// tested first and can be listed in `allowed_types`.
+    pub allowed_types:      Option<Vec<ValueType>>,
+
+    /// An attribute value can be structured on several 'sub-values'.
+    /// `structured_value` contain the char used to split this elements.
+    pub structured_value:   Option<char>,
+}
 
 
 #[derive(Debug, PartialEq, Eq)]
@@ -76,7 +103,7 @@ pub enum ValueType{
 
 
 /// Parse a value string.
-pub fn parse_value(buffer: &str, design: &DesignElem) -> ValueContainer {
+pub fn parse_value(buffer: &str, design: &ValueDesignElem) -> ValueContainer {
     let mut value: &str;
     let mut result = Vec::new();
 
@@ -85,7 +112,7 @@ pub fn parse_value(buffer: &str, design: &DesignElem) -> ValueContainer {
         let mut last_pos = 0;
 
         // Split each pieces.
-        while let Some(pos) = unescaped_find(buffer, last_pos, delimiter) {
+        while let Some(pos) = parser::unescaped_find(buffer, last_pos, delimiter) {
             // Save use of slice_unchecked. last_pos and pos come from the
             // buffer find method.
             unsafe {
@@ -116,7 +143,7 @@ pub fn parse_value(buffer: &str, design: &DesignElem) -> ValueContainer {
     }
 }
 
-fn value_to_typed(value: &str, design: &DesignElem) -> Option<Value> {
+fn value_to_typed(value: &str, design: &ValueDesignElem) -> Option<Value> {
     if value.len() == 0 {
         return None
     }

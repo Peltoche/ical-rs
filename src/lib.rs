@@ -4,8 +4,6 @@ extern crate rustc_serialize;
 pub mod parser;
 mod property;
 mod value;
-
-mod design;
 mod param;
 
 use std::fmt;
@@ -15,6 +13,12 @@ use std::error::Error;
 use parser::ParserError;
 use param::ParamError;
 use property::PropertyError;
+
+
+//pub const MULTIVALUE_DELIMITER: char = ',';
+pub const VALUE_DELIMITER: char = ':';
+pub const PARAM_DELIMITER: char = ';';
+pub const PARAM_NAME_DELIMITER: char = '=';
 
 #[derive(Debug)]
 pub enum VcardIcalError {
@@ -52,5 +56,17 @@ impl Error for VcardIcalError {
             VcardIcalError::Parser(ref err)  => Some(err),
             VcardIcalError::Property(ref err)  => Some(err),
         }
+    }
+}
+
+impl From<PropertyError> for VcardIcalError {
+    fn from(err: PropertyError) -> VcardIcalError {
+        VcardIcalError::Property(err)
+    }
+}
+
+impl From<ParamError> for VcardIcalError {
+    fn from(err: ParamError) -> VcardIcalError {
+        VcardIcalError::Param(err)
     }
 }

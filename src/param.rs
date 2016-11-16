@@ -4,15 +4,38 @@ use rustc_serialize::json::{ToJson, Json, Object};
 use std::fmt;
 use std::error::Error;
 
-use ::property::*;
-use ::design::*;
-use ::value::{ValueContainer, Value, parse_value};
+use ::{PARAM_DELIMITER, VALUE_DELIMITER, PARAM_NAME_DELIMITER};
+use ::value;
+use ::parser;
+
+
+
+/// Regroup all the rules (`ParamDesignElem`) for a type of file (VCard / ICal).
+pub type ParamDesignSet = HashMap<ParamName, ParamDesignElem>;
+
+
+/// Represent the set of rules for a parameter. It contain the expected format
+/// for the value or the list of possible values.
+#[derive(Debug)]
+pub struct ParamDesignElem {
+    /// If it's a 'open' parameter (not closed to a list of predetermined
+    /// choises), the values is parsed by a `ValueDesignSet` structur.
+    pub design:             Option<value::ValueDesignElem>,
+
+    /// If it's a 'closed' parameter (choices restricted to a predetermined
+    /// list), all the possible values a listed her.
+    pub allowed_values:     Option<Vec<&'static str>>,
+
+
+    pub allow_name:         bool,
+    pub allow_iana_token:   bool,
+}
 
 
 #[derive(Debug)]
 pub enum ParamSet {
     None,
-    Some(HashMap<ParamName, ValueContainer>)
+    Some(HashMap<ParamName, value::ValueContainer>)
 }
 
 
@@ -102,11 +125,11 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
 
     // Loop as long as it find a PARAM_NAME_DELIMITER announcing a new parameter
     // key.
-    while let Some(mut pos) = unescaped_find(line, last_param + 1, PARAM_NAME_DELIMITER) {
+    while let Some(mut pos) = parser::unescaped_find(line, last_param + 1, PARAM_NAME_DELIMITER) {
 
         let p_design_elem: &ParamDesignElem;
         let value_str: &str;
-        let value: ValueContainer;
+        let value: value::ValueContainer;
         let name: ParamName;
 
         let value_pos: usize;
@@ -157,7 +180,7 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
             // Jump the PARAM_NAME_DELIMITER and the close dquote
             value_pos = pos + 2;
 
-            pos = match unescaped_find(line, value_pos, '\"') {
+            pos = match parser::unescaped_find(line, value_pos, '\"') {
                 Some(val)   => val,
                 None        => return Err(ParamError::InvalidFormat),
             };
@@ -171,7 +194,7 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
             }
 
 
-            if unescaped_find(line, pos, PARAM_DELIMITER) == None {
+            if parser::unescaped_find(line, pos, PARAM_DELIMITER) == None {
                 have_params = false;
             };
 
@@ -180,8 +203,8 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
             value_pos = pos + 1;
 
 
-            let next_param_pos = unescaped_find(line, value_pos, PARAM_DELIMITER);
-            let prop_value_pos = unescaped_find(line, value_pos, VALUE_DELIMITER);
+            let next_param_pos = parser::unescaped_find(line, value_pos, PARAM_DELIMITER);
+            let prop_value_pos = parser::unescaped_find(line, value_pos, VALUE_DELIMITER);
             let next_pos;
 
             if prop_value_pos.is_some() && next_param_pos.is_some() && next_param_pos.unwrap() > prop_value_pos.unwrap() {
@@ -210,13 +233,13 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
         }
 
         if let Some(ref design) = p_design_elem.design {
-            value = parse_value(rfc_6868_escape(value_str).as_str(), &design);
+            value = value::parse_value(parser::rfc_6868_escape(value_str).as_str(), &design);
 
         } else if let Some(ref allowed_values) = p_design_elem.allowed_values {
             if !allowed_values.contains(&value_str) {
                 return Err(ParamError::InvalidValue);
             } else {
-                value = ValueContainer::Single(Value::Text(value_str.to_string()));
+                value = value::ValueContainer::Single(value::Value::Text(value_str.to_string()));
             }
 
         } else {
@@ -232,7 +255,7 @@ pub fn parse_parameters(line: &str, start: usize, p_design: &ParamDesignSet) -> 
 
 
 /// ParamError handler all the param parsing error.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum ParamError {
     MissingName,
     UnknownType,
