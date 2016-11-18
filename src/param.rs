@@ -5,39 +5,40 @@ use std::fmt;
 use std::error::Error;
 
 use ::{PARAM_DELIMITER, VALUE_DELIMITER, PARAM_NAME_DELIMITER};
-use ::value;
 use ::parser;
 
 
-
-/// Regroup all the rules (`DesignElem`) for a type of file (VCard / ICal).
-pub type DesignSet = HashMap<Name, DesignElem>;
+pub type Design = HashMap<Type, DesignElem>;
 
 
 /// Represent the set of rules for a parameter. It contain the expected format
 /// for the value or the list of possible values.
 #[derive(Debug)]
 pub struct DesignElem {
-    /// If it's a 'open' parameter (not closed to a list of predetermined
-    /// choises), the values is parsed by a `ValueDesignSet` structur.
-    pub design:             Option<value::DesignElem>,
-
     /// If it's a 'closed' parameter (choices restricted to a predetermined
     /// list), all the possible values a listed her.
     pub allowed_values:     Option<Vec<&'static str>>,
 
 
-    pub allow_name:         bool,
+    pub allow_x_name:       bool,
     pub allow_iana_token:   bool,
 }
 
 
 #[derive(Debug)]
 pub enum Container {
+    Some(HashMap<Type, String>),
     None,
-    Some(HashMap<Name, value::Container>)
 }
 
+impl Container {
+    pub fn get(&self, key: &Type) -> Option<&String> {
+        match *self {
+            Container::Some(ref map)   => map.get(key),
+            Container::None        => None,
+        }
+    }
+}
 
 impl ToJson for Container {
     fn to_json(&self) -> Json {
@@ -60,7 +61,7 @@ impl ToJson for Container {
 
 /// Regroupe all the possible arguments accepted.
 #[derive(Debug, PartialEq, Hash, Eq, Clone, Copy)]
-pub enum Name {
+pub enum Type {
     Language,
     Value,
     Pref,
@@ -75,23 +76,23 @@ pub enum Name {
     //Any(String),
 }
 
-impl Name {
-    /// Match a string an return the corresponding `Name`. The string
+impl Type {
+    /// Match a string an return the corresponding `Type`. The string
     /// is move to lowercase before matching.
-    pub fn from_str(input: &str) -> Option<Name> {
+    pub fn from_str(input: &str) -> Option<Type> {
 
         match input.to_lowercase().as_str() {
-            "language"  => Some(Name::Language),
-            "value"     => Some(Name::Value),
-            "atltid"    => Some(Name::AltId),
-            "pref"      => Some(Name::Pref),
-            "pid"       => Some(Name::Pid),
-            "type"      => Some(Name::Type),
-            "mediatype" => Some(Name::Mediatype),
-            "calscale"  => Some(Name::Calscale),
-            "sortas"    => Some(Name::SortAs),
-            "geo"       => Some(Name::Geo),
-            "tz"        => Some(Name::Tz),
+            "language"  => Some(Type::Language),
+            "value"     => Some(Type::Value),
+            "atltid"    => Some(Type::AltId),
+            "pref"      => Some(Type::Pref),
+            "pid"       => Some(Type::Pid),
+            "type"      => Some(Type::Type),
+            "mediatype" => Some(Type::Mediatype),
+            "calscale"  => Some(Type::Calscale),
+            "sortas"    => Some(Type::SortAs),
+            "geo"       => Some(Type::Geo),
+            "tz"        => Some(Type::Tz),
             _           => None,
         }
     }
@@ -99,17 +100,17 @@ impl Name {
 
     fn to_string(&self) -> String {
         match self {
-           &Name::Language     => "LANGUAGE",
-           &Name::Value        => "VALUE",
-           &Name::Pref         => "PREF",
-           &Name::AltId        => "ALTID",
-           &Name::Pid          => "PID",
-           &Name::Type         => "TYPE",
-           &Name::Mediatype    => "MEDIATYPE",
-           &Name::Calscale     => "CALSCALE",
-           &Name::SortAs       => "SORTAS",
-           &Name::Geo          => "GEO",
-           &Name::Tz           => "TZ",
+           &Type::Language     => "LANGUAGE",
+           &Type::Value        => "VALUE",
+           &Type::Pref         => "PREF",
+           &Type::AltId        => "ALTID",
+           &Type::Pid          => "PID",
+           &Type::Type         => "TYPE",
+           &Type::Mediatype    => "MEDIATYPE",
+           &Type::Calscale     => "CALSCALE",
+           &Type::SortAs       => "SORTAS",
+           &Type::Geo          => "GEO",
+           &Type::Tz           => "TZ",
         }.to_string()
     }
 }
@@ -117,7 +118,8 @@ impl Name {
 
 
 /// Parse the parameters from a string to an object. The start
-pub fn parse(line: &str, start: usize, p_design: &DesignSet) -> Result<Container, ParamError> {
+#[allow(unused_variables)]
+pub fn parse(line: &str, start: usize, p_design: &Design) -> Result<Container, ParamError> {
     let mut params = HashMap::new();
     let mut last_param: usize = start;
     let mut have_params: bool = true;
@@ -127,10 +129,9 @@ pub fn parse(line: &str, start: usize, p_design: &DesignSet) -> Result<Container
     // key.
     while let Some(mut pos) = parser::unescaped_find(line, last_param + 1, PARAM_NAME_DELIMITER) {
 
-        let p_design_elem: &DesignElem;
-        let value_str: &str;
-        let value: value::Container;
-        let name: Name;
+        //let design_elem: &DesignElem;
+        let value: String;
+        let name: Type;
 
         let value_pos: usize;
 
@@ -150,19 +151,19 @@ pub fn parse(line: &str, start: usize, p_design: &DesignSet) -> Result<Container
         }
 
         if name_str.is_empty() {
-            return Err(ParamError::MissingName);
+            return Err(ParamError::MissingType);
         }
 
-        name = match Name::from_str(name_str) {
+        name = match Type::from_str(name_str) {
             Some(val)   => val,
             None        => return Err(ParamError::UnknownType),
         };
 
         // Looking for the corresponding set of rules
-        p_design_elem = match p_design.get(&name) {
-            Some(val)   => val,
-            None        => return Err(ParamError::NotForProperty),
-        };
+        //design_elem = match p_design.get(&name) {
+            //Some(val)   => val,
+            //None        => return Err(ParamError::NotForProperty),
+        //};
 
         // Retrieve the param value.
 
@@ -190,7 +191,7 @@ pub fn parse(line: &str, start: usize, p_design: &DesignSet) -> Result<Container
             // methods on line.
             unsafe {
                 // Retrieve the value section.
-                value_str = line.slice_unchecked(value_pos, pos);
+                value = line.slice_unchecked(value_pos, pos).to_string();
             }
 
 
@@ -228,23 +229,10 @@ pub fn parse(line: &str, start: usize, p_design: &DesignSet) -> Result<Container
             }
 
             unsafe {
-                value_str = line.slice_unchecked(value_pos, next_pos);
+                value = line.slice_unchecked(value_pos, next_pos).to_string();
             }
         }
 
-        if let Some(ref design) = p_design_elem.design {
-            value = design.parse(parser::rfc_6868_escape(value_str).as_str());
-
-        } else if let Some(ref allowed_values) = p_design_elem.allowed_values {
-            if !allowed_values.contains(&value_str) {
-                return Err(ParamError::InvalidValue);
-            } else {
-                value = value::Container::Single(value::Value::Text(value_str.to_string()));
-            }
-
-        } else {
-            return Err(ParamError::Internal);
-        }
 
         params.insert(name, value);
     }
@@ -257,7 +245,7 @@ pub fn parse(line: &str, start: usize, p_design: &DesignSet) -> Result<Container
 /// ParamError handler all the param parsing error.
 #[derive(Debug, Clone, Copy)]
 pub enum ParamError {
-    MissingName,
+    MissingType,
     UnknownType,
     NotForProperty,
     InvalidFormat,
@@ -274,7 +262,7 @@ impl fmt::Display for ParamError {
 impl Error for ParamError {
     fn description(&self) -> &str {
         match *self {
-            ParamError::MissingName => "Missing a name to property parameter.",
+            ParamError::MissingType => "Missing a name to property parameter.",
             ParamError::UnknownType => "Unknow parameter type.",
             ParamError::NotForProperty => "Parameter not handled by this property.",
             ParamError::InvalidFormat => "Invalid format for.",
@@ -286,4 +274,54 @@ impl Error for ParamError {
     fn cause(&self) -> Option<&Error> {
         None
     }
+}
+
+
+pub fn get_vcard_design() -> Design {
+
+    let mut p_design = HashMap::with_capacity(7);
+
+    p_design.insert(Type::Language, DesignElem{
+        allowed_values:     None,
+        allow_x_name:		false,
+        allow_iana_token:	false,
+    });
+    p_design.insert(Type::Value, DesignElem {
+        allowed_values:     Some(
+            vec!["text", "uri", "date", "time", "date-time",
+            "date-and-or-time", "timestamp", "boolean", "integer", "float",
+            "utc-offset", "language-tag"]
+        ),
+        allow_x_name:		true,
+        allow_iana_token:	true,
+    });
+    p_design.insert(Type::Pref, DesignElem {
+        allowed_values:     None,
+        allow_x_name:		true,
+        allow_iana_token:	true,
+    });
+    p_design.insert(Type::AltId, DesignElem {
+        allowed_values:     None,
+        allow_x_name:		true,
+        allow_iana_token:	true,
+    });
+    p_design.insert(Type::Type, DesignElem {
+        allowed_values:     None,
+        allow_x_name:		        false,
+        allow_iana_token:	  false,
+    });
+    p_design.insert(Type::Mediatype, DesignElem {
+        allowed_values:     None,
+        allow_x_name:		true,
+        allow_iana_token:	true,
+    });
+    p_design.insert(Type::Calscale, DesignElem {
+        allowed_values:     None,
+        allow_x_name:		true,
+        allow_iana_token:	true,
+    });
+
+
+
+    p_design
 }

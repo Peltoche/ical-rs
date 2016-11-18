@@ -44,10 +44,10 @@ fn invalid_path() {
     }
 }
 
-#[test]
-fn valid_path() {
-    let in_path_vcf = Path::new("./tests/parser/vcard1.vcf");
-    let out_path_json = Path::new("./tests/parser/vcard1.json");
+//#[test]
+//fn valid_path() {
+    //let in_path_vcf = Path::new("./tests/parser/vcard1.vcf");
+    //let out_path_json = Path::new("./tests/parser/vcard1.json");
 
-    run_file(in_path_vcf, out_path_json);
-}
+    //run_file(in_path_vcf, out_path_json);
+//}

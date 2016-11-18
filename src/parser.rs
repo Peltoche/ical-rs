@@ -3,7 +3,7 @@ use std::fs::File;
 use std::path::Path;
 use std::fmt;
 use std::error::Error;
-use std::io::{BufReader, BufRead, Read};
+use std::io::{BufReader, BufRead, Read}; use rustc_serialize::json::{ToJson, Json, Object};
 
 use ::{PARAM_DELIMITER, VALUE_DELIMITER};
 use ::VcardIcalError;
@@ -11,7 +11,63 @@ use ::property;
 use ::value;
 use ::param;
 
+
+#[derive(Debug)]
+/// Main struct returning the parsed content of a line.
+pub struct Property {
+    pub name:   property::Type,
+    pub params: param::Container,
+    pub value:  value::Value,
+}
+
+impl ToJson for Property {
+    fn to_json(&self) -> Json {
+        let mut obj = Object::new();
+
+        obj.insert("name".to_string(), self.name.to_json());
+        obj.insert("params".to_string(), self.params.to_json());
+        obj.insert("value".to_string(), self.value.to_json());
+
+        Json::Object(obj)
+    }
+}
+
+
+#[derive(Debug)]
+pub enum Protocol {
+    Vcard,
+    Ical,
+}
+
+impl Protocol {
+    fn from_str(input: &str) -> Result<Protocol, ParserError> {
+        match input.to_lowercase().as_str() {
+            "vcard"     => Ok(Protocol::Vcard),
+            "Ical"      => Ok(Protocol::Ical),
+            _           => Err(ParserError::InvalidProtocol),
+        }
+    }
+}
+
+
+#[derive(Debug)]
+pub enum Version {
+    Four,
+    Three,
+}
+
+impl Version {
+    fn from_str(input: &str) -> Result<Version, ParserError> {
+        match input {
+            "4.0"   => Ok(Version::Four),
+            "3.0"   => Ok(Version::Three),
+            _       => Err(ParserError::InvalidProtocol),
+        }
+    }
+}
+
 /// Parser is the main parser struct. It handle the parsing of all the filetypes.
+#[allow(dead_code)]
 pub struct Parser {
     reader: BufReader<File>,
 
@@ -22,17 +78,18 @@ pub struct Parser {
     /// the next line is the start of a new attribute it must be cached.
     next_start: Option<String>,
 
-    //Protocol: Protocol,
-    //Version: Version,
+    protocol: Protocol,
+    version: Version,
 
+    property_design: property::Design,
     value_design: value::Design,
-    param_design: param::DesignSet,
+    param_design: param::Design,
 }
 
 
 
 impl Iterator for Parser {
-    type Item = Result<property::Property, VcardIcalError>;
+    type Item = Result<Property, VcardIcalError>;
 
     /// A property can be split over mutliple lines.
     ///
@@ -44,7 +101,7 @@ impl Iterator for Parser {
     /// Note the additional space at the second line.
     /// This method takes a `BufReader` and merge every lines of a property
     /// into one.
-    fn next(&mut self) -> Option<Result<property::Property, VcardIcalError>> {
+    fn next(&mut self) -> Option<Result<Property, VcardIcalError>> {
 
         match self.fetch_line() {
             Some(line)  => Some(self.parse_line(line.as_str())),
@@ -63,23 +120,22 @@ impl Parser {
             Err(err)      => return Err(VcardIcalError::File(err)),
         };
 
-        let reader = BufReader::new(file);
+        let mut reader = BufReader::new(file);
+
+        let (protocol, version) = retrieve_specs(&mut reader)?;
+
+        //let (value_design, param_design) = property::get_design(&protocol, &version);
 
         let parser = Parser{
             reader: reader,
             next_start: None,
-            value_design: property::get_vcard_properties(),
-            param_design: property::get_vcard_param_properties(),
-            //Protocol: Protocol::None,
-            //Version: Version::None,
+            property_design: property::get_vcard_design(),
+            value_design: value::get_vcard_design(),
+            param_design: param::get_vcard_design(),
+            protocol: protocol,
+            version: version,
 
         };
-
-        //parser.retrieve_header_line();
-        //parser.retrieve_header_line();
-
-        //println!("proto: {:?} / version: {:?}", parser.Protocol, parser.Version);
-        //assert!(false);
 
         Ok(parser)
     }
@@ -127,46 +183,11 @@ impl Parser {
     }
 
 
-    //fn retrieve_header_line(&mut self) -> Result<(), ParserError> {
-        //let key: &str;
-        //let value: &str;
-        //let line;
-
-        //line = match self.fetch_line() {
-            //Some(val)   => val,
-            //None        => return Err(ParserError::NoProtocol),
-        //};
-
-        //let (_, value_index) = split_line(line.as_str());
-
-        //if value_index.is_none() {
-            //return Err(ParserError::InvalidProtocol);
-        //}
-
-        //unsafe {
-            //key = line.slice_unchecked(0, value_index.unwrap());
-            //value = line.slice_unchecked(value_index.unwrap(), line.len());
-        //}
-
-
-        //match key.to_lowercase().as_str() {
-            //"begin"     => self.Protocol = Protocol::from_str(value),
-            //"version"   => self.Version = Version::from_str(value),
-            //_           => {
-                //println!("key: {}", key);
-                //return Err(ParserError::InvalidProtocol);
-            //}
-        //};
-
-        //Ok(())
-    //}
-
-
-    fn parse_line(&mut self, line: &str) -> Result<property::Property, VcardIcalError> {
+    fn parse_line(&mut self, line: &str) -> Result<Property, VcardIcalError> {
 
         let name: property::Type;
         let params: param::Container;
-        let value: value::Container;
+        let value: value::Value;
 
 
         let (value_position, param_position) = split_line(line);
@@ -200,17 +221,34 @@ impl Parser {
             value_str = line.slice_unchecked(value_position.unwrap() + 1, line.len());
         }
 
-        if let Some(v_design_elem) = self.value_design.get(&name) {
-            value = v_design_elem.parse(value_str);
+        if let Some(property) = self.property_design.get(&name) {
+            let mut v_type = property.value_type;
+
+            if let Some(type_str) = params.get(&param::Type::Type) {
+                if let Some(ref allowed) = property.allowed_types {
+                    let param_type = value::Type::from_str(type_str)?;
+
+                    if allowed.contains(&param_type) {
+                        v_type = param_type;
+                    }
+                }
+            }
+
+
+            value = match self.value_design.get(&v_type) {
+                Some(design)    => (design.from_str)(value_str),
+                None            => return Err(VcardIcalError::Value(value::ValueError::NotImplemented)),
+            };
+
         } else {
-            unimplemented!()
+            return Err(VcardIcalError::Property(property::PropertyError::NotHandled));
         }
 
 
         //let value = parse_value(value, multi_value, ptype);
         //println!("value: {:?}", value);
 
-        Ok(property::Property{
+        Ok(Property{
             name: name,
             params: params,
             value: value,
@@ -244,37 +282,56 @@ fn split_line(line: &str) -> (Option<usize>, Option<usize>) {
     (value_position, param_position)
 }
 
-/// ParserError handler all the parsing error. It take a `ParserErrorCode`.
-#[derive(Debug)]
-pub enum ParserError {
-    InvalidFormat,
-    InvalidProtocol,
-    NoProtocol,
-}
 
-impl fmt::Display for ParserError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Parser error: {}",  self.description())
-    }
-}
+fn retrieve_specs(reader: &mut BufReader<File>) -> Result<(Protocol, Version), ParserError> {
+    let protocol: Protocol;
+    let version: Version;
 
-impl Error for ParserError {
-    fn description(&self) -> &str {
-        match *self {
-            ParserError::InvalidFormat => "Invalid line format.",
-            ParserError::InvalidProtocol => "Invalid protocol.",
-            ParserError::NoProtocol => "No protocol found.",
-        }
+    let mut line: String = String::new();
+    if reader.read_line(&mut line).is_err() {
+        return Err(ParserError::InvalidFormat);
     }
 
-    fn cause(&self) -> Option<&Error> {
-        match *self {
-            ParserError::InvalidFormat => None,
-            ParserError::InvalidProtocol => None,
-            ParserError::NoProtocol => None,
-        }
+    let (key, value) = retrieve_key_value_line(&line)?;
+    if key == "begin" {
+        protocol = Protocol::from_str(value.as_str())?;
+    } else {
+        return Err(ParserError::InvalidProtocol);
     }
+
+
+    let mut line: String = String::new();
+    if reader.read_line(&mut line).is_err() {
+        return Err(ParserError::InvalidFormat);
+    }
+
+    let (key, value) = retrieve_key_value_line(&line)?;
+    if key == "version" {
+        version = Version::from_str(value.as_str())?;
+    } else {
+        return Err(ParserError::InvalidProtocol);
+    }
+
+    Ok((protocol, version))
 }
+
+fn retrieve_key_value_line(line: &String) -> Result<(String, String), ParserError> {
+    let mut elems = line.splitn(2, VALUE_DELIMITER);
+
+    let key = match elems.next() {
+        Some(val)   => val,
+        None        => return Err(ParserError::InvalidFormat),
+    };
+
+    let value = match elems.next() {
+        Some(val)   => val.trim_right(),
+        None        => return Err(ParserError::InvalidFormat),
+    };
+
+    Ok((key.to_lowercase(), value.to_lowercase()))
+}
+
+
 
 
 /// Identical to `find` but will only match values when they are not
@@ -294,7 +351,7 @@ pub fn unescaped_find(buffer: &str, start: usize, pat: char) -> Option<usize> {
             return false;
         })
     .and_then(|(index, _)| {
-       Some(index)
+        Some(index)
     })
 
 }
@@ -317,4 +374,31 @@ pub fn rfc_6868_escape(input: &str) -> String {
     }
 
     s
+}
+
+
+/// ParserError handler all the parsing error. It take a `ParserErrorCode`.
+#[derive(Debug)]
+pub enum ParserError {
+    InvalidFormat,
+    InvalidProtocol,
+}
+
+impl fmt::Display for ParserError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Parser error: {}",  self.description())
+    }
+}
+
+impl Error for ParserError {
+    fn description(&self) -> &str {
+        match *self {
+            ParserError::InvalidFormat => "Invalid line format.",
+            ParserError::InvalidProtocol => "Invalid protocol.",
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        None
+    }
 }
