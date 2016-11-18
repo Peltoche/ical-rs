@@ -227,7 +227,7 @@ pub fn get_vcard_design() -> Design {
     v_design.insert(Type::Caladruri, DEFAULT_TYPE_URI);
     v_design.insert(Type::Caluri, DEFAULT_TYPE_URI);
     v_design.insert(Type::Clientpidmap, DesignElem{
-        value_type:         value::Type::Clientpidmap,
+        value_type:         value::Type::ClientPidMap,
         allowed_types:      None,
     });
     v_design.insert(Type::Email, DEFAULT_TYPE_TEXT);

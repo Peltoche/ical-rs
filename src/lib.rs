@@ -81,3 +81,9 @@ impl From<ParserError> for VcardIcalError {
         VcardIcalError::Parser(err)
     }
 }
+
+impl From<ValueError> for VcardIcalError {
+    fn from(err: ValueError) -> VcardIcalError {
+        VcardIcalError::Value(err)
+    }
+}

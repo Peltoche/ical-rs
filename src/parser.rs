@@ -224,7 +224,7 @@ impl Parser {
         if let Some(property) = self.property_design.get(&name) {
             let mut v_type = property.value_type;
 
-            if let Some(type_str) = params.get(&param::Type::Type) {
+            if let Some(type_str) = params.get(&param::Type::Value) {
                 if let Some(ref allowed) = property.allowed_types {
                     let param_type = value::Type::from_str(type_str)?;
 
@@ -235,8 +235,9 @@ impl Parser {
             }
 
 
+            println!("type: {:?}", v_type);
             value = match self.value_design.get(&v_type) {
-                Some(design)    => (design.from_str)(value_str),
+                Some(design)    => (design.from_str)(value_str)?,
                 None            => return Err(VcardIcalError::Value(value::ValueError::NotImplemented)),
             };
 
