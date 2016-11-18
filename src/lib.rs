@@ -13,6 +13,7 @@ use std::error::Error;
 use parser::ParserError;
 use param::ParamError;
 use property::PropertyError;
+use value::ValueError;
 
 
 //pub const MULTIVALUE_DELIMITER: char = ',';
@@ -26,6 +27,7 @@ pub enum VcardIcalError {
     File(io::Error),
     Parser(ParserError),
     Property(PropertyError),
+    Value(ValueError),
 }
 
 impl fmt::Display for VcardIcalError {
@@ -35,6 +37,7 @@ impl fmt::Display for VcardIcalError {
             VcardIcalError::File(ref err)  => err.fmt(f),
             VcardIcalError::Parser(ref err)  => err.fmt(f),
             VcardIcalError::Property(ref err)  => err.fmt(f),
+            VcardIcalError::Value(ref err)  => err.fmt(f),
         }
     }
 }
@@ -46,6 +49,7 @@ impl Error for VcardIcalError {
             VcardIcalError::File(ref err)  => err.description(),
             VcardIcalError::Parser(ref err)  => err.description(),
             VcardIcalError::Property(ref err)  => err.description(),
+            VcardIcalError::Value(ref err)  => err.description(),
         }
     }
 
@@ -55,6 +59,7 @@ impl Error for VcardIcalError {
             VcardIcalError::File(ref err)  => Some(err),
             VcardIcalError::Parser(ref err)  => Some(err),
             VcardIcalError::Property(ref err)  => Some(err),
+            VcardIcalError::Value(ref err)  => Some(err),
         }
     }
 }
@@ -68,5 +73,11 @@ impl From<PropertyError> for VcardIcalError {
 impl From<ParamError> for VcardIcalError {
     fn from(err: ParamError) -> VcardIcalError {
         VcardIcalError::Param(err)
+    }
+}
+
+impl From<ParserError> for VcardIcalError {
+    fn from(err: ParserError) -> VcardIcalError {
+        VcardIcalError::Parser(err)
     }
 }

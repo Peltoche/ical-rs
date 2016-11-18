@@ -1,104 +1,20 @@
 
-use rustc_serialize::json::{ToJson, Json, Array};
+use rustc_serialize::json::{ToJson, Json};
 use std::collections::HashMap;
+use std::fmt;
+use std::error::Error;
 
 use ::property;
-use ::parser;
 
 /// A list of `DesignSet`. It list all the possible properties and their
 /// format.
-pub type Design = HashMap<property::Type, DesignElem>;
+pub type Design = HashMap<Type, DesignElem>;
 
 
-/// A element of the HashMap `DesignSet`. It represent a the properties of an
-/// attribute.
-#[derive(Debug)]
 pub struct DesignElem {
-    /// The default `Type` for the attribute.
-    pub value_type:         Type,
-
-    /// An attribute can have several values. If this is the case `multi_value`
-    /// contain the char used to split the elements.
-    pub multi_value:        Option<char>,
-
-    /// An attribute can accept several `Type`. In the case allowed_types
-    /// take a list of all allowed elements. The value_type attribute will be
-    /// tested first and can be listed in `allowed_types`.
-    pub allowed_types:      Option<Vec<Type>>,
-
-    /// An attribute value can be structured on several 'sub-values'.
-    /// `structured_value` contain the char used to split this elements.
-    pub structured_value:   Option<char>,
+    pub from_str:   fn(&str) -> Value,
 }
 
-impl DesignElem {
-    /// Parse a value string.
-    pub fn parse(&self, buffer: &str) -> Container {
-        let mut value_str: &str;
-        let mut result = Vec::new();
-
-        // If this is a multi value string.
-        if let Some(delimiter) = self.multi_value {
-            let mut last_pos = 0;
-
-            // Split each pieces.
-            while let Some(pos) = parser::unescaped_find(buffer, last_pos, delimiter) {
-                // Save use of slice_unchecked. last_pos and pos come from the
-                // buffer find method.
-                unsafe {
-                    value_str = buffer.slice_unchecked(last_pos, pos);
-                }
-
-                if let Some(value) = Value::from_str(value_str, self.value_type) {
-                    result.push(value);
-                }
-
-                last_pos = pos + 1;
-            }
-
-            // On the last piece take the rest of the string.
-            value_str = buffer.split_at(last_pos).1;
-        } else {
-            value_str = buffer;
-        }
-
-        if let Some(value) = Value::from_str(value_str, self.value_type) {
-            result.push(value);
-        }
-
-        match result.len() {
-            0   => Container::None,
-            1   => Container::Single(result.pop().unwrap()),
-            _   => Container::Multi(result),
-        }
-    }
-}
-
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum Container {
-    Single(Value),
-    Multi(Vec<Value>),
-    None,
-}
-
-impl ToJson for Container {
-    fn to_json(&self) -> Json {
-        match self {
-            &Container::None               => Json::Null,
-            &Container::Single(ref val)    => val.to_json(),
-            &Container::Multi(ref list)    => {
-                let mut res = Array::new();
-
-                for elem in list {
-                    res.push(elem.to_json());
-                }
-
-                Json::Array(res)
-            }
-        }
-    }
-}
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Value {
@@ -126,22 +42,7 @@ impl ToJson for Value {
     }
 }
 
-impl Value {
-    fn from_str(value: &str, value_type: Type) -> Option<Value> {
-        if value.len() == 0 {
-            return None
-        }
-
-
-        match value_type {
-            Type::Text     => Some(Value::Text(value.to_string())),
-            Type::Uri      => Some(Value::Uri(value.to_string())),
-            _              => None,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Type{
     Text,
     Uri,
@@ -155,4 +56,73 @@ pub enum Type{
     //Float,
     UtcOffset,
     LanguageTag,
+    Nickname,
+    N,
+    Org,
+    Adr,
+    Gender,
+    Clientpidmap,
+}
+
+impl Type {
+    pub fn from_str(input: &str) -> Result<Type, property::PropertyError> {
+        match input.to_lowercase().as_str() {
+            "text"          => Ok(Type::Text),
+            "uri"           => Ok(Type::Uri),
+            "date"          => Ok(Type::Date),
+            "datetime"      => Ok(Type::DateTime),
+            "dateandortime" => Ok(Type::DateAndOrTime),
+            "timestamp"     => Ok(Type::Timestamp),
+            "integer"       => Ok(Type::Integer),
+            "utcoffset"     => Ok(Type::UtcOffset),
+            "languagetag"   => Ok(Type::LanguageTag),
+            _               => Err(property::PropertyError::UnknownType),
+        }
+    }
+}
+
+pub fn get_vcard_design() -> Design {
+    let mut v_design = HashMap::with_capacity(7);
+
+
+    v_design.insert(Type::Text, DesignElem{from_str: imple});
+    v_design.insert(Type::Uri, DesignElem{from_str: imple});
+    v_design.insert(Type::Uri, DesignElem{from_str: imple});
+
+
+    v_design
+}
+
+
+pub fn imple(input: &str) -> Value {
+    println!("Parser not implemented!\nparse: {}", input);
+
+    Value::Text("value".to_string())
+}
+
+
+
+/// ValueError handler all the parsing error. It take a `ParserErrorCode`.
+#[derive(Debug)]
+pub enum ValueError {
+    NotImplemented
+}
+
+impl fmt::Display for ValueError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Value error: {}",  self.description())
+    }
+}
+
+impl Error for ValueError {
+    fn description(&self) -> &str {
+        match *self {
+            ValueError::NotImplemented => "The parsing of this type of value \
+                                        is not implemented yet.",
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        None
+    }
 }
