@@ -100,7 +100,7 @@ impl Type {
 }
 
 pub fn get_vcard_design() -> Design {
-    let mut v_design = HashMap::with_capacity(11);
+    let mut v_design = HashMap::with_capacity(15);
 
 
     v_design.insert(Type::Text, DesignElem{from_str: parser::from_text});

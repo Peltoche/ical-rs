@@ -235,7 +235,6 @@ impl Parser {
             }
 
 
-            println!("type: {:?}", v_type);
             value = match self.value_design.get(&v_type) {
                 Some(design)    => (design.from_str)(value_str)?,
                 None            => return Err(VcardIcalError::Value(value::ValueError::NotImplemented)),
