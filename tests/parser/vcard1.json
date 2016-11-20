@@ -3,11 +3,11 @@
 {"name":"BDAY","params":null,"value":"--0203"}
 {"name":"CALADRURI","params":null,"value":"http://example.com/calendar/jdoe"}
 {"name":"CALURI","params":{"MEDIATYPE":"text/calendar"},"value":"ftp://ftp.example.com/calA.ics"}
-{"name":"CLIENTPIDMAP","params":null,"value":"1;urn:uuid:3df403f4-5924-4bb7-b077-3c711d9eb34b"}
+{"name":"CLIENTPIDMAP","params":null,"value":["1","urn:uuid:3df403f4-5924-4bb7-b077-3c711d9eb34b"]}
 {"name":"EMAIL","params":{"TYPE":"work"},"value":"jqpublic@xyz.example.com"}
 {"name":"FBURL","params":{"MEDIATYPE":"text/calendar"},"value":"ftp://example.com/busy/project-a.ifb"}
 {"name":"FN","params":null,"value":"J. Doe"}
-{"name":"GENDER","params":null,"value":"M;Fellow"}
+{"name":"GENDER","params":null,"value":["M","Fellow"]}
 {"name":"GEO","params":null,"value":"geo:37.386013\\,-122.082932"}
 {"name":"IMPP","params":{"PREF":"1"},"value":"xmpp:alice@example.com"}
 {"name":"KEY","params":null,"value":"http://www.example.com/keys/jdoe.cer"}
@@ -18,7 +18,7 @@
 {"name":"N","params":null,"value":"Stevenson;John;Philip,Paul;Dr.;Jr.,M.D.,A.C.P."}
 {"name":"NICKNAME","params":{"TYPE":"work"},"value":"Boss"}
 {"name":"NOTE","params":null,"value":"This fax number is operational 0800 to 1715 EST\\, Mon-Fri"}
-{"name":"ORG","params":null,"value":"ABC\\, Inc.;North American Division;Marketing"}
+{"name":"ORG","params":null,"value":["ABC\\, Inc.","North American Division","Marketing"]}
 {"name":"PHOTO","params":null,"value":"http://www.example.com/pub/photos/jqpublic.gif"}
 {"name":"RELATED","params":{"TYPE":"friend"},"value":"urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6"}
 {"name":"REV","params":null,"value":"19951031T222710Z"}

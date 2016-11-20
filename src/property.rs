@@ -33,8 +33,7 @@ pub enum Type {
     Caluri,
     Clientpidmap,
     Email,
-    Fburl,
-    Fn,
+    Fburl, Fn,
     Gender,
     Geo,
     Impp,
@@ -184,6 +183,11 @@ pub const DEFAULT_TYPE_TEXT: DesignElem = DesignElem {
     allowed_types:      None,
 };
 
+pub const DEFAULT_TYPE_TEXT_MULTI: DesignElem = DesignElem {
+    value_type:         value::Type::TextMulti,
+    allowed_types:      None,
+};
+
 
 //pub const DEFAULT_TYPE_INTEGER: DesignElem = DesignElem {
     //value_type:       value::Type::Integer,
@@ -226,40 +230,25 @@ pub fn get_vcard_design() -> Design {
     });
     v_design.insert(Type::Caladruri, DEFAULT_TYPE_URI);
     v_design.insert(Type::Caluri, DEFAULT_TYPE_URI);
-    v_design.insert(Type::Clientpidmap, DesignElem{
-        value_type:         value::Type::ClientPidMap,
-        allowed_types:      None,
-    });
+    v_design.insert(Type::Clientpidmap, DEFAULT_TYPE_TEXT_MULTI);
     v_design.insert(Type::Email, DEFAULT_TYPE_TEXT);
     v_design.insert(Type::Fburl, DEFAULT_TYPE_URI);
     v_design.insert(Type::Fn, DEFAULT_TYPE_TEXT);
-    v_design.insert(Type::Gender, DesignElem{
-        value_type:         value::Type::Gender,
-        allowed_types:      None,
-    });
+    v_design.insert(Type::Gender, DEFAULT_TYPE_TEXT_MULTI);
     v_design.insert(Type::Geo, DEFAULT_TYPE_URI);
     v_design.insert(Type::Impp, DEFAULT_TYPE_URI);
     v_design.insert(Type::Key, DEFAULT_TYPE_URI);
     v_design.insert(Type::Kind, DEFAULT_TYPE_TEXT);
-    v_design.insert(Type::Lang, DesignElem{
-        value_type:         value::Type::LanguageTag,
-        allowed_types:      None,
-    });
+    v_design.insert(Type::Lang, DEFAULT_TYPE_TEXT);
     v_design.insert(Type::Logo, DEFAULT_TYPE_URI);
     v_design.insert(Type::Member, DEFAULT_TYPE_URI);
     v_design.insert(Type::N, DesignElem{
         value_type:         value::Type::N,
         allowed_types:      None,
     });
-    v_design.insert(Type::Nickname, DesignElem{
-        value_type:         value::Type::Nickname,
-        allowed_types:      None,
-    });
+    v_design.insert(Type::Nickname, DEFAULT_TYPE_TEXT_MULTI);
     v_design.insert(Type::Note, DEFAULT_TYPE_TEXT);
-    v_design.insert(Type::Org, DesignElem{
-        value_type:         value::Type::Org,
-        allowed_types:      None,
-    });
+    v_design.insert(Type::Org, DEFAULT_TYPE_TEXT_MULTI);
     v_design.insert(Type::Photo, DEFAULT_TYPE_URI);
     v_design.insert(Type::Related, DEFAULT_TYPE_URI);
     v_design.insert(Type::Rev, DesignElem{
