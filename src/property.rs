@@ -1,9 +1,8 @@
 
 use std::collections::HashMap;
 use rustc_serialize::json::{ToJson, Json};
-use std::fmt;
-use std::error::Error;
 
+use ::{ParseError, ErrorKind};
 use ::value;
 
 /// Regroup all the rules (`DesignElem`) for a type of file (VCard / ICal).
@@ -33,8 +32,7 @@ pub enum Type {
     Caluri,
     Clientpidmap,
     Email,
-    Fburl,
-    Fn,
+    Fburl, Fn,
     Gender,
     Geo,
     Impp,
@@ -68,7 +66,7 @@ impl ToJson for Type {
 
 impl Type {
     /// Match a string an return the  corresponding `Type`.
-    pub fn from_str(input: &str) -> Result<Type, PropertyError> {
+    pub fn from_str(input: &str) -> Result<Type, ParseError> {
         match input.to_lowercase().as_str() {
             "adr"           => Ok(Type::Adr),
             "anniversary"   => Ok(Type::Anniversary),
@@ -101,7 +99,7 @@ impl Type {
             "title"         => Ok(Type::Title),
             "tz"            => Ok(Type::Tz),
             "xml"           => Ok(Type::Xml),
-            _               => Err(PropertyError::UnknownProperty),
+            _               => Err(ParseError::new(ErrorKind::InvalidProperty)),
         }
     }
 
@@ -145,42 +143,13 @@ impl Type {
 
 
 
-
-/// ParamError handler all the param parsing error.
-#[derive(Debug)]
-pub enum PropertyError {
-    UnacceptedType,
-    UnknownType,
-    UnknownProperty,
-    NotHandled,
-}
-
-impl fmt::Display for PropertyError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Property error: {}",  self.description())
-    }
-}
-
-impl Error for PropertyError {
-    fn description(&self) -> &str {
-        match *self {
-            PropertyError::UnknownProperty => "Unknown property.",
-            PropertyError::NotHandled => "This property is not handled by this\
-                                       protocol or version.",
-            PropertyError::UnacceptedType => "The property doesn't accept \
-            this type of value.",
-            PropertyError::UnknownType  => "Unknown type."
-        }
-    }
-
-    fn cause(&self) -> Option<&Error> {
-        None
-    }
-}
-
-
 pub const DEFAULT_TYPE_TEXT: DesignElem = DesignElem {
     value_type:         value::Type::Text,
+    allowed_types:      None,
+};
+
+pub const DEFAULT_TYPE_TEXT_MULTI: DesignElem = DesignElem {
+    value_type:         value::Type::TextMulti,
     allowed_types:      None,
 };
 
@@ -226,25 +195,16 @@ pub fn get_vcard_design() -> Design {
     });
     v_design.insert(Type::Caladruri, DEFAULT_TYPE_URI);
     v_design.insert(Type::Caluri, DEFAULT_TYPE_URI);
-    v_design.insert(Type::Clientpidmap, DesignElem{
-        value_type:         value::Type::Clientpidmap,
-        allowed_types:      None,
-    });
+    v_design.insert(Type::Clientpidmap, DEFAULT_TYPE_TEXT_MULTI);
     v_design.insert(Type::Email, DEFAULT_TYPE_TEXT);
     v_design.insert(Type::Fburl, DEFAULT_TYPE_URI);
     v_design.insert(Type::Fn, DEFAULT_TYPE_TEXT);
-    v_design.insert(Type::Gender, DesignElem{
-        value_type:         value::Type::Gender,
-        allowed_types:      None,
-    });
+    v_design.insert(Type::Gender, DEFAULT_TYPE_TEXT_MULTI);
     v_design.insert(Type::Geo, DEFAULT_TYPE_URI);
     v_design.insert(Type::Impp, DEFAULT_TYPE_URI);
     v_design.insert(Type::Key, DEFAULT_TYPE_URI);
     v_design.insert(Type::Kind, DEFAULT_TYPE_TEXT);
-    v_design.insert(Type::Lang, DesignElem{
-        value_type:         value::Type::LanguageTag,
-        allowed_types:      None,
-    });
+    v_design.insert(Type::Lang, DEFAULT_TYPE_TEXT);
     v_design.insert(Type::Logo, DEFAULT_TYPE_URI);
     v_design.insert(Type::Member, DEFAULT_TYPE_URI);
     v_design.insert(Type::N, DesignElem{
@@ -252,14 +212,11 @@ pub fn get_vcard_design() -> Design {
         allowed_types:      None,
     });
     v_design.insert(Type::Nickname, DesignElem{
-        value_type:         value::Type::Nickname,
+        value_type:         value::Type::TextMultiQuote,
         allowed_types:      None,
     });
     v_design.insert(Type::Note, DEFAULT_TYPE_TEXT);
-    v_design.insert(Type::Org, DesignElem{
-        value_type:         value::Type::Org,
-        allowed_types:      None,
-    });
+    v_design.insert(Type::Org, DEFAULT_TYPE_TEXT_MULTI);
     v_design.insert(Type::Photo, DEFAULT_TYPE_URI);
     v_design.insert(Type::Related, DEFAULT_TYPE_URI);
     v_design.insert(Type::Rev, DesignElem{

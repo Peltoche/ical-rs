@@ -1,28 +1,10 @@
 
 use std::collections::HashMap;
 use rustc_serialize::json::{ToJson, Json, Object};
-use std::fmt;
-use std::error::Error;
 
 use ::{PARAM_DELIMITER, VALUE_DELIMITER, PARAM_NAME_DELIMITER};
+use ::{ParseError, ErrorKind};
 use ::parser;
-
-
-pub type Design = HashMap<Type, DesignElem>;
-
-
-/// Represent the set of rules for a parameter. It contain the expected format
-/// for the value or the list of possible values.
-#[derive(Debug)]
-pub struct DesignElem {
-    /// If it's a 'closed' parameter (choices restricted to a predetermined
-    /// list), all the possible values a listed her.
-    pub allowed_values:     Option<Vec<&'static str>>,
-
-
-    pub allow_x_name:       bool,
-    pub allow_iana_token:   bool,
-}
 
 
 #[derive(Debug)]
@@ -60,7 +42,7 @@ impl ToJson for Container {
 
 
 /// Regroupe all the possible arguments accepted.
-#[derive(Debug, PartialEq, Hash, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Hash, Eq, Clone)]
 pub enum Type {
     Language,
     Value,
@@ -73,44 +55,45 @@ pub enum Type {
     SortAs,
     Geo,
     Tz,
-    //Any(String),
+    Any(String),
 }
 
 impl Type {
     /// Match a string an return the corresponding `Type`. The string
     /// is move to lowercase before matching.
-    pub fn from_str(input: &str) -> Option<Type> {
+    pub fn from_str(input: &str) -> Type {
 
         match input.to_lowercase().as_str() {
-            "language"  => Some(Type::Language),
-            "value"     => Some(Type::Value),
-            "atltid"    => Some(Type::AltId),
-            "pref"      => Some(Type::Pref),
-            "pid"       => Some(Type::Pid),
-            "type"      => Some(Type::Type),
-            "mediatype" => Some(Type::Mediatype),
-            "calscale"  => Some(Type::Calscale),
-            "sortas"    => Some(Type::SortAs),
-            "geo"       => Some(Type::Geo),
-            "tz"        => Some(Type::Tz),
-            _           => None,
+            "language"  => Type::Language,
+            "value"     => Type::Value,
+            "atltid"    => Type::AltId,
+            "pref"      => Type::Pref,
+            "pid"       => Type::Pid,
+            "type"      => Type::Type,
+            "mediatype" => Type::Mediatype,
+            "calscale"  => Type::Calscale,
+            "sortas"    => Type::SortAs,
+            "geo"       => Type::Geo,
+            "tz"        => Type::Tz,
+            _           => Type::Any(input.to_uppercase()),
         }
     }
 
 
     fn to_string(&self) -> String {
-        match self {
-           &Type::Language     => "LANGUAGE",
-           &Type::Value        => "VALUE",
-           &Type::Pref         => "PREF",
-           &Type::AltId        => "ALTID",
-           &Type::Pid          => "PID",
-           &Type::Type         => "TYPE",
-           &Type::Mediatype    => "MEDIATYPE",
-           &Type::Calscale     => "CALSCALE",
-           &Type::SortAs       => "SORTAS",
-           &Type::Geo          => "GEO",
-           &Type::Tz           => "TZ",
+        match *self {
+           Type::Language     => "LANGUAGE",
+           Type::Value        => "VALUE",
+           Type::Pref         => "PREF",
+           Type::AltId        => "ALTID",
+           Type::Pid          => "PID",
+           Type::Type         => "TYPE",
+           Type::Mediatype    => "MEDIATYPE",
+           Type::Calscale     => "CALSCALE",
+           Type::SortAs       => "SORTAS",
+           Type::Geo          => "GEO",
+           Type::Tz           => "TZ",
+           Type::Any(ref val) => return val.clone(),
         }.to_string()
     }
 }
@@ -118,8 +101,7 @@ impl Type {
 
 
 /// Parse the parameters from a string to an object. The start
-#[allow(unused_variables)]
-pub fn parse(line: &str, start: usize, p_design: &Design) -> Result<Container, ParamError> {
+pub fn parse(line: &str, start: usize) -> Result<Container, ParseError> {
     let mut params = HashMap::new();
     let mut last_param: usize = start;
     let mut have_params: bool = true;
@@ -151,19 +133,10 @@ pub fn parse(line: &str, start: usize, p_design: &Design) -> Result<Container, P
         }
 
         if name_str.is_empty() {
-            return Err(ParamError::MissingType);
+            return Err(ParseError::new(ErrorKind::InvalidParamFormat));
         }
 
-        name = match Type::from_str(name_str) {
-            Some(val)   => val,
-            None        => return Err(ParamError::UnknownType),
-        };
-
-        // Looking for the corresponding set of rules
-        //design_elem = match p_design.get(&name) {
-            //Some(val)   => val,
-            //None        => return Err(ParamError::NotForProperty),
-        //};
+        name = Type::from_str(name_str);
 
         // Retrieve the param value.
 
@@ -173,7 +146,7 @@ pub fn parse(line: &str, start: usize, p_design: &Design) -> Result<Container, P
         // 2. Find other letter -> this a 'raw' value
         let next_char = match line.bytes().nth(pos + 1) {
             Some(val)   => val,
-            None        => return Err(ParamError::InvalidFormat),
+            None        => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
         };
 
         // 1.
@@ -183,7 +156,7 @@ pub fn parse(line: &str, start: usize, p_design: &Design) -> Result<Container, P
 
             pos = match parser::unescaped_find(line, value_pos, '\"') {
                 Some(val)   => val,
-                None        => return Err(ParamError::InvalidFormat),
+                None        => return Err(ParseError::new(ErrorKind::InvalidParamFormat)),
             };
 
 
@@ -239,89 +212,4 @@ pub fn parse(line: &str, start: usize, p_design: &Design) -> Result<Container, P
 
 
     Ok(Container::Some(params))
-}
-
-
-/// ParamError handler all the param parsing error.
-#[derive(Debug, Clone, Copy)]
-pub enum ParamError {
-    MissingType,
-    UnknownType,
-    NotForProperty,
-    InvalidFormat,
-    InvalidValue,
-    Internal,
-}
-
-impl fmt::Display for ParamError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Param error: {}",  self.description())
-    }
-}
-
-impl Error for ParamError {
-    fn description(&self) -> &str {
-        match *self {
-            ParamError::MissingType => "Missing a name to property parameter.",
-            ParamError::UnknownType => "Unknow parameter type.",
-            ParamError::NotForProperty => "Parameter not handled by this property.",
-            ParamError::InvalidFormat => "Invalid format for.",
-            ParamError::InvalidValue => "Invalid value.",
-            ParamError::Internal => "Internal error.",
-        }
-    }
-
-    fn cause(&self) -> Option<&Error> {
-        None
-    }
-}
-
-
-pub fn get_vcard_design() -> Design {
-
-    let mut p_design = HashMap::with_capacity(7);
-
-    p_design.insert(Type::Language, DesignElem{
-        allowed_values:     None,
-        allow_x_name:		false,
-        allow_iana_token:	false,
-    });
-    p_design.insert(Type::Value, DesignElem {
-        allowed_values:     Some(
-            vec!["text", "uri", "date", "time", "date-time",
-            "date-and-or-time", "timestamp", "boolean", "integer", "float",
-            "utc-offset", "language-tag"]
-        ),
-        allow_x_name:		true,
-        allow_iana_token:	true,
-    });
-    p_design.insert(Type::Pref, DesignElem {
-        allowed_values:     None,
-        allow_x_name:		true,
-        allow_iana_token:	true,
-    });
-    p_design.insert(Type::AltId, DesignElem {
-        allowed_values:     None,
-        allow_x_name:		true,
-        allow_iana_token:	true,
-    });
-    p_design.insert(Type::Type, DesignElem {
-        allowed_values:     None,
-        allow_x_name:		        false,
-        allow_iana_token:	  false,
-    });
-    p_design.insert(Type::Mediatype, DesignElem {
-        allowed_values:     None,
-        allow_x_name:		true,
-        allow_iana_token:	true,
-    });
-    p_design.insert(Type::Calscale, DesignElem {
-        allowed_values:     None,
-        allow_x_name:		true,
-        allow_iana_token:	true,
-    });
-
-
-
-    p_design
 }

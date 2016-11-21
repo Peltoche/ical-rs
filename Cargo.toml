@@ -4,4 +4,4 @@ version = "0.1.0"
 authors = ["peltoche <dev@halium.fr>"]
 
 [dependencies]
-rustc-serialize="0.3"
+rustc-serialize = "0.3"
