@@ -18,7 +18,7 @@ LANG;PREF=1:fr
 LOGO:http://www.example.com/pub/logos/abccorp.jpg
 MEMBER:urn:uuid:03a0e51f-d1aa-4385-8a53-e29025acd8af
 N:Stevenson;John;Philip,Paul;Dr.;Jr.,M.D.,A.C.P.
-NICKNAME;TYPE=work:Boss
+NICKNAME;TYPE="work":Boss
 NOTE:This fax number is operational 0800 to 1715 EST\, Mon-Fri
 ORG:ABC\, Inc.;North American Division;Marketing
 PHOTO:http://www.example.com/pub/photos/jqpublic.gif
