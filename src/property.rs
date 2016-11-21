@@ -1,9 +1,8 @@
 
 use std::collections::HashMap;
 use rustc_serialize::json::{ToJson, Json};
-use std::fmt;
-use std::error::Error;
 
+use ::{ParseError, ErrorKind};
 use ::value;
 
 /// Regroup all the rules (`DesignElem`) for a type of file (VCard / ICal).
@@ -67,7 +66,7 @@ impl ToJson for Type {
 
 impl Type {
     /// Match a string an return the  corresponding `Type`.
-    pub fn from_str(input: &str) -> Result<Type, PropertyError> {
+    pub fn from_str(input: &str) -> Result<Type, ParseError> {
         match input.to_lowercase().as_str() {
             "adr"           => Ok(Type::Adr),
             "anniversary"   => Ok(Type::Anniversary),
@@ -100,7 +99,7 @@ impl Type {
             "title"         => Ok(Type::Title),
             "tz"            => Ok(Type::Tz),
             "xml"           => Ok(Type::Xml),
-            _               => Err(PropertyError::UnknownProperty),
+            _               => Err(ParseError::new(ErrorKind::InvalidProperty)),
         }
     }
 
@@ -142,40 +141,6 @@ impl Type {
     }
 }
 
-
-
-
-/// ParamError handler all the param parsing error.
-#[derive(Debug)]
-pub enum PropertyError {
-    UnacceptedType,
-    UnknownType,
-    UnknownProperty,
-    NotHandled,
-}
-
-impl fmt::Display for PropertyError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Property error: {}",  self.description())
-    }
-}
-
-impl Error for PropertyError {
-    fn description(&self) -> &str {
-        match *self {
-            PropertyError::UnknownProperty => "Unknown property.",
-            PropertyError::NotHandled => "This property is not handled by this\
-                                       protocol or version.",
-            PropertyError::UnacceptedType => "The property doesn't accept \
-            this type of value.",
-            PropertyError::UnknownType  => "Unknown type."
-        }
-    }
-
-    fn cause(&self) -> Option<&Error> {
-        None
-    }
-}
 
 
 pub const DEFAULT_TYPE_TEXT: DesignElem = DesignElem {

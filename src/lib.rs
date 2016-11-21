@@ -10,80 +10,63 @@ use std::fmt;
 use std::io;
 use std::error::Error;
 
-use parser::ParserError;
-use param::ParamError;
-use property::PropertyError;
-use value::ValueError;
-
-
 //pub const MULTIVALUE_DELIMITER: char = ',';
 pub const VALUE_DELIMITER: char = ':';
 pub const PARAM_DELIMITER: char = ';';
 pub const PARAM_NAME_DELIMITER: char = '=';
 
 #[derive(Debug)]
-pub enum VcardIcalError {
-    Param(ParamError),
+pub enum ErrorKind {
     File(io::Error),
-    Parser(ParserError),
-    Property(PropertyError),
-    Value(ValueError),
+    InvalidLineFormat,
+    InvalidParamFormat,
+    InvalidProperty,
+    InvalidVersion,
+    InvalidValueType,
+    InvalidProtocol,
+    NotImplemented,
+    UnacceptedType,
 }
 
-impl fmt::Display for VcardIcalError {
+#[derive(Debug)]
+pub struct ParseError {
+    kind:   ErrorKind,
+}
+
+impl ParseError {
+    pub fn new(kind: ErrorKind) -> ParseError {
+        ParseError{kind: kind}
+    }
+}
+
+impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            VcardIcalError::Param(ref err) => err.fmt(f),
-            VcardIcalError::File(ref err)  => err.fmt(f),
-            VcardIcalError::Parser(ref err)  => err.fmt(f),
-            VcardIcalError::Property(ref err)  => err.fmt(f),
-            VcardIcalError::Value(ref err)  => err.fmt(f),
+        match self.kind {
+            ErrorKind::File(ref err)    => err.fmt(f),
+            _                           => write!(f, "{}", self.description()),
         }
     }
 }
 
-impl Error for VcardIcalError {
+impl Error for ParseError {
     fn description(&self) -> &str {
-        match *self {
-            VcardIcalError::Param(ref err) => err.description(),
-            VcardIcalError::File(ref err)  => err.description(),
-            VcardIcalError::Parser(ref err)  => err.description(),
-            VcardIcalError::Property(ref err)  => err.description(),
-            VcardIcalError::Value(ref err)  => err.description(),
+        match self.kind {
+            ErrorKind::File(ref err)           => err.description(),
+            ErrorKind::InvalidLineFormat       => "Invalid line format.",
+            ErrorKind::InvalidParamFormat      => "Invalid parameter format.",
+            ErrorKind::InvalidProperty         => "Invalid property.",
+            ErrorKind::InvalidVersion          => "Invalid version.",
+            ErrorKind::InvalidValueType        => "Invalid value type.",
+            ErrorKind::InvalidProtocol         => "Invalid protocol.",
+            ErrorKind::NotImplemented          => "Element not implemented.",
+            ErrorKind::UnacceptedType          => "Unaccepted type.",
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match *self {
-            VcardIcalError::Param(ref err) => Some(err),
-            VcardIcalError::File(ref err)  => Some(err),
-            VcardIcalError::Parser(ref err)  => Some(err),
-            VcardIcalError::Property(ref err)  => Some(err),
-            VcardIcalError::Value(ref err)  => Some(err),
+        match self.kind {
+            ErrorKind::File(ref err)    => Some(err),
+            _                           => None,
         }
-    }
-}
-
-impl From<PropertyError> for VcardIcalError {
-    fn from(err: PropertyError) -> VcardIcalError {
-        VcardIcalError::Property(err)
-    }
-}
-
-impl From<ParamError> for VcardIcalError {
-    fn from(err: ParamError) -> VcardIcalError {
-        VcardIcalError::Param(err)
-    }
-}
-
-impl From<ParserError> for VcardIcalError {
-    fn from(err: ParserError) -> VcardIcalError {
-        VcardIcalError::Parser(err)
-    }
-}
-
-impl From<ValueError> for VcardIcalError {
-    fn from(err: ValueError) -> VcardIcalError {
-        VcardIcalError::Value(err)
     }
 }

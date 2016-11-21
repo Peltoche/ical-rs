@@ -1,12 +1,10 @@
 
 use std::fs::File;
 use std::path::Path;
-use std::fmt;
-use std::error::Error;
 use std::io::{BufReader, BufRead, Read}; use rustc_serialize::json::{ToJson, Json, Object};
 
 use ::{PARAM_DELIMITER, VALUE_DELIMITER};
-use ::VcardIcalError;
+use ::{ParseError, ErrorKind};
 use ::property;
 use ::value;
 use ::param;
@@ -40,11 +38,11 @@ pub enum Protocol {
 }
 
 impl Protocol {
-    fn from_str(input: &str) -> Result<Protocol, ParserError> {
+    fn from_str(input: &str) -> Result<Protocol, ParseError> {
         match input.to_lowercase().as_str() {
             "vcard"     => Ok(Protocol::Vcard),
             "Ical"      => Ok(Protocol::Ical),
-            _           => Err(ParserError::InvalidProtocol),
+            _           => Err(ParseError::new(ErrorKind::InvalidProtocol)),
         }
     }
 }
@@ -57,11 +55,11 @@ pub enum Version {
 }
 
 impl Version {
-    fn from_str(input: &str) -> Result<Version, ParserError> {
+    fn from_str(input: &str) -> Result<Version, ParseError> {
         match input {
             "4.0"   => Ok(Version::Four),
             "3.0"   => Ok(Version::Three),
-            _       => Err(ParserError::InvalidProtocol),
+            _       => Err(ParseError::new(ErrorKind::InvalidVersion)),
         }
     }
 }
@@ -88,7 +86,7 @@ pub struct Parser {
 
 
 impl Iterator for Parser {
-    type Item = Result<Property, VcardIcalError>;
+    type Item = Result<Property, ParseError>;
 
     // A property can be split over mutliple lines.
     //
@@ -100,7 +98,7 @@ impl Iterator for Parser {
     // Note the additional space at the second line.
     // This method takes a `BufReader` and merge every lines of a property
     // into one.
-    fn next(&mut self) -> Option<Result<Property, VcardIcalError>> {
+    fn next(&mut self) -> Option<Result<Property, ParseError>> {
 
         match self.fetch_line() {
             Some(line)  => Some(self.parse_line(line.as_str())),
@@ -113,10 +111,10 @@ impl Iterator for Parser {
 impl Parser {
     /// parse_vcard_file take a `Path` to a VCard file and parse the content
     /// into a vector of contact.
-    pub fn from_path(path: &Path) -> Result<Parser, VcardIcalError>{
+    pub fn from_path(path: &Path) -> Result<Parser, ParseError>{
         let file = match File::open(path) {
             Ok(file)    => file,
-            Err(err)      => return Err(VcardIcalError::File(err)),
+            Err(err)      => return Err(ParseError::new(ErrorKind::File(err))),
         };
 
         let mut reader = BufReader::new(file);
@@ -179,7 +177,7 @@ impl Parser {
     }
 
 
-    fn parse_line(&mut self, line: &str) -> Result<Property, VcardIcalError> {
+    fn parse_line(&mut self, line: &str) -> Result<Property, ParseError> {
 
         let name: property::Type;
         let params: param::Container;
@@ -208,7 +206,7 @@ impl Parser {
 
         } else {
             // Missing VALUE_DELIMITER, the line is invalid.
-            return Err(VcardIcalError::Parser(ParserError::InvalidFormat));
+            return Err(ParseError::new(ErrorKind::InvalidLineFormat));
         }
 
         let value_str;
@@ -223,21 +221,25 @@ impl Parser {
             if let Some(type_str) = params.get(&param::Type::Value) {
                 if let Some(ref allowed) = property.allowed_types {
                     let param_type = value::Type::from_str(type_str)?;
+                    println!("param: {:?}", param_type);
 
                     if allowed.contains(&param_type) {
                         v_type = param_type;
                     }
+                } else {
+                    return Err(ParseError::new(ErrorKind::UnacceptedType));
                 }
             }
 
 
             value = match self.value_design.get(&v_type) {
                 Some(design)    => (design.parse_str)(value_str)?,
-                None            => return Err(VcardIcalError::Value(value::ValueError::NotImplemented)),
+                None            => return Err(ParseError::new(
+                        ErrorKind::NotImplemented))
             };
 
         } else {
-            return Err(VcardIcalError::Property(property::PropertyError::NotHandled));
+            return Err(ParseError::new(ErrorKind::InvalidProperty));
         }
 
 
@@ -279,49 +281,49 @@ fn split_line(line: &str) -> (Option<usize>, Option<usize>) {
 }
 
 
-fn retrieve_specs(reader: &mut BufReader<File>) -> Result<(Protocol, Version), ParserError> {
+fn retrieve_specs(reader: &mut BufReader<File>) -> Result<(Protocol, Version), ParseError> {
     let protocol: Protocol;
     let version: Version;
 
     let mut line: String = String::new();
     if reader.read_line(&mut line).is_err() {
-        return Err(ParserError::InvalidFormat);
+        return Err(ParseError::new(ErrorKind::InvalidLineFormat));
     }
 
     let (key, value) = retrieve_key_value_line(&line)?;
     if key == "begin" {
         protocol = Protocol::from_str(value.as_str())?;
     } else {
-        return Err(ParserError::InvalidProtocol);
+        return Err(ParseError::new(ErrorKind::InvalidLineFormat));
     }
 
 
     let mut line: String = String::new();
     if reader.read_line(&mut line).is_err() {
-        return Err(ParserError::InvalidFormat);
+        return Err(ParseError::new(ErrorKind::InvalidLineFormat));
     }
 
     let (key, value) = retrieve_key_value_line(&line)?;
     if key == "version" {
         version = Version::from_str(value.as_str())?;
     } else {
-        return Err(ParserError::InvalidProtocol);
+        return Err(ParseError::new(ErrorKind::InvalidLineFormat));
     }
 
     Ok((protocol, version))
 }
 
-fn retrieve_key_value_line(line: &String) -> Result<(String, String), ParserError> {
+fn retrieve_key_value_line(line: &String) -> Result<(String, String), ParseError> {
     let mut elems = line.splitn(2, VALUE_DELIMITER);
 
     let key = match elems.next() {
         Some(val)   => val,
-        None        => return Err(ParserError::InvalidFormat),
+        None        => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
     };
 
     let value = match elems.next() {
         Some(val)   => val.trim_right(),
-        None        => return Err(ParserError::InvalidFormat),
+        None        => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
     };
 
     Ok((key.to_lowercase(), value.to_lowercase()))
@@ -370,31 +372,4 @@ pub fn rfc_6868_escape(input: &str) -> String {
     }
 
     s
-}
-
-
-/// ParserError handler all the parsing error. It take a `ParserErrorCode`.
-#[derive(Debug)]
-pub enum ParserError {
-    InvalidFormat,
-    InvalidProtocol,
-}
-
-impl fmt::Display for ParserError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Parser error: {}",  self.description())
-    }
-}
-
-impl Error for ParserError {
-    fn description(&self) -> &str {
-        match *self {
-            ParserError::InvalidFormat => "Invalid line format.",
-            ParserError::InvalidProtocol => "Invalid protocol.",
-        }
-    }
-
-    fn cause(&self) -> Option<&Error> {
-        None
-    }
 }

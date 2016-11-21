@@ -1,10 +1,8 @@
+
 use rustc_serialize::json::{ToJson, Json};
 use std::collections::HashMap;
-use std::fmt;
-use std::error::Error;
-use std::num;
 
-use ::property;
+use ::{ParseError, ErrorKind};
 
 /// A list of `DesignSet`. It list all the possible properties and their
 /// format.
@@ -12,7 +10,7 @@ pub type Design = HashMap<Type, DesignElem>;
 
 
 pub struct DesignElem {
-    pub parse_str:   fn(&str) -> Result<Value, ValueError>,
+    pub parse_str:   fn(&str) -> Result<Value, ParseError>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -79,7 +77,7 @@ pub enum Type{
 }
 
 impl Type {
-    pub fn from_str(input: &str) -> Result<Type, property::PropertyError> {
+    pub fn from_str(input: &str) -> Result<Type, ParseError> {
         match input.to_lowercase().as_str() {
             "text"          => Ok(Type::Text),
             "uri"           => Ok(Type::Uri),
@@ -91,7 +89,7 @@ impl Type {
             "utcoffset"     => Ok(Type::UtcOffset),
             "utc-offset"    => Ok(Type::UtcOffset),
             "languagetag"   => Ok(Type::LanguageTag),
-            _               => Err(property::PropertyError::UnknownType),
+            _               => Err(ParseError::new(ErrorKind::InvalidValueType)),
         }
     }
 }
@@ -116,19 +114,19 @@ pub fn get_vcard_design() -> Design {
     v_design
 }
 
-pub fn parse_text(input: &str) -> Result<Value, ValueError> {
+pub fn parse_text(input: &str) -> Result<Value, ParseError> {
     Ok(Value::Text(input.to_string()))
 }
 
-pub fn parse_text_multi_quote(input: &str) -> Result<Value, ValueError> {
+pub fn parse_text_multi_quote(input: &str) -> Result<Value, ParseError> {
     parse_multi(input, ',')
 }
 
-pub fn parse_text_multi(input: &str) -> Result<Value, ValueError> {
+pub fn parse_text_multi(input: &str) -> Result<Value, ParseError> {
     parse_multi(input, ';')
 }
 
-fn parse_multi(input: &str, separator: char) -> Result<Value, ValueError> {
+fn parse_multi(input: &str, separator: char) -> Result<Value, ParseError> {
     let mut res = Vec::new();
 
     let list = input.split(separator);
@@ -144,71 +142,34 @@ fn parse_multi(input: &str, separator: char) -> Result<Value, ValueError> {
     }
 }
 
-pub fn parse_uri(input: &str) -> Result<Value, ValueError> {
+pub fn parse_uri(input: &str) -> Result<Value, ParseError> {
     Ok(Value::Uri(input.to_string()))
 }
 
-pub fn parse_adr(input: &str) -> Result<Value, ValueError> {
+pub fn parse_adr(input: &str) -> Result<Value, ParseError> {
     Ok(Value::Adr(input.to_string()))
 }
 
-pub fn parse_date(input: &str) -> Result<Value, ValueError> {
+pub fn parse_date(input: &str) -> Result<Value, ParseError> {
     Ok(Value::Date(input.to_string()))
 }
 
-pub fn parse_date_time(input: &str) -> Result<Value, ValueError> {
+pub fn parse_date_time(input: &str) -> Result<Value, ParseError> {
     Ok(Value::Date(input.to_string()))
 }
 
-pub fn parse_date_and_or_time(input: &str) -> Result<Value, ValueError> {
+pub fn parse_date_and_or_time(input: &str) -> Result<Value, ParseError> {
     Ok(Value::Date(input.to_string()))
 }
 
-pub fn parse_timestamp(input: &str) -> Result<Value, ValueError> {
+pub fn parse_timestamp(input: &str) -> Result<Value, ParseError> {
     Ok(Value::Date(input.to_string()))
 }
 
-pub fn parse_n(input: &str) -> Result<Value, ValueError> {
+pub fn parse_n(input: &str) -> Result<Value, ParseError> {
     Ok(Value::N(input.to_string()))
 }
 
-pub fn parse_utcoffset(input: &str) -> Result<Value, ValueError> {
+pub fn parse_utcoffset(input: &str) -> Result<Value, ParseError> {
     Ok(Value::Date(input.to_string()))
-}
-
-
-/// ValueError handler all the parsing error. It take a `ParserErrorCode`.
-#[derive(Debug)]
-pub enum ValueError {
-    NotImplemented,
-    ParseInt(num::ParseIntError),
-}
-
-impl fmt::Display for ValueError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Value error: {}",  self.description())
-    }
-}
-
-impl Error for ValueError {
-    fn description(&self) -> &str {
-        match *self {
-            ValueError::NotImplemented => "The parsing of this type of value \
-                                        is not implemented yet.",
-            ValueError::ParseInt(_) => "An error during the parsing occured.",
-        }
-    }
-
-    fn cause(&self) -> Option<&Error> {
-        match *self {
-            ValueError::NotImplemented  => None,
-            ValueError::ParseInt(ref err)   => Some(err),
-        }
-    }
-}
-
-impl From<num::ParseIntError> for ValueError {
-    fn from(err: num::ParseIntError) -> ValueError {
-        ValueError::ParseInt(err)
-    }
 }

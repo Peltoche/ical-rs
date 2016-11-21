@@ -1,10 +1,9 @@
 
 use std::collections::HashMap;
 use rustc_serialize::json::{ToJson, Json, Object};
-use std::fmt;
-use std::error::Error;
 
 use ::{PARAM_DELIMITER, VALUE_DELIMITER, PARAM_NAME_DELIMITER};
+use ::{ParseError, ErrorKind};
 use ::parser;
 
 
@@ -102,7 +101,7 @@ impl Type {
 
 
 /// Parse the parameters from a string to an object. The start
-pub fn parse(line: &str, start: usize) -> Result<Container, ParamError> {
+pub fn parse(line: &str, start: usize) -> Result<Container, ParseError> {
     let mut params = HashMap::new();
     let mut last_param: usize = start;
     let mut have_params: bool = true;
@@ -134,7 +133,7 @@ pub fn parse(line: &str, start: usize) -> Result<Container, ParamError> {
         }
 
         if name_str.is_empty() {
-            return Err(ParamError::MissingType);
+            return Err(ParseError::new(ErrorKind::InvalidParamFormat));
         }
 
         name = Type::from_str(name_str);
@@ -147,7 +146,7 @@ pub fn parse(line: &str, start: usize) -> Result<Container, ParamError> {
         // 2. Find other letter -> this a 'raw' value
         let next_char = match line.bytes().nth(pos + 1) {
             Some(val)   => val,
-            None        => return Err(ParamError::InvalidFormat),
+            None        => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
         };
 
         // 1.
@@ -157,7 +156,7 @@ pub fn parse(line: &str, start: usize) -> Result<Container, ParamError> {
 
             pos = match parser::unescaped_find(line, value_pos, '\"') {
                 Some(val)   => val,
-                None        => return Err(ParamError::InvalidFormat),
+                None        => return Err(ParseError::new(ErrorKind::InvalidParamFormat)),
             };
 
 
@@ -213,37 +212,4 @@ pub fn parse(line: &str, start: usize) -> Result<Container, ParamError> {
 
 
     Ok(Container::Some(params))
-}
-
-
-/// ParamError handler all the param parsing error.
-#[derive(Debug, Clone, Copy)]
-pub enum ParamError {
-    MissingType,
-    NotForProperty,
-    InvalidFormat,
-    InvalidValue,
-    Internal,
-}
-
-impl fmt::Display for ParamError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Param error: {}",  self.description())
-    }
-}
-
-impl Error for ParamError {
-    fn description(&self) -> &str {
-        match *self {
-            ParamError::MissingType => "Missing a name to property parameter.",
-            ParamError::NotForProperty => "Parameter not handled by this property.",
-            ParamError::InvalidFormat => "Invalid format for.",
-            ParamError::InvalidValue => "Invalid value.",
-            ParamError::Internal => "Internal error.",
-        }
-    }
-
-    fn cause(&self) -> Option<&Error> {
-        None
-    }
 }
