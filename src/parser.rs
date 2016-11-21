@@ -71,11 +71,11 @@ impl Version {
 pub struct Parser {
     reader: BufReader<File>,
 
-    /// An attribute can be on several lines. Once the first line of an
-    /// attribute is retrieved, the line after nned to be retrieved too in
-    /// order to check if it's a single or multiline attribute. As the reader
-    /// work with a stream it's impossible to read twice the same line so if
-    /// the next line is the start of a new attribute it must be cached.
+    // An attribute can be on several lines. Once the first line of an
+    // attribute is retrieved, the line after nned to be retrieved too in
+    // order to check if it's a single or multiline attribute. As the reader
+    // work with a stream it's impossible to read twice the same line so if
+    // the next line is the start of a new attribute it must be cached.
     next_start: Option<String>,
 
     protocol: Protocol,
@@ -83,7 +83,6 @@ pub struct Parser {
 
     property_design: property::Design,
     value_design: value::Design,
-    param_design: param::Design,
 }
 
 
@@ -91,16 +90,16 @@ pub struct Parser {
 impl Iterator for Parser {
     type Item = Result<Property, VcardIcalError>;
 
-    /// A property can be split over mutliple lines.
-    ///
-    /// ```text
-    /// ADR;TYPE=home;LABEL="Heidestraße 17\n51147 Köln\nDeutschland"
-    ///  :;;Heidestraße 17;Köln;;51147;Germany
-    /// ```
-    ///
-    /// Note the additional space at the second line.
-    /// This method takes a `BufReader` and merge every lines of a property
-    /// into one.
+    // A property can be split over mutliple lines.
+    //
+    // ```text
+    // ADR;TYPE=home;LABEL="Heidestraße 17\n51147 Köln\nDeutschland"
+    //  :;;Heidestraße 17;Köln;;51147;Germany
+    // ```
+    //
+    // Note the additional space at the second line.
+    // This method takes a `BufReader` and merge every lines of a property
+    // into one.
     fn next(&mut self) -> Option<Result<Property, VcardIcalError>> {
 
         match self.fetch_line() {
@@ -124,14 +123,11 @@ impl Parser {
 
         let (protocol, version) = retrieve_specs(&mut reader)?;
 
-        //let (value_design, param_design) = property::get_design(&protocol, &version);
-
         let parser = Parser{
             reader: reader,
             next_start: None,
             property_design: property::get_vcard_design(),
             value_design: value::get_vcard_design(),
-            param_design: param::get_vcard_design(),
             protocol: protocol,
             version: version,
 
@@ -200,7 +196,7 @@ impl Parser {
                 name = property::Type::from_str(line.slice_unchecked(0, param_position))?;
             }
 
-            params = param::parse(line, param_position, &self.param_design)?;
+            params = param::parse(line, param_position)?;
 
         } else if value_position.is_some() {
             // Line without parameters (BEGIN:VCARD, CLASS:PUBLIC)

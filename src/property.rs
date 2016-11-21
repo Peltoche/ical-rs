@@ -246,7 +246,10 @@ pub fn get_vcard_design() -> Design {
         value_type:         value::Type::N,
         allowed_types:      None,
     });
-    v_design.insert(Type::Nickname, DEFAULT_TYPE_TEXT_MULTI);
+    v_design.insert(Type::Nickname, DesignElem{
+        value_type:         value::Type::TextMultiQuote,
+        allowed_types:      None,
+    });
     v_design.insert(Type::Note, DEFAULT_TYPE_TEXT);
     v_design.insert(Type::Org, DEFAULT_TYPE_TEXT_MULTI);
     v_design.insert(Type::Photo, DEFAULT_TYPE_URI);

@@ -60,6 +60,7 @@ impl ToJson for Value {
 pub enum Type{
     Text,
     TextMulti,
+    TextMultiQuote,
     Uri,
     Date,
     //Time,
@@ -109,6 +110,7 @@ pub fn get_vcard_design() -> Design {
     v_design.insert(Type::Timestamp, DesignElem{parse_str: parse_timestamp});
     v_design.insert(Type::UtcOffset, DesignElem{parse_str: parse_utcoffset});
     v_design.insert(Type::TextMulti, DesignElem{parse_str: parse_text_multi});
+    v_design.insert(Type::TextMultiQuote, DesignElem{parse_str: parse_text_multi_quote});
 
 
     v_design
@@ -118,13 +120,20 @@ pub fn parse_text(input: &str) -> Result<Value, ValueError> {
     Ok(Value::Text(input.to_string()))
 }
 
+pub fn parse_text_multi_quote(input: &str) -> Result<Value, ValueError> {
+    parse_multi(input, ',')
+}
+
 pub fn parse_text_multi(input: &str) -> Result<Value, ValueError> {
+    parse_multi(input, ';')
+}
+
+fn parse_multi(input: &str, separator: char) -> Result<Value, ValueError> {
     let mut res = Vec::new();
 
-    let list = input.split(';');
+    let list = input.split(separator);
 
     for elem in list {
-        println!("elem: {}", elem);
         res.push(elem.to_string());
     }
 
