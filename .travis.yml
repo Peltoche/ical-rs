@@ -6,3 +6,4 @@ matrix:
     - rust:
       - nightly
       - beta
+script: cargo test --features 'rustc-serialize'
