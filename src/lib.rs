@@ -2,12 +2,14 @@
 //!
 //! This library is under heavy development. Many features are not finished.
 //!
-//! Vcard and Ical parser for Rust. It aims to be a feature-complete parser all vcard and ical files.
+//! Vcard and Ical parser for Rust. It aims to be a feature-complete parser
+//! all vcard and ical files.
 //! * Ical-rs strictly adheres to rfc6350.
 //! * Ical-rs handle Vcard version 3 and 4.
 //!
 //!
-//! The initial goal was to make a porting of the [mozilla parser](https://github.com/mozilla-comm/ical.js) from Javascript
+//! The initial goal was to make a porting of the
+//! [mozilla parser](https://github.com/mozilla-comm/ical.js) from Javascript
 //! to Rust. The main logic come from this codebase, but is adapted to more Rusty.
 //!
 //!
@@ -67,20 +69,20 @@ pub enum ErrorKind {
 /// An error from the parser.
 #[derive(Debug)]
 pub struct ParseError {
-    kind:   ErrorKind,
+    kind: ErrorKind,
 }
 
 impl ParseError {
     pub fn new(kind: ErrorKind) -> ParseError {
-        ParseError{kind: kind}
+        ParseError { kind: kind }
     }
 }
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.kind {
-            ErrorKind::File(ref err)    => err.fmt(f),
-            _                           => write!(f, "{}", self.description()),
+            ErrorKind::File(ref err) => err.fmt(f),
+            _ => write!(f, "{}", self.description()),
         }
     }
 }
@@ -88,22 +90,22 @@ impl fmt::Display for ParseError {
 impl Error for ParseError {
     fn description(&self) -> &str {
         match self.kind {
-            ErrorKind::File(ref err)           => err.description(),
-            ErrorKind::InvalidLineFormat       => "Invalid line format.",
-            ErrorKind::InvalidParamFormat      => "Invalid parameter format.",
-            ErrorKind::InvalidProperty         => "Invalid property.",
-            ErrorKind::InvalidVersion          => "Invalid version.",
-            ErrorKind::InvalidValueType        => "Invalid value type.",
-            ErrorKind::InvalidProtocol         => "Invalid protocol.",
-            ErrorKind::NotImplemented          => "Element not implemented.",
-            ErrorKind::UnacceptedType          => "Unaccepted type.",
+            ErrorKind::File(ref err) => err.description(),
+            ErrorKind::InvalidLineFormat => "Invalid line format.",
+            ErrorKind::InvalidParamFormat => "Invalid parameter format.",
+            ErrorKind::InvalidProperty => "Invalid property.",
+            ErrorKind::InvalidVersion => "Invalid version.",
+            ErrorKind::InvalidValueType => "Invalid value type.",
+            ErrorKind::InvalidProtocol => "Invalid protocol.",
+            ErrorKind::NotImplemented => "Element not implemented.",
+            ErrorKind::UnacceptedType => "Unaccepted type.",
         }
     }
 
     fn cause(&self) -> Option<&Error> {
         match self.kind {
-            ErrorKind::File(ref err)    => Some(err),
-            _                           => None,
+            ErrorKind::File(ref err) => Some(err),
+            _ => None,
         }
     }
 }

@@ -1,7 +1,16 @@
 [package]
-name = "vcard_ical"
+name = "ical"
 version = "0.1.0"
-authors = ["peltoche <dev@halium.fr>"]
+authors = ["Peltoche <dev@halium.fr>"]
 
-[dependencies]
+description = "Ical and Vcard parser for Rust"
+homepage = "https://github.com/Peltoche/ical-rs"
+repositoy = "https://github.com/Peltoche/ical-rs"
+keyword = ["ical", "vcard", "parser"]
+readme = "README.md"
+license = "GPL-3.0"
+
+[dev-dependencies]
 rustc-serialize = "0.3"
+
+

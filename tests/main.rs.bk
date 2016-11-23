@@ -20,23 +20,23 @@ fn run_file(in_path_vcf: &Path, res_path_json: &Path) {
 
     for elem in parser {
         let expected = match res_reader.next().unwrap() {
-            Ok(val) => val,
-            Err(err) => return assert!(false, err),
+            Ok(val)     => val,
+            Err(err)    => return assert!(false, err),
         };
 
         match elem {
-            Ok(val) => {
+            Ok(val)     => {
                 let output = val.to_json();
                 assert_eq!(expected, format!("{}", output));
-            }
-            Err(err) => {
+            },
+            Err(err)    => {
                 println!("tutu");
-                assert_eq!(expected, format!("{}", err.description()));
+                assert_eq!(expected, format!("{}",err.description()));
             }
         };
 
 
-    }
+    };
 }
 
 #[test]
@@ -44,8 +44,8 @@ fn invalid_path() {
     let path = Path::new("this is an invalid path");
 
     match Parser::from_path(path) {
-        Ok(_) => assert!(false, "File should be invalid"),
-        Err(err) => assert_eq!(err.description(), "entity not found"),
+        Ok(_)        => assert!(false, "File should be invalid"),
+        Err(err)     => assert_eq!(err.description(), "entity not found"),
     }
 }
 
@@ -65,3 +65,4 @@ fn vcard_error() {
 
     run_file(in_path_vcf, out_path_json);
 }
+
