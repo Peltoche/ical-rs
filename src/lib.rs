@@ -36,6 +36,7 @@
 //! extern crate ical;
 //! ```
 
+#[cfg(feature = "rustc-serialize")]
 extern crate rustc_serialize;
 
 pub mod parser;

@@ -2,7 +2,6 @@
 use std::fs::File;
 use std::path::Path;
 use std::io::{BufReader, BufRead, Read};
-use rustc_serialize::json::{ToJson, Json, Object};
 
 use ::{PARAM_DELIMITER, VALUE_DELIMITER};
 use ::{ParseError, ErrorKind};
@@ -19,15 +18,21 @@ pub struct Property {
     pub value: value::Value,
 }
 
-impl ToJson for Property {
-    fn to_json(&self) -> Json {
-        let mut obj = Object::new();
+#[cfg(feature = "rustc-serialize")]
+mod rustc_serialize {
+    use rustc_serialize::json::{ToJson, Json, Object};
+    use super::Property;
 
-        obj.insert("name".to_string(), self.name.to_json());
-        obj.insert("params".to_string(), self.params.to_json());
-        obj.insert("value".to_string(), self.value.to_json());
+    impl ToJson for Property {
+        fn to_json(&self) -> Json {
+            let mut obj = Object::new();
 
-        Json::Object(obj)
+            obj.insert("name".to_string(), self.name.to_json());
+            obj.insert("params".to_string(), self.params.to_json());
+            obj.insert("value".to_string(), self.value.to_json());
+
+            Json::Object(obj)
+        }
     }
 }
 

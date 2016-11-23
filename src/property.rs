@@ -1,6 +1,5 @@
 
 use std::collections::HashMap;
-use rustc_serialize::json::{ToJson, Json};
 
 use ::{ParseError, ErrorKind};
 use ::value;
@@ -58,9 +57,55 @@ pub enum Type {
     Xml,
 }
 
-impl ToJson for Type {
-    fn to_json(&self) -> Json {
-        Json::String(self.to_string())
+#[cfg(feature = "rustc-serialize")]
+mod rustc_serialize {
+    use rustc_serialize::json::{ToJson, Json};
+    use super::Type;
+
+    impl ToJson for Type {
+        fn to_json(&self) -> Json {
+            Json::String(self.to_string())
+        }
+    }
+
+    impl Type {
+        /// Match a `Type `an return the  corresponding string.
+        fn to_string(&self) -> String {
+            match *self {
+                    Type::Adr => "ADR",
+                    Type::Anniversary => "ANNIVERSARY",
+                    Type::Bday => "BDAY",
+                    Type::Caladruri => "CALADRURI",
+                    Type::Caluri => "CALURI",
+                    Type::Clientpidmap => "CLIENTPIDMAP",
+                    Type::Email => "EMAIL",
+                    Type::Fburl => "FBURL",
+                    Type::Fn => "FN",
+                    Type::Gender => "GENDER",
+                    Type::Geo => "GEO",
+                    Type::Impp => "IMPP",
+                    Type::Key => "KEY",
+                    Type::Kind => "KIND",
+                    Type::Lang => "LANG",
+                    Type::Logo => "LOGO",
+                    Type::Member => "MEMBER",
+                    Type::N => "N",
+                    Type::Nickname => "NICKNAME",
+                    Type::Note => "NOTE",
+                    Type::Org => "ORG",
+                    Type::Photo => "PHOTO",
+                    Type::Related => "RELATED",
+                    Type::Rev => "REV",
+                    Type::Role => "ROLE",
+                    Type::Sound => "SOUND",
+                    Type::Source => "SOURCE",
+                    Type::Tel => "TEL",
+                    Type::Title => "TITLE",
+                    Type::Tz => "TZ",
+                    Type::Xml => "XML",
+                }
+                .to_string()
+        }
     }
 }
 
@@ -102,44 +147,6 @@ impl Type {
             "xml" => Ok(Type::Xml),
             _ => Err(ParseError::new(ErrorKind::InvalidProperty)),
         }
-    }
-
-    /// Match a `Type `an return the  corresponding string.
-    fn to_string(&self) -> String {
-        match *self {
-                Type::Adr => "ADR",
-                Type::Anniversary => "ANNIVERSARY",
-                Type::Bday => "BDAY",
-                Type::Caladruri => "CALADRURI",
-                Type::Caluri => "CALURI",
-                Type::Clientpidmap => "CLIENTPIDMAP",
-                Type::Email => "EMAIL",
-                Type::Fburl => "FBURL",
-                Type::Fn => "FN",
-                Type::Gender => "GENDER",
-                Type::Geo => "GEO",
-                Type::Impp => "IMPP",
-                Type::Key => "KEY",
-                Type::Kind => "KIND",
-                Type::Lang => "LANG",
-                Type::Logo => "LOGO",
-                Type::Member => "MEMBER",
-                Type::N => "N",
-                Type::Nickname => "NICKNAME",
-                Type::Note => "NOTE",
-                Type::Org => "ORG",
-                Type::Photo => "PHOTO",
-                Type::Related => "RELATED",
-                Type::Rev => "REV",
-                Type::Role => "ROLE",
-                Type::Sound => "SOUND",
-                Type::Source => "SOURCE",
-                Type::Tel => "TEL",
-                Type::Title => "TITLE",
-                Type::Tz => "TZ",
-                Type::Xml => "XML",
-            }
-            .to_string()
     }
 }
 

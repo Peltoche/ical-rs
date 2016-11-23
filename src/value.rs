@@ -1,5 +1,4 @@
 
-use rustc_serialize::json::{ToJson, Json};
 use std::collections::HashMap;
 
 use ::{ParseError, ErrorKind};
@@ -31,24 +30,30 @@ pub enum Value {
     N(String),
 }
 
-impl ToJson for Value {
-    fn to_json(&self) -> Json {
-        match *self {
-            Value::Text(ref val) => Json::String(val.clone()),
-            Value::Uri(ref val) => Json::String(val.clone()),
-            Value::Adr(ref val) => Json::String(val.clone()),
-            Value::Date(ref val) => Json::String(val.clone()),
-            Value::Integer(ref val) => Json::I64(val.clone() as i64),
-            Value::LanguageTag(ref val) => Json::String(val.clone()),
-            Value::N(ref val) => Json::String(val.clone()),
-            Value::TextMulti(ref list) => {
-                let mut res = Vec::new();
+#[cfg(feature = "rustc-serialize")]
+mod rustc_serialize {
+    use rustc_serialize::json::{ToJson, Json};
+    use super::Value;
 
-                for elem in list {
-                    res.push(Json::String(elem.clone()));
+    impl ToJson for Value {
+        fn to_json(&self) -> Json {
+            match *self {
+                Value::Text(ref val) => Json::String(val.clone()),
+                Value::Uri(ref val) => Json::String(val.clone()),
+                Value::Adr(ref val) => Json::String(val.clone()),
+                Value::Date(ref val) => Json::String(val.clone()),
+                Value::Integer(ref val) => Json::I64(val.clone() as i64),
+                Value::LanguageTag(ref val) => Json::String(val.clone()),
+                Value::N(ref val) => Json::String(val.clone()),
+                Value::TextMulti(ref list) => {
+                    let mut res = Vec::new();
+
+                    for elem in list {
+                        res.push(Json::String(elem.clone()));
+                    }
+
+                    Json::Array(res)
                 }
-
-                Json::Array(res)
             }
         }
     }

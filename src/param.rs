@@ -1,7 +1,6 @@
 //! Parser for ical parameters.
 
 use std::collections::HashMap;
-use rustc_serialize::json::{ToJson, Json, Object};
 
 use ::{PARAM_DELIMITER, VALUE_DELIMITER, PARAM_NAME_DELIMITER};
 use ::{ParseError, ErrorKind};
@@ -31,18 +30,24 @@ impl Container {
     }
 }
 
-impl ToJson for Container {
-    fn to_json(&self) -> Json {
-        match self {
-            &Container::None => Json::Null,
-            &Container::Some(ref list) => {
-                let mut res = Object::new();
+#[cfg(feature = "rustc-serialize")]
+mod rustc_serialize {
+    use rustc_serialize::json::{ToJson, Json, Object};
+    use super::Container;
 
-                for (key, val) in list {
-                    res.insert(key.to_string(), val.to_json());
+    impl ToJson for Container {
+        fn to_json(&self) -> Json {
+            match self {
+                &Container::None => Json::Null,
+                &Container::Some(ref list) => {
+                    let mut res = Object::new();
+
+                    for (key, val) in list {
+                        res.insert(key.to_string(), val.to_json());
+                    }
+
+                    Json::Object(res)
                 }
-
-                Json::Object(res)
             }
         }
     }
