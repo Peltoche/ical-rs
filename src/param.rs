@@ -1,4 +1,3 @@
-
 use std::collections::HashMap;
 use rustc_serialize::json::{ToJson, Json, Object};
 
