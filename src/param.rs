@@ -1,3 +1,5 @@
+//! Parser for ical parameters.
+
 use std::collections::HashMap;
 use rustc_serialize::json::{ToJson, Json, Object};
 
@@ -6,6 +8,13 @@ use ::{ParseError, ErrorKind};
 use ::parser;
 
 
+/// Contains all the property parameters.
+///
+/// This is a custom implementation of an `Option` enum:
+/// * If no parameters have been parsed, `None` is set.
+/// * If some parameters have been parsed `Some` is set with a valid hashmap.
+///
+/// It's possible to directly access to the parameters values throught the `get` method.
 #[derive(Debug)]
 pub enum Container {
     Some(HashMap<Type, String>),
@@ -13,6 +22,7 @@ pub enum Container {
 }
 
 impl Container {
+    /// Return an `Option`al parameter value.
     pub fn get(&self, key: &Type) -> Option<&String> {
         match *self {
             Container::Some(ref map)   => map.get(key),
@@ -40,7 +50,7 @@ impl ToJson for Container {
 
 
 
-/// Regroupe all the possible arguments accepted.
+/// Arguments accepted.
 #[derive(Debug, PartialEq, Hash, Eq, Clone)]
 pub enum Type {
     Language,
@@ -58,8 +68,7 @@ pub enum Type {
 }
 
 impl Type {
-    /// Match a string an return the corresponding `Type`. The string
-    /// is move to lowercase before matching.
+    /// Make a case insensitive match and return the corresponding `param::Type`.
     pub fn from_str(input: &str) -> Type {
 
         match input.to_lowercase().as_str() {
@@ -79,7 +88,8 @@ impl Type {
     }
 
 
-    fn to_string(&self) -> String {
+    /// Return an uppercase `String` corresponding to the param type.
+    pub fn to_string(&self) -> String {
         match *self {
            Type::Language     => "LANGUAGE",
            Type::Value        => "VALUE",
@@ -99,7 +109,12 @@ impl Type {
 
 
 
-/// Parse the parameters from a string to an object. The start
+/// Parse the parameters from a string to an object.
+///
+/// # Arguments
+///
+/// * `line`:   A complete Ical line without newline character.
+/// * `start`:  The index of first PARAM_DELIMITER.
 pub fn parse(line: &str, start: usize) -> Result<Container, ParseError> {
     let mut params = HashMap::new();
     let mut last_param: usize = start;
