@@ -1,4 +1,4 @@
-
+//! Parse for ical values
 use std::collections::HashMap;
 
 use ::{ParseError, ErrorKind};
@@ -92,6 +92,7 @@ pub enum Type {
 }
 
 impl Type {
+    /// Return the corresponding `value::Type`.
     pub fn from_str(input: &str) -> Result<Type, ParseError> {
         match input.to_lowercase().as_str() {
             "text" => Ok(Type::Text),

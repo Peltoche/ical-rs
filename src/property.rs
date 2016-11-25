@@ -1,10 +1,26 @@
+//! Handle the Ical properties.
+//!
+//! Each protocol or version contains its own properties or implementations.
+//! Ical have a generic way to handle theses rules.
+//!
+//! After reading the first two lines the reader can define the protocol and the
+//! version used by the file. Knowing this it can load the corresponding `Design`
+//! element corresponding to a `HashMap<Type, DesignElem`.
+//!
+//! Each `DesignElem` contains the parameters used to corretly parse the property,
+//! like the type of value expected.
+//!
+//! When a property is detected, it must be parsed as a `property::Type` element and
+//! retrieve the corresponding `DesignElem` in `Design`. If there is no match the
+//! attribute is not handled by the protocol/version.
+
 
 use std::collections::HashMap;
 
 use ::{ParseError, ErrorKind};
 use ::value;
 
-/// Regroup all the rules (`DesignElem`) for a type of file (VCard / ICal).
+/// All the rules (`DesignElem`) for a protocol/version.
 pub type Design = HashMap<Type, DesignElem>;
 
 /// A element of the HashMap `DesignSet`. It represent a the properties of an
@@ -152,12 +168,12 @@ impl Type {
 
 
 
-pub const DEFAULT_TYPE_TEXT: DesignElem = DesignElem {
+const DEFAULT_TYPE_TEXT: DesignElem = DesignElem {
     value_type: value::Type::Text,
     allowed_types: None,
 };
 
-pub const DEFAULT_TYPE_TEXT_MULTI: DesignElem = DesignElem {
+const DEFAULT_TYPE_TEXT_MULTI: DesignElem = DesignElem {
     value_type: value::Type::TextMulti,
     allowed_types: None,
 };
@@ -174,7 +190,7 @@ pub const DEFAULT_TYPE_TEXT_MULTI: DesignElem = DesignElem {
 // allowed_types:      None,
 // ;
 
-pub const DEFAULT_TYPE_URI: DesignElem = DesignElem {
+const DEFAULT_TYPE_URI: DesignElem = DesignElem {
     value_type: value::Type::Uri,
     allowed_types: None,
 };
