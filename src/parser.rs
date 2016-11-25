@@ -1,7 +1,8 @@
 
 use std::fs::File;
 use std::path::Path;
-use std::io::{BufReader, BufRead, Read}; use rustc_serialize::json::{ToJson, Json, Object};
+use std::io::{BufReader, BufRead, Read};
+use rustc_serialize::json::{ToJson, Json, Object};
 
 use ::{PARAM_DELIMITER, VALUE_DELIMITER};
 use ::{ParseError, ErrorKind};
@@ -13,9 +14,9 @@ use ::param;
 #[derive(Debug)]
 /// Main struct returning the parsed content of a line.
 pub struct Property {
-    pub name:   property::Type,
+    pub name: property::Type,
     pub params: param::Container,
-    pub value:  value::Value,
+    pub value: value::Value,
 }
 
 impl ToJson for Property {
@@ -40,15 +41,15 @@ pub enum Protocol {
 impl Protocol {
     fn from_str(input: &str) -> Result<Protocol, ParseError> {
         match input.to_lowercase().as_str() {
-            "vcard"     => Ok(Protocol::Vcard),
-            "Ical"      => Ok(Protocol::Ical),
-            _           => Err(ParseError::new(ErrorKind::InvalidProtocol)),
+            "vcard" => Ok(Protocol::Vcard),
+            "Ical" => Ok(Protocol::Ical),
+            _ => Err(ParseError::new(ErrorKind::InvalidProtocol)),
         }
     }
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Version {
     Four,
     Three,
@@ -57,9 +58,9 @@ pub enum Version {
 impl Version {
     fn from_str(input: &str) -> Result<Version, ParseError> {
         match input {
-            "4.0"   => Ok(Version::Four),
-            "3.0"   => Ok(Version::Three),
-            _       => Err(ParseError::new(ErrorKind::InvalidVersion)),
+            "4.0" => Ok(Version::Four),
+            "3.0" => Ok(Version::Three),
+            _ => Err(ParseError::new(ErrorKind::InvalidVersion)),
         }
     }
 }
@@ -101,8 +102,8 @@ impl Iterator for Parser {
     fn next(&mut self) -> Option<Result<Property, ParseError>> {
 
         match self.fetch_line() {
-            Some(line)  => Some(self.parse_line(line.as_str())),
-            None        => None,
+            Some(line) => Some(self.parse_line(line.as_str())),
+            None => None,
         }
     }
 }
@@ -111,24 +112,23 @@ impl Iterator for Parser {
 impl Parser {
     /// parse_vcard_file take a `Path` to a VCard file and parse the content
     /// into a vector of contact.
-    pub fn from_path(path: &Path) -> Result<Parser, ParseError>{
+    pub fn from_path(path: &Path) -> Result<Parser, ParseError> {
         let file = match File::open(path) {
-            Ok(file)    => file,
-            Err(err)      => return Err(ParseError::new(ErrorKind::File(err))),
+            Ok(file) => file,
+            Err(err) => return Err(ParseError::new(ErrorKind::File(err))),
         };
 
         let mut reader = BufReader::new(file);
 
         let (protocol, version) = retrieve_specs(&mut reader)?;
 
-        let parser = Parser{
+        let parser = Parser {
             reader: reader,
             next_start: None,
-            property_design: property::get_vcard_design(),
+            property_design: property::get_vcard_design(version),
             value_design: value::get_vcard_design(),
             protocol: protocol,
             version: version,
-
         };
 
         Ok(parser)
@@ -221,21 +221,19 @@ impl Parser {
             if let Some(type_str) = params.get(&param::Type::Value) {
                 if let Some(ref allowed) = property.allowed_types {
                     let param_type = value::Type::from_str(type_str)?;
-                    println!("param: {:?}", param_type);
 
                     if allowed.contains(&param_type) {
                         v_type = param_type;
                     }
-                } else {
+                } else if v_type != property.value_type {
                     return Err(ParseError::new(ErrorKind::UnacceptedType));
                 }
             }
 
 
             value = match self.value_design.get(&v_type) {
-                Some(design)    => (design.parse_str)(value_str)?,
-                None            => return Err(ParseError::new(
-                        ErrorKind::NotImplemented))
+                Some(design) => (design.parse_str)(value_str)?,
+                None => return Err(ParseError::new(ErrorKind::NotImplemented)),
             };
 
         } else {
@@ -243,10 +241,10 @@ impl Parser {
         }
 
 
-        //let value = parse_value(value, multi_value, ptype);
-        //println!("value: {:?}", value);
+        // let value = parse_value(value, multi_value, ptype);
+        // println!("value: {:?}", value);
 
-        Ok(Property{
+        Ok(Property {
             name: name,
             params: params,
             value: value,
@@ -317,13 +315,13 @@ fn retrieve_key_value_line(line: &String) -> Result<(String, String), ParseError
     let mut elems = line.splitn(2, VALUE_DELIMITER);
 
     let key = match elems.next() {
-        Some(val)   => val,
-        None        => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
+        Some(val) => val,
+        None => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
     };
 
     let value = match elems.next() {
-        Some(val)   => val.trim_right(),
-        None        => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
+        Some(val) => val.trim_right(),
+        None => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
     };
 
     Ok((key.to_lowercase(), value.to_lowercase()))
@@ -336,7 +334,7 @@ fn retrieve_key_value_line(line: &String) -> Result<(String, String), ParseError
 /// preceded by a backslash character.
 pub fn unescaped_find(buffer: &str, start: usize, pat: char) -> Option<usize> {
 
-    //let res = buf_chars
+    // let res = buf_chars
     buffer.char_indices()
         .skip(start)
         .find(|&(index, value)| {
@@ -348,9 +346,7 @@ pub fn unescaped_find(buffer: &str, start: usize, pat: char) -> Option<usize> {
 
             return false;
         })
-    .and_then(|(index, _)| {
-        Some(index)
-    })
+        .and_then(|(index, _)| Some(index))
 
 }
 

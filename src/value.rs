@@ -10,7 +10,7 @@ pub type Design = HashMap<Type, DesignElem>;
 
 
 pub struct DesignElem {
-    pub parse_str:   fn(&str) -> Result<Value, ParseError>,
+    pub parse_str: fn(&str) -> Result<Value, ParseError>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -22,9 +22,9 @@ pub enum Value {
     Adr(String),
     Date(String),
     Integer(i32),
-    //Boolean,
-    //Float,
-    //UtcOffset,
+    // Boolean,
+    // Float,
+    // UtcOffset,
     LanguageTag(String),
 
     // Customs values
@@ -34,14 +34,14 @@ pub enum Value {
 impl ToJson for Value {
     fn to_json(&self) -> Json {
         match *self {
-            Value::Text(ref val)            => Json::String(val.clone()),
-            Value::Uri(ref val)             => Json::String(val.clone()),
-            Value::Adr(ref val)             => Json::String(val.clone()),
-            Value::Date(ref val)            => Json::String(val.clone()),
-            Value::Integer(ref val)         => Json::I64(val.clone() as i64),
-            Value::LanguageTag(ref val)     => Json::String(val.clone()),
-            Value::N(ref val)               => Json::String(val.clone()),
-            Value::TextMulti(ref list)       => {
+            Value::Text(ref val) => Json::String(val.clone()),
+            Value::Uri(ref val) => Json::String(val.clone()),
+            Value::Adr(ref val) => Json::String(val.clone()),
+            Value::Date(ref val) => Json::String(val.clone()),
+            Value::Integer(ref val) => Json::I64(val.clone() as i64),
+            Value::LanguageTag(ref val) => Json::String(val.clone()),
+            Value::N(ref val) => Json::String(val.clone()),
+            Value::TextMulti(ref list) => {
                 let mut res = Vec::new();
 
                 for elem in list {
@@ -55,19 +55,19 @@ impl ToJson for Value {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Type{
+pub enum Type {
     Text,
     TextMulti,
-    TextMultiQuote,
+    TextMultiComa,
     Uri,
     Date,
-    //Time,
+    // Time,
     DateTime,
     DateAndOrTime,
     Timestamp,
-    //Boolean,
+    // Boolean,
     Integer,
-    //Float,
+    // Float,
     UtcOffset,
     LanguageTag,
 
@@ -79,17 +79,17 @@ pub enum Type{
 impl Type {
     pub fn from_str(input: &str) -> Result<Type, ParseError> {
         match input.to_lowercase().as_str() {
-            "text"          => Ok(Type::Text),
-            "uri"           => Ok(Type::Uri),
-            "date"          => Ok(Type::Date),
-            "datetime"      => Ok(Type::DateTime),
+            "text" => Ok(Type::Text),
+            "uri" => Ok(Type::Uri),
+            "date" => Ok(Type::Date),
+            "datetime" => Ok(Type::DateTime),
             "dateandortime" => Ok(Type::DateAndOrTime),
-            "timestamp"     => Ok(Type::Timestamp),
-            "integer"       => Ok(Type::Integer),
-            "utcoffset"     => Ok(Type::UtcOffset),
-            "utc-offset"    => Ok(Type::UtcOffset),
-            "languagetag"   => Ok(Type::LanguageTag),
-            _               => Err(ParseError::new(ErrorKind::InvalidValueType)),
+            "timestamp" => Ok(Type::Timestamp),
+            "integer" => Ok(Type::Integer),
+            "utcoffset" => Ok(Type::UtcOffset),
+            "utc-offset" => Ok(Type::UtcOffset),
+            "languagetag" => Ok(Type::LanguageTag),
+            _ => Err(ParseError::new(ErrorKind::InvalidValueType)),
         }
     }
 }
@@ -98,17 +98,19 @@ pub fn get_vcard_design() -> Design {
     let mut v_design = HashMap::with_capacity(15);
 
 
-    v_design.insert(Type::Text, DesignElem{parse_str: parse_text});
-    v_design.insert(Type::Uri, DesignElem{parse_str: parse_uri});
-    v_design.insert(Type::Adr, DesignElem{parse_str: parse_adr});
-    v_design.insert(Type::Date, DesignElem{parse_str: parse_date});
-    v_design.insert(Type::DateTime, DesignElem{parse_str: parse_date_time});
-    v_design.insert(Type::DateAndOrTime, DesignElem{parse_str: parse_date_and_or_time});
-    v_design.insert(Type::N, DesignElem{parse_str: parse_n});
-    v_design.insert(Type::Timestamp, DesignElem{parse_str: parse_timestamp});
-    v_design.insert(Type::UtcOffset, DesignElem{parse_str: parse_utcoffset});
-    v_design.insert(Type::TextMulti, DesignElem{parse_str: parse_text_multi});
-    v_design.insert(Type::TextMultiQuote, DesignElem{parse_str: parse_text_multi_quote});
+    v_design.insert(Type::Text, DesignElem { parse_str: parse_text });
+    v_design.insert(Type::Uri, DesignElem { parse_str: parse_uri });
+    v_design.insert(Type::Adr, DesignElem { parse_str: parse_adr });
+    v_design.insert(Type::Date, DesignElem { parse_str: parse_date });
+    v_design.insert(Type::DateTime, DesignElem { parse_str: parse_date_time });
+    v_design.insert(Type::DateAndOrTime,
+                    DesignElem { parse_str: parse_date_and_or_time });
+    v_design.insert(Type::N, DesignElem { parse_str: parse_n });
+    v_design.insert(Type::Timestamp, DesignElem { parse_str: parse_timestamp });
+    v_design.insert(Type::UtcOffset, DesignElem { parse_str: parse_utcoffset });
+    v_design.insert(Type::TextMulti, DesignElem { parse_str: parse_text_multi });
+    v_design.insert(Type::TextMultiComa,
+                    DesignElem { parse_str: parse_text_multi_quote });
 
 
     v_design

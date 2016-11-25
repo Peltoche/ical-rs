@@ -1,0 +1,40 @@
+{"name":"FN","params":null,"value":"Mr. John Q. Public\\, Esq."}
+{"name":"N","params":null,"value":"Public;John;Quinlan;Mr.;Esq."}
+{"name":"N","params":null,"value":"Stevenson;John;Philip,Paul;Dr.;Jr.,M.D.,A.C.P."}
+{"name":"NICKNAME","params":null,"value":"Robbie"}
+{"name":"NICKNAME","params":null,"value":["Jim","Jimmie"]}
+{"name":"PHOTO","params":{"VALUE":"uri"},"value":"http://www.abc.com/pub/photos/jqpublic.gif"}
+{"name":"PHOTO","params":{"ENCODING":"b","TYPE":"JPEG"},"value":"SGVsbG8sIHRoaXMgaXMgbm90IGEgcmVhbCBpbWFnZSBqdXN0IGEgdGVzdC4="}
+{"name":"BDAY","params":null,"value":"1996-04-15"}
+{"name":"BDAY","params":null,"value":"1953-10-15T23:10:00Z"}
+{"name":"BDAY","params":null,"value":"1987-09-27T08:30:00-06:00"}
+{"name":"ADR","params":{"TYPE":"dom,home,postal,parcel"},"value":";;123 Main Street;Any Town;CA;91921-1234"}
+{"name":"LABEL","params":{"TYPE":"dom,home,postal,parcel"},"value":"Mr.John Q. Public\\, Esq.\\nMail Drop: TNE QB\\n123 Main Street\\nAny Town\\, CA  91921-1234\\nU.S.A."}
+{"name":"TEL","params":{"TYPE":"work,voice,pref,msg"},"value":"+1-213-555-1234"}
+{"name":"EMAIL","params":{"TYPE":"internet"},"value":"jqpublic@xyz.dom1.com"}
+{"name":"EMAIL","params":{"TYPE":"internet"},"value":"jdoe@isp.net"}
+{"name":"EMAIL","params":{"TYPE":"internet,pref"},"value":"jane_doe@abc.com"}
+{"name":"Mailer","params":null,"value":"PigeonMail 2.1"}
+{"name":"TZ","params":null,"value":"-05:00"}
+{"name":"TZ","params":{"VALUE":"text"},"value":"-05:00\\; EST\\; Raleigh/North America\\;This example has a single value\\, not a structure text value."}
+{"name":"GEO","params":null,"value":"37.386013;-122.082932"}
+{"name":"TITLE","params":null,"value":"Director\\, Research and Development"}
+{"name":"ROLE","params":null,"value":"Programmer"}
+{"name":"LOGO","params":{"VALUE":"uri"},"value":"http://www.abc.com/pub/logos/abccorp.jpg"}
+{"name":"LOGO","params":{"ENCODING":"b","TYPE":"JPEG"},"value":"SGVsbG8sIHRoaXMgaXMgbm90IGEgcmVhbCBpbWFnZSBqdXN0IGEgdGVzdC4="}
+{"name":"AGENT","params":{"VALUE":"uri"},"value":"CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com1234\\nEMAIL\\;INTERNET:sthomas@host.com\\nEND:VCARD\\n"}
+{"name":"ORG","params":null,"value":["ABC\\, Inc.","North American Division","Marketing"]}
+{"name":"CATEGORIES","params":null,"value":"TRAVEL AGENT"}
+{"name":"CATEGORIES","params":null,"value":["INTERNET","IETF","INDUSTRY","INFORMATION TECHNOLOGY"]}
+{"name":"NOTE","params":null,"value":"This fax number is operational 0800 to 1715 EST\\, Mon-Fri."}
+{"name":"PRODID","params":null,"value":"-//ONLINE DIRECTORY//NONSGML Version 1//EN"}
+{"name":"REV","params":null,"value":"1995-10-31T22:27:10Z"}
+{"name":"REV","params":null,"value":"1997-11-15"}
+{"name":"SORT-STRING","params":null,"value":"Harten"}
+{"name":"SOUND","params":{"TYPE":"BASIC","VALUE":"uri"},"value":"CID:JOHNQPUBLIC.part8.19960229T080000.xyzMail@host1.com"}
+{"name":"SOUND","params":{"ENCODING":"b","TYPE":"BASIC"},"value":"VGhlcmUgaXMgbm8gc291bmQgaW4gc3BhY2U="}
+{"name":"CLASS","params":null,"value":"PUBLIC"}
+{"name":"CLASS","params":null,"value":"PRIVATE"}
+{"name":"CLASS","params":null,"value":"CONFIDENTIAL"}
+{"name":"KEY","params":{"ENCODING":"b"},"value":"Tm90IHRoZSBrZXkgeW91IGFyZSBsb29raW5nIGZvcg=="}
+

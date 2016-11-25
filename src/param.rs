@@ -16,8 +16,8 @@ pub enum Container {
 impl Container {
     pub fn get(&self, key: &Type) -> Option<&String> {
         match *self {
-            Container::Some(ref map)   => map.get(key),
-            Container::None        => None,
+            Container::Some(ref map) => map.get(key),
+            Container::None => None,
         }
     }
 }
@@ -25,8 +25,8 @@ impl Container {
 impl ToJson for Container {
     fn to_json(&self) -> Json {
         match self {
-            &Container::None    => Json::Null,
-            &Container::Some(ref list)    => {
+            &Container::None => Json::Null,
+            &Container::Some(ref list) => {
                 let mut res = Object::new();
 
                 for (key, val) in list {
@@ -64,37 +64,38 @@ impl Type {
     pub fn from_str(input: &str) -> Type {
 
         match input.to_lowercase().as_str() {
-            "language"  => Type::Language,
-            "value"     => Type::Value,
-            "atltid"    => Type::AltId,
-            "pref"      => Type::Pref,
-            "pid"       => Type::Pid,
-            "type"      => Type::Type,
+            "language" => Type::Language,
+            "value" => Type::Value,
+            "atltid" => Type::AltId,
+            "pref" => Type::Pref,
+            "pid" => Type::Pid,
+            "type" => Type::Type,
             "mediatype" => Type::Mediatype,
-            "calscale"  => Type::Calscale,
-            "sortas"    => Type::SortAs,
-            "geo"       => Type::Geo,
-            "tz"        => Type::Tz,
-            _           => Type::Any(input.to_uppercase()),
+            "calscale" => Type::Calscale,
+            "sortas" => Type::SortAs,
+            "geo" => Type::Geo,
+            "tz" => Type::Tz,
+            _ => Type::Any(input.to_uppercase()),
         }
     }
 
 
     fn to_string(&self) -> String {
         match *self {
-           Type::Language     => "LANGUAGE",
-           Type::Value        => "VALUE",
-           Type::Pref         => "PREF",
-           Type::AltId        => "ALTID",
-           Type::Pid          => "PID",
-           Type::Type         => "TYPE",
-           Type::Mediatype    => "MEDIATYPE",
-           Type::Calscale     => "CALSCALE",
-           Type::SortAs       => "SORTAS",
-           Type::Geo          => "GEO",
-           Type::Tz           => "TZ",
-           Type::Any(ref val) => return val.clone(),
-        }.to_string()
+                Type::Language => "LANGUAGE",
+                Type::Value => "VALUE",
+                Type::Pref => "PREF",
+                Type::AltId => "ALTID",
+                Type::Pid => "PID",
+                Type::Type => "TYPE",
+                Type::Mediatype => "MEDIATYPE",
+                Type::Calscale => "CALSCALE",
+                Type::SortAs => "SORTAS",
+                Type::Geo => "GEO",
+                Type::Tz => "TZ",
+                Type::Any(ref val) => return val.clone(),
+            }
+            .to_string()
     }
 }
 
@@ -111,7 +112,7 @@ pub fn parse(line: &str, start: usize) -> Result<Container, ParseError> {
     // key.
     while let Some(mut pos) = parser::unescaped_find(line, last_param + 1, PARAM_NAME_DELIMITER) {
 
-        //let design_elem: &DesignElem;
+        // let design_elem: &DesignElem;
         let value: String;
         let name: Type;
 
@@ -145,8 +146,8 @@ pub fn parse(line: &str, start: usize) -> Result<Container, ParseError> {
         // 1. Find '\"' -> the value is around dquote
         // 2. Find other letter -> this a 'raw' value
         let next_char = match line.bytes().nth(pos + 1) {
-            Some(val)   => val,
-            None        => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
+            Some(val) => val,
+            None => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
         };
 
         // 1.
@@ -155,8 +156,8 @@ pub fn parse(line: &str, start: usize) -> Result<Container, ParseError> {
             value_pos = pos + 2;
 
             pos = match parser::unescaped_find(line, value_pos, '\"') {
-                Some(val)   => val,
-                None        => return Err(ParseError::new(ErrorKind::InvalidParamFormat)),
+                Some(val) => val,
+                None => return Err(ParseError::new(ErrorKind::InvalidParamFormat)),
             };
 
 
@@ -181,7 +182,8 @@ pub fn parse(line: &str, start: usize) -> Result<Container, ParseError> {
             let prop_value_pos = parser::unescaped_find(line, value_pos, VALUE_DELIMITER);
             let next_pos;
 
-            if prop_value_pos.is_some() && next_param_pos.is_some() && next_param_pos.unwrap() > prop_value_pos.unwrap() {
+            if prop_value_pos.is_some() && next_param_pos.is_some() &&
+               next_param_pos.unwrap() > prop_value_pos.unwrap() {
 
                 // This is a delimiter in the property value: let's stop here.
                 next_pos = prop_value_pos.unwrap();
@@ -191,8 +193,8 @@ pub fn parse(line: &str, start: usize) -> Result<Container, ParseError> {
             } else if next_param_pos.is_none() {
                 // no ';'
                 next_pos = match prop_value_pos {
-                    Some(val)   => val,
-                    None        => line.len(),
+                    Some(val) => val,
+                    None => line.len(),
                 };
 
                 have_params = false;

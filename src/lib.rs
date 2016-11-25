@@ -10,7 +10,7 @@ use std::fmt;
 use std::io;
 use std::error::Error;
 
-//pub const MULTIVALUE_DELIMITER: char = ',';
+// pub const MULTIVALUE_DELIMITER: char = ',';
 pub const VALUE_DELIMITER: char = ':';
 pub const PARAM_DELIMITER: char = ';';
 pub const PARAM_NAME_DELIMITER: char = '=';
@@ -30,20 +30,20 @@ pub enum ErrorKind {
 
 #[derive(Debug)]
 pub struct ParseError {
-    kind:   ErrorKind,
+    kind: ErrorKind,
 }
 
 impl ParseError {
     pub fn new(kind: ErrorKind) -> ParseError {
-        ParseError{kind: kind}
+        ParseError { kind: kind }
     }
 }
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.kind {
-            ErrorKind::File(ref err)    => err.fmt(f),
-            _                           => write!(f, "{}", self.description()),
+            ErrorKind::File(ref err) => err.fmt(f),
+            _ => write!(f, "{}", self.description()),
         }
     }
 }
@@ -51,22 +51,22 @@ impl fmt::Display for ParseError {
 impl Error for ParseError {
     fn description(&self) -> &str {
         match self.kind {
-            ErrorKind::File(ref err)           => err.description(),
-            ErrorKind::InvalidLineFormat       => "Invalid line format.",
-            ErrorKind::InvalidParamFormat      => "Invalid parameter format.",
-            ErrorKind::InvalidProperty         => "Invalid property.",
-            ErrorKind::InvalidVersion          => "Invalid version.",
-            ErrorKind::InvalidValueType        => "Invalid value type.",
-            ErrorKind::InvalidProtocol         => "Invalid protocol.",
-            ErrorKind::NotImplemented          => "Element not implemented.",
-            ErrorKind::UnacceptedType          => "Unaccepted type.",
+            ErrorKind::File(ref err) => err.description(),
+            ErrorKind::InvalidLineFormat => "Invalid line format.",
+            ErrorKind::InvalidParamFormat => "Invalid parameter format.",
+            ErrorKind::InvalidProperty => "Invalid property.",
+            ErrorKind::InvalidVersion => "Invalid version.",
+            ErrorKind::InvalidValueType => "Invalid value type.",
+            ErrorKind::InvalidProtocol => "Invalid protocol.",
+            ErrorKind::NotImplemented => "Element not implemented.",
+            ErrorKind::UnacceptedType => "Unaccepted type.",
         }
     }
 
     fn cause(&self) -> Option<&Error> {
         match self.kind {
-            ErrorKind::File(ref err)    => Some(err),
-            _                           => None,
+            ErrorKind::File(ref err) => Some(err),
+            _ => None,
         }
     }
 }
