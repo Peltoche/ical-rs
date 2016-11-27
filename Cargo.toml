@@ -1,5 +1,5 @@
 [package]
-name = "vcard_ical"
+name = "ical"
 version = "0.1.0"
 authors = ["peltoche <dev@halium.fr>"]
 

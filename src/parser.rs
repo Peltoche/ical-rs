@@ -1,371 +1,210 @@
+//! Return parsed property from a `Line`.
 
-use std::fs::File;
-use std::path::Path;
-use std::io::{BufReader, BufRead, Read};
-use rustc_serialize::json::{ToJson, Json, Object};
+use std::iter::Iterator;
+use std::io::BufRead;
+use std::error::Error;
+use std::fmt;
 
-use ::{PARAM_DELIMITER, VALUE_DELIMITER};
-use ::{ParseError, ErrorKind};
-use ::property;
-use ::value;
-use ::param;
+use ::line;
 
-
-#[derive(Debug)]
-/// Main struct returning the parsed content of a line.
-pub struct Property {
-    pub name: property::Type,
-    pub params: param::Container,
-    pub value: value::Value,
+/// A parsed `Line`.
+///
+/// It's only split a raw line into the mains elements:
+/// - name: Property name.
+/// - params: Vector of key/value parameter.
+/// - value: Property Value.
+pub struct LineParsed {
+    name: String,
+    params: Option<Vec<(String, String)>>,
+    value: String,
 }
 
-impl ToJson for Property {
-    fn to_json(&self) -> Json {
-        let mut obj = Object::new();
-
-        obj.insert("name".to_string(), self.name.to_json());
-        obj.insert("params".to_string(), self.params.to_json());
-        obj.insert("value".to_string(), self.value.to_json());
-
-        Json::Object(obj)
-    }
-}
-
-
-#[derive(Debug)]
-pub enum Protocol {
-    Vcard,
-    Ical,
-}
-
-impl Protocol {
-    fn from_str(input: &str) -> Result<Protocol, ParseError> {
-        match input.to_lowercase().as_str() {
-            "vcard" => Ok(Protocol::Vcard),
-            "Ical" => Ok(Protocol::Ical),
-            _ => Err(ParseError::new(ErrorKind::InvalidProtocol)),
+impl LineParsed {
+    pub fn new() -> LineParsed {
+        LineParsed {
+            name: String::new(),
+            params: None,
+            value: String::new(),
         }
     }
-}
 
-
-#[derive(Debug, Clone, Copy)]
-pub enum Version {
-    Four,
-    Three,
-}
-
-impl Version {
-    fn from_str(input: &str) -> Result<Version, ParseError> {
-        match input {
-            "4.0" => Ok(Version::Four),
-            "3.0" => Ok(Version::Three),
-            _ => Err(ParseError::new(ErrorKind::InvalidVersion)),
-        }
+    pub fn set_name(&mut self, name: &str) {
+        self.name = name.to_uppercase();
     }
-}
 
-/// Parser is the main parser struct. It handle the parsing of all the filetypes.
-#[allow(dead_code)]
-pub struct Parser {
-    reader: BufReader<File>,
-
-    // An attribute can be on several lines. Once the first line of an
-    // attribute is retrieved, the line after nned to be retrieved too in
-    // order to check if it's a single or multiline attribute. As the reader
-    // work with a stream it's impossible to read twice the same line so if
-    // the next line is the start of a new attribute it must be cached.
-    next_start: Option<String>,
-
-    protocol: Protocol,
-    version: Version,
-
-    property_design: property::Design,
-    value_design: value::Design,
-}
-
-
-
-impl Iterator for Parser {
-    type Item = Result<Property, ParseError>;
-
-    // A property can be split over mutliple lines.
-    //
-    // ```text
-    // ADR;TYPE=home;LABEL="Heidestraße 17\n51147 Köln\nDeutschland"
-    //  :;;Heidestraße 17;Köln;;51147;Germany
-    // ```
-    //
-    // Note the additional space at the second line.
-    // This method takes a `BufReader` and merge every lines of a property
-    // into one.
-    fn next(&mut self) -> Option<Result<Property, ParseError>> {
-
-        match self.fetch_line() {
-            Some(line) => Some(self.parse_line(line.as_str())),
-            None => None,
-        }
+    pub fn set_value(&mut self, value: &str) {
+        self.value = value.to_string();
     }
-}
 
+    pub fn set_parameters(&mut self, params: Option<Vec<(String, String)>>) {
+        self.params = params;
+    }
 
-impl Parser {
-    /// parse_vcard_file take a `Path` to a VCard file and parse the content
-    /// into a vector of contact.
-    pub fn from_path(path: &Path) -> Result<Parser, ParseError> {
-        let file = match File::open(path) {
-            Ok(file) => file,
-            Err(err) => return Err(ParseError::new(ErrorKind::File(err))),
+    pub fn add_parameter(&mut self, key: &str, value: &str) {
+        let param = (key.to_uppercase(), value.to_string());
+
+        match self.params {
+            Some(ref mut list)  => list.push(param),
+            None => self.params = Some(vec!(param)),
         };
+    }
+}
 
-        let mut reader = BufReader::new(file);
+impl fmt::Display for LineParsed {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+               "name: {}\nparams: {:?}\nvalue: {}",
+               self.name,
+               self.params,
+               self.value)
+    }
+}
 
-        let (protocol, version) = retrieve_specs(&mut reader)?;
+/// A splitted `Line`.
+pub struct LineParser<B> {
+    line_reader: line::LineReader<B>,
+}
 
-        let parser = Parser {
-            reader: reader,
-            next_start: None,
-            property_design: property::get_vcard_design(version),
-            value_design: value::get_vcard_design(),
-            protocol: protocol,
-            version: version,
-        };
-
-        Ok(parser)
+impl<B: BufRead> LineParser<B> {
+    pub fn new(line_reader: line::LineReader<B>) -> LineParser<B> {
+        LineParser { line_reader: line_reader }
     }
 
 
-    fn fetch_line(&mut self) -> Option<String> {
-        let mut new_line = String::new();
+    fn parse(&self, line: line::Line) -> Result<LineParsed, ParseError> {
+        let mut property = LineParsed::new();
 
-        // If during the last iteration a new line have been saved, start with.
-        if let Some(start) = self.next_start.clone() {
-            new_line.push_str(start.as_str());
-            self.next_start = None;
+        // Parse name.
+        let name = self.parse_name(line.as_str())
+            .ok_or(ParseError::MissingName)?;
+        property.set_name(name);
 
-            // This is the first iteration, next_start isn't been filled yet.
+        // Parse value
+        let value = self.parse_value(line.as_str())
+            .ok_or(ParseError::MissingValue)?;
+        property.set_value(value);
+
+        // Parse parameters.
+        let parameters = self.parse_parameters(line.as_str())?;
+        property.set_parameters(parameters);
+        Ok(property)
+
+    }
+
+    /// Return the name from the given `Line`.
+    fn parse_name<'a>(&self, line: &'a str) -> Option<&'a str> {
+        let end_name_index;
+
+        let param_index = line.find(::PARAM_DELIMITER).unwrap_or(usize::max_value());
+        let value_index = line.find(::VALUE_DELIMITER).unwrap_or(usize::max_value());
+
+        if param_index < value_index {
+            end_name_index = param_index;
+        } else if value_index != usize::max_value() {
+            end_name_index = value_index;
         } else {
-            if self.reader.by_ref().read_line(&mut new_line).is_err() {
-                return None;
-            }
-
-            new_line = new_line.trim_right().to_string();
+            return None;
         }
 
-        for line in self.reader.by_ref().lines() {
-            let mut line = line.unwrap();
+        Some(line.split_at(end_name_index).0)
+    }
 
-            // This is a multi-lines attribute.
-            if line.starts_with(" ") {
-                // Remove the ' ' charactere and join with the current line.
-                line.remove(0);
-                new_line.push_str(line.trim_right())
 
-            } else {
-                // This is a new attribute so it need to be saved it for
-                // the next iteration.
-                self.next_start = Some(line.trim().to_string());
-                break;
-            }
-        }
+    /// Return the value from the given `Line`.
+    fn parse_value<'a>(&self, line: &'a str) -> Option<&'a str> {
+        let value_index = match line.find(::VALUE_DELIMITER) {
+            Some(val) => val + 1, // Jump the VALUE_DELIMITER
+            None => return None,
+        };
 
-        if new_line.is_empty() {
+        if value_index < line.len() {
+            Some(line.split_at(value_index).1)
+        } else {
             None
-        } else {
-            Some(new_line)
         }
     }
 
+    /// Return the parameters from the given `Line`.
+    fn parse_parameters(&self, line: &str) -> Result<Option<Vec<(String, String)>>, ParseError> {
+        let params_str;
+        let mut param_list =  Vec::new();
 
-    fn parse_line(&mut self, line: &str) -> Result<Property, ParseError> {
+        let end_param_index = line.find(::VALUE_DELIMITER)
+            .ok_or(ParseError::MissingValueDelimiter)?;
 
-        let name: property::Type;
-        let params: param::Container;
-        let value: value::Value;
+        let start_param_index = match line.find(::PARAM_DELIMITER) {
+            Some(val) => val + 1, // Jump the PARAM_DELIMITER sign.
+            None => return Ok(None), // there is no params.
+        };
 
-
-        let (value_position, param_position) = split_line(line);
-
-        // There is some parameters, handle them
-        if let Some(param_position) = param_position {
-            // The use is safe because the param_position come from the
-            // 'find' method.
-            unsafe {
-                name = property::Type::from_str(line.slice_unchecked(0, param_position))?;
-            }
-
-            params = param::parse(line, param_position)?;
-
-        } else if value_position.is_some() {
-            // Line without parameters (BEGIN:VCARD, CLASS:PUBLIC)
-            params = param::Container::None;
-
-            unsafe {
-                name = property::Type::from_str(line.slice_unchecked(0, value_position.unwrap()))?;
-            }
-
-        } else {
-            // Missing VALUE_DELIMITER, the line is invalid.
-            return Err(ParseError::new(ErrorKind::InvalidLineFormat));
+        if start_param_index > line.len() {
+            // There is not parameters after PARAM_DELIMITER.
+            return Err(ParseError::InvalidParamFormat);
         }
-
-        let value_str;
 
         unsafe {
-            value_str = line.slice_unchecked(value_position.unwrap() + 1, line.len());
+            params_str = line.slice_unchecked(start_param_index, end_param_index);
         }
 
-        if let Some(property) = self.property_design.get(&name) {
-            let mut v_type = property.value_type;
+        let key_value_list: Vec<&str> = params_str.split(::PARAM_DELIMITER).collect();
 
-            if let Some(type_str) = params.get(&param::Type::Value) {
-                if let Some(ref allowed) = property.allowed_types {
-                    let param_type = value::Type::from_str(type_str)?;
+        for key_value in key_value_list {
 
-                    if allowed.contains(&param_type) {
-                        v_type = param_type;
-                    }
-                } else if v_type != property.value_type {
-                    return Err(ParseError::new(ErrorKind::UnacceptedType));
-                }
-            }
+            let mut elem_list = key_value.split(::PARAM_NAME_DELIMITER);
 
+            let key = elem_list.next()
+                .and_then(|key| Some(key.to_uppercase()))
+                .ok_or(ParseError::InvalidParamFormat)?;
 
-            value = match self.value_design.get(&v_type) {
-                Some(design) => (design.parse_str)(value_str)?,
-                None => return Err(ParseError::new(ErrorKind::NotImplemented)),
-            };
+            let value = elem_list.next()
+                .and_then(|value| Some(value.to_string()))
+                .ok_or(ParseError::InvalidParamFormat)?;
 
-        } else {
-            return Err(ParseError::new(ErrorKind::InvalidProperty));
+            param_list.push((key, value));
+
         }
-
-
-        // let value = parse_value(value, multi_value, ptype);
-        // println!("value: {:?}", value);
-
-        Ok(Property {
-            name: name,
-            params: params,
-            value: value,
-        })
+        Ok(Some((param_list)))
     }
 }
 
-/// Split the line between the value and the parameters.
-///
-/// Different property cases
-///
-/// 1. RRULE:FREQ=foo
-///      FREQ= is not a param but the value
-///
-/// 2. ATTENDEE;ROLE=REQ-PARTICIPANT;
-///      ROLE= is a param because ':' has not happend yet
-fn split_line(line: &str) -> (Option<usize>, Option<usize>) {
-    // Break up the parts of the line.
-    let value_position = line.find(VALUE_DELIMITER);
-    let mut param_position = line.find(PARAM_DELIMITER);
+impl<B: BufRead> Iterator for LineParser<B> {
+    type Item = Result<LineParsed, ParseError>;
 
+    fn next(&mut self) -> Option<Result<LineParsed, ParseError>> {
+        let line = match self.line_reader.next() {
+            Some(val) => val,
+            None => return None,
+        };
 
-    if param_position.is_some() && value_position.is_some() {
-        // When the parameter delimiter is after the value delimiter then its
-        // not a parameter.
-        if param_position.unwrap() > value_position.unwrap() {
-            param_position = None;
+        Some(self.parse(line))
+    }
+}
+
+#[derive(Debug)]
+pub enum ParseError {
+    MissingValueDelimiter,
+    MissingName,
+    MissingValue,
+    InvalidParamFormat,
+}
+
+impl Error for ParseError {
+    fn description(&self) -> &str {
+        match *self {
+            ParseError::MissingValueDelimiter => "Missing value delimiter.",
+            ParseError::MissingName => "Missing name.",
+            ParseError::MissingValue => "Missing value.",
+            ParseError::InvalidParamFormat => "Invalid parameter format.",
         }
     }
 
-    (value_position, param_position)
+    fn cause(&self) -> Option<&Error> {
+        None
+    }
 }
 
-
-fn retrieve_specs(reader: &mut BufReader<File>) -> Result<(Protocol, Version), ParseError> {
-    let protocol: Protocol;
-    let version: Version;
-
-    let mut line: String = String::new();
-    if reader.read_line(&mut line).is_err() {
-        return Err(ParseError::new(ErrorKind::InvalidLineFormat));
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
     }
-
-    let (key, value) = retrieve_key_value_line(&line)?;
-    if key == "begin" {
-        protocol = Protocol::from_str(value.as_str())?;
-    } else {
-        return Err(ParseError::new(ErrorKind::InvalidLineFormat));
-    }
-
-
-    let mut line: String = String::new();
-    if reader.read_line(&mut line).is_err() {
-        return Err(ParseError::new(ErrorKind::InvalidLineFormat));
-    }
-
-    let (key, value) = retrieve_key_value_line(&line)?;
-    if key == "version" {
-        version = Version::from_str(value.as_str())?;
-    } else {
-        return Err(ParseError::new(ErrorKind::InvalidLineFormat));
-    }
-
-    Ok((protocol, version))
-}
-
-fn retrieve_key_value_line(line: &String) -> Result<(String, String), ParseError> {
-    let mut elems = line.splitn(2, VALUE_DELIMITER);
-
-    let key = match elems.next() {
-        Some(val) => val,
-        None => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
-    };
-
-    let value = match elems.next() {
-        Some(val) => val.trim_right(),
-        None => return Err(ParseError::new(ErrorKind::InvalidLineFormat)),
-    };
-
-    Ok((key.to_lowercase(), value.to_lowercase()))
-}
-
-
-
-
-/// Identical to `find` but will only match values when they are not
-/// preceded by a backslash character.
-pub fn unescaped_find(buffer: &str, start: usize, pat: char) -> Option<usize> {
-
-    // let res = buf_chars
-    buffer.char_indices()
-        .skip(start)
-        .find(|&(index, value)| {
-            if value == pat {
-                if buffer.as_bytes().get(index - 1) != Some(&b'\\') {
-                    return true;
-                }
-            }
-
-            return false;
-        })
-        .and_then(|(index, _)| Some(index))
-
-}
-
-
-/// Internal helper for rfc6868.
-pub fn rfc_6868_escape(input: &str) -> String {
-    let mut s = input.to_string();
-
-    if s.contains("^'") {
-        s = s.replace("^'", "\"");
-    }
-
-    if s.contains("^n") {
-        s = s.replace("^n", "\n");
-    }
-
-    if s.contains("^^") {
-        s = s.replace("^^", "^");
-    }
-
-    s
 }
