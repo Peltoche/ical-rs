@@ -11,7 +11,7 @@ use ::line;
 ///
 /// It's only split a raw line into the mains elements:
 /// - name: Property name.
-/// - params: Vector of key/value parameter.
+/// - params: Vector of (key,value) parameter.
 /// - value: Property Value.
 pub struct LineParsed {
     name: String,
