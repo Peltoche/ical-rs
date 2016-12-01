@@ -42,7 +42,7 @@ use std::fmt;
 ///
 /// Its inner is only a raw line from the file. No parsing or checking have
 /// been made yet.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Line {
     inner: String,
     number: usize,
@@ -57,7 +57,7 @@ impl Line {
     }
 
     // pub fn get_number(&mut self) -> usize {
-        // self.number
+    // self.number
     // }
 
     pub fn as_str(&self) -> &str {
@@ -79,6 +79,7 @@ pub trait LineRead {
 
 
 /// Take a `BufRead` and return the merged `Line`.
+#[derive(Debug, Clone)]
 pub struct LineReader<B> {
     reader: B,
     saved: Option<String>,
@@ -98,6 +99,7 @@ impl<B: BufRead> LineReader<B> {
 impl<B: BufRead> LineRead for LineReader<B> {
     fn next_line(&mut self) -> Option<Line> {
         let mut next_line = String::new();
+
 
         if let Some(start) = self.saved.take() {
             // If during the last iteration a new line have been saved, start with.

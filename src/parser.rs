@@ -13,10 +13,11 @@ use ::line;
 /// - name: Property name.
 /// - params: Vector of (key,value) parameter.
 /// - value: Property Value.
+#[derive(Debug, Clone)]
 pub struct LineParsed {
-    name: String,
-    params: Option<Vec<(String, String)>>,
-    value: String,
+    pub name: String,
+    pub params: Option<Vec<(String, String)>>,
+    pub value: String,
 }
 
 impl LineParsed {
@@ -39,15 +40,6 @@ impl LineParsed {
     pub fn set_parameters(&mut self, params: Option<Vec<(String, String)>>) {
         self.params = params;
     }
-
-    pub fn add_parameter(&mut self, key: &str, value: &str) {
-        let param = (key.to_uppercase(), value.to_string());
-
-        match self.params {
-            Some(ref mut list)  => list.push(param),
-            None => self.params = Some(vec!(param)),
-        };
-    }
 }
 
 impl fmt::Display for LineParsed {
@@ -61,6 +53,7 @@ impl fmt::Display for LineParsed {
 }
 
 /// A splitted `Line`.
+#[derive(Debug, Clone)]
 pub struct LineParser<B> {
     line_reader: line::LineReader<B>,
 }
@@ -87,6 +80,7 @@ impl<B: BufRead> LineParser<B> {
         // Parse parameters.
         let parameters = self.parse_parameters(line.as_str())?;
         property.set_parameters(parameters);
+
         Ok(property)
 
     }
@@ -127,7 +121,7 @@ impl<B: BufRead> LineParser<B> {
     /// Return the parameters from the given `Line`.
     fn parse_parameters(&self, line: &str) -> Result<Option<Vec<(String, String)>>, ParseError> {
         let params_str;
-        let mut param_list =  Vec::new();
+        let mut param_list = Vec::new();
 
         let end_param_index = line.find(::VALUE_DELIMITER)
             .ok_or(ParseError::MissingValueDelimiter)?;
@@ -136,6 +130,12 @@ impl<B: BufRead> LineParser<B> {
             Some(val) => val + 1, // Jump the PARAM_DELIMITER sign.
             None => return Ok(None), // there is no params.
         };
+
+        // The first PARAM_DELIMITER is after the VALUE_DELIMITER so it's in the
+        // value section and not a PARAM_DELIMITER.
+        if start_param_index > end_param_index {
+            return Ok(None);
+        }
 
         if start_param_index > line.len() {
             // There is not parameters after PARAM_DELIMITER.
@@ -171,16 +171,13 @@ impl<B: BufRead> Iterator for LineParser<B> {
     type Item = Result<LineParsed, ParseError>;
 
     fn next(&mut self) -> Option<Result<LineParsed, ParseError>> {
-        let line = match self.line_reader.next() {
-            Some(val) => val,
-            None => return None,
-        };
-
-        Some(self.parse(line))
+        self.line_reader
+            .next()
+            .map(|line| self.parse(line))
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ParseError {
     MissingValueDelimiter,
     MissingName,

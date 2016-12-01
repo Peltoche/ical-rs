@@ -52,14 +52,16 @@ fn test_mltiple_root_components() {
 
 #[test]
 fn test_rfc() {
-    let buf = BufReader::new(File::open("./tests/ressources/rfc.ics").unwrap());
+    let buf = BufReader::new(File::open("./tests/ressources/rfc.ics")
+        .unwrap());
 
     test_raw_line(buf);
 }
 
 #[test]
 fn test_component() {
-    let buf = BufReader::new(File::open("./tests/ressources/component.ics").unwrap());
+    let buf = BufReader::new(File::open("./tests/ressources/component.ics")
+        .unwrap());
 
     test_raw_line_2(buf);
 }
