@@ -1,73 +1,42 @@
+// extern crate ical;
 
-extern crate ical;
-extern crate rustc_serialize;
-
-#[cfg(feature = "rustc-serialize")]
-mod test {
+// use std::io::BufReader;
+// use std::fs::File;
 
 
-    use std::path::Path;
-    use std::fs::File;
-    use std::error::Error;
-    use std::io::{BufReader, BufRead};
+// fn test_raw_line(buf: BufReader<File>) {
+// let reader = ical::IcalReader::new(buf);
+
+// for res in reader {
+// match res {
+// Ok(line_parsed) => println!("{:?}", line_parsed),
+// Err(err) => println!("{}", err),
+// };
+// }
+// }
 
 
-    use ical::parser::Parser;
-    use rustc_serialize::json::ToJson;
+// #[test]
+// fn test_mltiple_root_components() {
+// let buf = BufReader::new(File::open("./tests/ressources/multiple_root_components.ics")
+// .unwrap());
 
+// test_raw_line(buf);
+// assert!(false, "END")
+// }
 
+// #[test]
+// fn test_rfc() {
+// let buf = BufReader::new(File::open("./tests/ressources/rfc.ics").unwrap());
 
-    fn run_file(in_path_vcf: &Path, res_path_json: &Path) {
-        let res_file = File::open(res_path_json).unwrap();
-        let mut res_reader = BufReader::new(res_file).lines();
+// test_raw_line(buf);
+// assert!(false, "END")
+// }
 
-        let parser = Parser::from_path(in_path_vcf).unwrap();
+// #[test]
+// fn test_component() {
+// let buf = BufReader::new(File::open("./tests/ressources/component.ics").unwrap());
 
-        for elem in parser {
-            let expected = match res_reader.next().unwrap() {
-                Ok(val) => val,
-                Err(err) => return assert!(false, err),
-            };
-
-            match elem {
-                Ok(val) => {
-                    let output = val.to_json();
-                    assert_eq!(expected, format!("{}", output));
-                }
-                Err(err) => {
-                    println!("tutu");
-                    assert_eq!(expected, format!("{}", err.description()));
-                }
-            };
-
-
-        }
-    }
-
-    #[test]
-    fn invalid_path() {
-        let path = Path::new("this is an invalid path");
-
-        match Parser::from_path(path) {
-            Ok(_) => assert!(false, "File should be invalid"),
-            Err(err) => assert_eq!(err.description(), "entity not found"),
-        }
-    }
-
-    #[test]
-    fn vcard() {
-        let in_path_vcf = Path::new("./tests/parser/vcard.vcf");
-        let out_path_json = Path::new("./tests/parser/vcard.json");
-
-        run_file(in_path_vcf, out_path_json);
-    }
-
-
-    #[test]
-    fn vcard_error() {
-        let in_path_vcf = Path::new("./tests/parser/vcard_error.vcf");
-        let out_path_json = Path::new("./tests/parser/vcard_error.json");
-
-        run_file(in_path_vcf, out_path_json);
-    }
-}
+// test_raw_line(buf);
+// assert!(false, "END")
+// }

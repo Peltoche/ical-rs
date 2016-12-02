@@ -1,9 +1,9 @@
 [package]
 name = "ical"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Peltoche <dev@halium.fr>"]
 
-description = "Ical and Vcard parser for Rust"
+description = "Ical parser for Rust"
 homepage = "https://github.com/Peltoche/ical-rs"
 repository = "https://github.com/Peltoche/ical-rs"
 keywords = ["ical", "vcard", "parser"]
@@ -11,9 +11,4 @@ readme = "README.md"
 license = "GPL-3.0"
 
 [dependencies]
-rustc-serialize = { version = "0.3", optional = true }
-
-[dev-dependencies]
-rustc-serialize = "0.3"
-
 

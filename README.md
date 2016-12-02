@@ -1,40 +1,31 @@
 
-# ical-rs 0.1.0
+# ical-rs 0.2.0
 ===============
 
 [![Build Status](https://travis-ci.org/Peltoche/rust-vcard-ical.svg?branch=master)](https://travis-ci.org/Peltoche/rust-vcard-ical)
 
-This library is under heavy development. Many features are not finished.
 
-Vcard and Ical parser for Rust. It aims to be a feature-complete parser all vcard and ical files.
-* Ical-rs strictly adheres to rfc6350.
-* Ical-rs handle Vcard version 3 and 4.
+This is a library to parse the ICalendar format defined in [RFC5545](http://tools.ietf.org/html/rfc5545), as well as
+similar formats like VCard.
+
+There are probably some issues to be taken care of, but the library should work for most cases. If you like to help out and
+would like to discuss any API changes, please [contact me](dev@halium.fr) or create an issue.
+
+The initial goal was to make a port from the [ical.js](https://github.com/mozilla-comm/ical.js) library in JavaScript and
+many code/algorithms was taken from it but in order to but more 'Rusty' a complete rewrite have been made.
 
 
-The initial goal was to make a porting of the [mozilla parser](https://github.com/mozilla-comm/ical.js) from Javascript
-to Rust. The main logic come from this codebase, but is adapted to more Rusty.
+## Installing
 
+Put this in your `Cargo.toml`:
 
-
-## Usage
-
-Put this in your `Cargo.toml`.
 ```toml
 [dependencies]
-ical-rs = "0.1.0"
-```
-
-Or, if you want [rustc-serialize](https://github.com/rust-lang-nursery/rustc-serialize) support,
-include the features like this:
-```toml
-[dependencies]
-ical-rs = { version = "0.1.0", features = ["rustc-serialize"] }
+ical = "0.2"
 ```
 
 
-Then put this in your crate root:
+## Overview
 
-```rust
-extern crate ical;
-```
+There is several ways to use Ical depending on the level of parsing you want.
 
