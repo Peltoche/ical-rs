@@ -4,14 +4,14 @@ use std::error::Error;
 use std::cell::RefCell;
 use std::fmt;
 
-use super::super::parser;
-use super::property;
+use super::super::super::parser;
+use super::super::property;
 use super::alarm;
 
 #[derive(Debug)]
 pub struct IcalEvent {
-    properties: Vec<property::Property>,
-    alarms: Vec<alarm::IcalAlarm>,
+    pub properties: Vec<property::Property>,
+    pub alarms: Vec<alarm::IcalAlarm>,
 }
 
 impl IcalEvent {
@@ -39,23 +39,15 @@ impl IcalEvent {
             match line.name.as_str() {
                 "END" => break,
                 "BEGIN" => match line.value.as_str() {
-                    "VALARM" => event.add_alarm(alarm::IcalAlarm::parse(line_parser)?),
+                    "VALARM" => event.alarms.push((alarm::IcalAlarm::parse(line_parser)?)),
                     _   => return Err(EventError::InvalidComponent(line.value)),
 
                 },
-                _ => event.add_property(property::Property::parse(line)?),
+                _ => event.properties.push((property::Property::parse(line)?)),
             };
         }
 
         Ok(event)
-    }
-
-    pub fn add_property(&mut self, property: property::Property) {
-        self.properties.push(property)
-    }
-
-    pub fn add_alarm(&mut self, alarm: alarm::IcalAlarm) {
-        self.alarms.push(alarm)
     }
 }
 

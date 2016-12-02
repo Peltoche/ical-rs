@@ -1,8 +1,7 @@
 
-mod event;
+mod component;
 mod param;
 mod property;
-mod alarm;
 
 use std::io::BufRead;
 use std::error::Error;
@@ -15,8 +14,9 @@ use super::line;
 #[derive(Debug)]
 pub struct IcalCalendar {
     properties: Vec<property::Property>,
-    events: Vec<event::IcalEvent>,
-    alarms: Vec<alarm::IcalAlarm>,
+    events: Vec<component::event::IcalEvent>,
+    alarms: Vec<component::alarm::IcalAlarm>,
+    todos: Vec<component::todo::IcalTodo>,
 }
 
 impl IcalCalendar {
@@ -25,6 +25,7 @@ impl IcalCalendar {
             properties: Vec::new(),
             events: Vec::new(),
             alarms: Vec::new(),
+            todos: Vec::new(),
         }
     }
 }
@@ -75,8 +76,9 @@ impl<B: BufRead> IcalReader<B> {
 
             if line.name == "BEGIN" {
                 match line.value.as_str() {
-                    "VEVENT" => calendar.events.push(event::IcalEvent::parse(&self.line_parser)?),
-                    "ALARM" => calendar.alarms.push(alarm::IcalAlarm::parse(&self.line_parser)?),
+                    "VEVENT" => calendar.events.push(component::event::IcalEvent::parse(&self.line_parser)?),
+                    "ALARM" => calendar.alarms.push(component::alarm::IcalAlarm::parse(&self.line_parser)?),
+                    "VTODO" => calendar.todos.push(component::todo::IcalTodo::parse(&self.line_parser)?),
                     _ => return Err(IcalError::NotImplemented),
                 };
             } else if line.name == "END" {
@@ -112,8 +114,9 @@ impl<B: BufRead> Iterator for IcalReader<B> {
 pub enum IcalError {
     Parse(parser::ParseError),
     Property(property::PropertyError),
-    Event(event::EventError),
-    Alarm(alarm::AlarmError),
+    Event(component::event::EventError),
+    Alarm(component::alarm::AlarmError),
+    Todo(component::todo::TodoError),
     EndOfFile,
     MissingCalendarHeader,
     NotImplemented,
@@ -131,6 +134,7 @@ impl Error for IcalError {
             IcalError::Property(ref err) => err.description(),
             IcalError::Event(ref err) => err.description(),
             IcalError::Alarm(ref err) => err.description(),
+            IcalError::Todo(ref err) => err.description(),
         }
     }
 
@@ -140,6 +144,7 @@ impl Error for IcalError {
             IcalError::Property(ref err) => Some(err),
             IcalError::Event(ref err) => Some(err),
             IcalError::Alarm(ref err) => Some(err),
+            IcalError::Todo(ref err) => Some(err),
             _ => None,
         }
     }
@@ -163,14 +168,20 @@ impl From<property::PropertyError> for IcalError {
     }
 }
 
-impl From<event::EventError> for IcalError {
-    fn from(err: event::EventError) -> IcalError {
+impl From<component::event::EventError> for IcalError {
+    fn from(err: component::event::EventError) -> IcalError {
         IcalError::Event(err)
     }
 }
 
-impl From<alarm::AlarmError> for IcalError {
-    fn from(err: alarm::AlarmError) -> IcalError {
+impl From<component::alarm::AlarmError> for IcalError {
+    fn from(err: component::alarm::AlarmError) -> IcalError {
         IcalError::Alarm(err)
+    }
+}
+
+impl From<component::todo::TodoError> for IcalError {
+    fn from(err: component::todo::TodoError) -> IcalError {
+        IcalError::Todo(err)
     }
 }

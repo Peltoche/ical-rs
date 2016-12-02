@@ -4,12 +4,12 @@ use std::error::Error;
 use std::cell::RefCell;
 use std::fmt;
 
-use super::super::parser;
-use super::property;
+use super::super::super::parser;
+use super::super::property;
 
 #[derive(Debug)]
 pub struct IcalAlarm {
-    properties: Vec<property::Property>,
+    pub properties: Vec<property::Property>,
 }
 
 impl IcalAlarm {
@@ -33,15 +33,11 @@ impl IcalAlarm {
 
             match line.name.as_str() {
                 "END" => break,
-                _ => alarm.add_property(property::Property::parse(line)?),
+                _ => alarm.properties.push((property::Property::parse(line)?)),
             };
         }
 
         Ok(alarm)
-    }
-
-    pub fn add_property(&mut self, property: property::Property) {
-        self.properties.push(property)
     }
 }
 
