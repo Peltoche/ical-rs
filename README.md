@@ -69,3 +69,44 @@ END:VCALENDAR          Line 5: END:VCALENDAR
 ```
 
 
+
+### LineParser
+
+Parse the unfolded line into three parts:
+
+- The name of the line attribute formated in uppercase.
+- A vector of `(key/value)` tuple for the parameters. The key is formatted in uppercase and the value is untouched.
+- The value which stay untouched.
+
+#### Example:
+
+Code:
+```rust
+extern crate ical;
+
+use std::io::BufReader;
+use std::fs::File;
+
+fn main() {
+    let buf = BufReader::new(File::open("/tmp/component.ics")
+        .unwrap());
+
+    let reader = ical::LineParser::from_reader(buf);
+
+    for line in reader {
+        println!("{:?}", line);
+    }
+
+```
+
+Imput -> Output:
+```
+BEGIN:VCALENDAR                           Ok(LineParsed { name: "BEGIN", params: None, value: "VCALENDAR" }
+ATTENDEE;CN=FooBar:mailto:foo3@bar    ->  Ok(LineParsed { name: "ATTENDEE", params: Some([("CN", "FooBar")]), value: "mailto:foo3@bar" })
+END:VCALENDAR                             Ok(LineParsed { name: "END", params: None, value: "VCALENDAR" })
+```
+
+)
+
+
+
