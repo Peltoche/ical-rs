@@ -62,9 +62,9 @@ Input -> Output:
 ```
 BEGIN:VCALENDAR        Line 0: BEGIN:VCALENDAR
 BEGIN:VEVENT           Line 1: BEGIN:VEVENT
-SUMMARY:foo \\n   ->   Line 3: SUMMARY:foo \\nbar
- bar                   Line 4: END:VEVENT
-END:VEVENT
+SUMMARY:foo and   ->   Line 3: SUMMARY:foo andbar
+ bar
+END:VEVENT             Line 4: END:VEVENT
 END:VCALENDAR          Line 5: END:VCALENDAR
 ```
 
