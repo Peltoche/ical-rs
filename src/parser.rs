@@ -63,6 +63,12 @@ impl<B: BufRead> LineParser<B> {
         LineParser { line_reader: line_reader }
     }
 
+    pub fn from_reader(reader: B) -> LineParser<B> {
+        let line_reader = line::LineReader::new(reader);
+
+        LineParser { line_reader: line_reader }
+    }
+
 
     fn parse(&self, line: line::Line) -> Result<LineParsed, ParseError> {
         let mut property = LineParsed::new();
