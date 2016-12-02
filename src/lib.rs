@@ -10,3 +10,4 @@ pub const PARAM_DELIMITER: char = ';';
 pub const PARAM_NAME_DELIMITER: char = '=';
 
 pub use ical::IcalReader;
+pub use line::LineReader;
