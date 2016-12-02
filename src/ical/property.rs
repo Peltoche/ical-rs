@@ -5,7 +5,7 @@ use std::fmt;
 use super::super::parser;
 use super::param;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Property {
     name: String,
     params: Vec<param::IcalParam>,

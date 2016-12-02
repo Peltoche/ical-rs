@@ -8,27 +8,8 @@ use std::error::Error;
 use std::cell::RefCell;
 use std::fmt;
 
-use super::parser;
-use super::line;
-
-#[derive(Debug)]
-pub struct IcalCalendar {
-    properties: Vec<property::Property>,
-    events: Vec<component::event::IcalEvent>,
-    alarms: Vec<component::alarm::IcalAlarm>,
-    todos: Vec<component::todo::IcalTodo>,
-}
-
-impl IcalCalendar {
-    pub fn new() -> IcalCalendar {
-        IcalCalendar {
-            properties: Vec::new(),
-            events: Vec::new(),
-            alarms: Vec::new(),
-            todos: Vec::new(),
-        }
-    }
-}
+use super::{parser, line};
+use self::component::{Component, IcalCalendar};
 
 /// Reader returning Ical object from a `BufRead`.
 pub struct IcalReader<B> {
@@ -56,40 +37,6 @@ impl<B: BufRead> IcalReader<B> {
 
         Ok(Some(()))
     }
-
-    fn read_body(&mut self) -> Result<IcalCalendar, IcalError> {
-        let mut calendar = IcalCalendar::new();
-
-        loop {
-            let line: parser::LineParsed;
-
-            {
-                line = match self.line_parser.borrow_mut().next() {
-                    Some(val) => val,
-                    None => return Err(IcalError::NotComplete),
-                }?;
-
-                if line.name == "END" && line.value == "VCALENDAR" {
-                    break;
-                }
-            }
-
-            if line.name == "BEGIN" {
-                match line.value.as_str() {
-                    "VEVENT" => calendar.events.push(component::event::IcalEvent::parse(&self.line_parser)?),
-                    "ALARM" => calendar.alarms.push(component::alarm::IcalAlarm::parse(&self.line_parser)?),
-                    "VTODO" => calendar.todos.push(component::todo::IcalTodo::parse(&self.line_parser)?),
-                    _ => return Err(IcalError::NotImplemented),
-                };
-            } else if line.name == "END" {
-                break;
-            } else {
-                calendar.properties.push(property::Property::parse(line)?);
-            }
-        }
-
-        Ok(calendar)
-    }
 }
 
 impl<B: BufRead> Iterator for IcalReader<B> {
@@ -106,7 +53,13 @@ impl<B: BufRead> Iterator for IcalReader<B> {
         };
 
 
-        Some(self.read_body())
+        let mut calendar = IcalCalendar::new();
+        let result = match calendar.parse(&self.line_parser) {
+            Ok(_) => Ok(calendar),
+            Err(err) => Err(err),
+        };
+
+        Some(result)
     }
 }
 
@@ -114,13 +67,11 @@ impl<B: BufRead> Iterator for IcalReader<B> {
 pub enum IcalError {
     Parse(parser::ParseError),
     Property(property::PropertyError),
-    Event(component::event::EventError),
-    Alarm(component::alarm::AlarmError),
-    Todo(component::todo::TodoError),
     EndOfFile,
     MissingCalendarHeader,
     NotImplemented,
     NotComplete,
+    InvalidComponent(String),
 }
 
 impl Error for IcalError {
@@ -130,11 +81,9 @@ impl Error for IcalError {
             IcalError::EndOfFile => "End of file.",
             IcalError::NotImplemented => "Element parsing not implemented yet.",
             IcalError::NotComplete => "Calendar component is not complete.",
+            IcalError::InvalidComponent(_) => "Contains an invalid component.",
             IcalError::Parse(ref err) => err.description(),
             IcalError::Property(ref err) => err.description(),
-            IcalError::Event(ref err) => err.description(),
-            IcalError::Alarm(ref err) => err.description(),
-            IcalError::Todo(ref err) => err.description(),
         }
     }
 
@@ -142,9 +91,6 @@ impl Error for IcalError {
         match *self {
             IcalError::Parse(ref err) => Some(err),
             IcalError::Property(ref err) => Some(err),
-            IcalError::Event(ref err) => Some(err),
-            IcalError::Alarm(ref err) => Some(err),
-            IcalError::Todo(ref err) => Some(err),
             _ => None,
         }
     }
@@ -165,23 +111,5 @@ impl From<parser::ParseError> for IcalError {
 impl From<property::PropertyError> for IcalError {
     fn from(err: property::PropertyError) -> IcalError {
         IcalError::Property(err)
-    }
-}
-
-impl From<component::event::EventError> for IcalError {
-    fn from(err: component::event::EventError) -> IcalError {
-        IcalError::Event(err)
-    }
-}
-
-impl From<component::alarm::AlarmError> for IcalError {
-    fn from(err: component::alarm::AlarmError) -> IcalError {
-        IcalError::Alarm(err)
-    }
-}
-
-impl From<component::todo::TodoError> for IcalError {
-    fn from(err: component::todo::TodoError) -> IcalError {
-        IcalError::Todo(err)
     }
 }

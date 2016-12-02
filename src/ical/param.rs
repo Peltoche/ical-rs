@@ -2,7 +2,7 @@
 use std::error::Error;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IcalParam {
     name: ParamName,
     values: Vec<String>,
@@ -22,7 +22,7 @@ impl IcalParam {
 }
 
 /// Parameter name.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ParamName {
     AltRep,
     Cn,
