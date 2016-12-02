@@ -5,7 +5,7 @@
 [![Build Status](https://travis-ci.org/Peltoche/rust-vcard-ical.svg?branch=master)](https://travis-ci.org/Peltoche/rust-vcard-ical)
 
 
-This is a library to parse the ICalendar format defined in [RFC5545](http://tools.ietf.org/html/rfc5545), as well as
+This is a library to parse the ICalendar format defined in [RFC5545](http://tools.ietf.org/html/rfc5545), as well asl
 similar formats like VCard.
 
 There are probably some issues to be taken care of, but the library should work for most cases. If you like to help out and
@@ -28,4 +28,44 @@ ical = "0.2"
 ## Overview
 
 There is several ways to use Ical depending on the level of parsing you want.
+
+
+### LineReader
+
+This is a very low level parser. It only unfold the lines.
+
+Individual lines within vCard/ICal are delimited by the [RFC5322](http://tools.ietf.org/html/rfc5322) line break.
+
+#### Example:
+
+Code:
+```rust
+extern crate ical;
+
+use std::io::BufReader;
+use std::fs::File;
+
+fn main() {
+    let buf = BufReader::new(File::open("/tmp/component.ics")
+        .unwrap());
+
+    let reader = ical::LineReader::new(buf);
+
+    for line in reader {
+        println!("{}", line);
+    }
+}
+```
+
+Input -> Output:
+
+```
+BEGIN:VCALENDAR        Line 0: BEGIN:VCALENDAR
+BEGIN:VEVENT           Line 1: BEGIN:VEVENT
+SUMMARY:foo \\n   ->   Line 3: SUMMARY:foo \\nbar
+ bar                   Line 4: END:VEVENT
+END:VEVENT
+END:VCALENDAR          Line 5: END:VCALENDAR
+```
+
 
