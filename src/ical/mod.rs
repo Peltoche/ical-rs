@@ -12,16 +12,16 @@ use super::{parser, line};
 use self::component::{Component, IcalCalendar};
 
 /// Reader returning Ical object from a `BufRead`.
-pub struct IcalReader<B> {
+pub struct IcalParser<B> {
     line_parser: RefCell<parser::LineParser<B>>,
 }
 
-impl<B: BufRead> IcalReader<B> {
-    pub fn new(reader: B) -> IcalReader<B> {
+impl<B: BufRead> IcalParser<B> {
+    pub fn new(reader: B) -> IcalParser<B> {
         let line_reader = line::LineReader::new(reader);
         let line_parser = parser::LineParser::new(line_reader);
 
-        IcalReader { line_parser: RefCell::new(line_parser) }
+        IcalParser { line_parser: RefCell::new(line_parser) }
     }
 
     /// Read the next line and check if it's a valid VCALENDAR start.
@@ -39,7 +39,7 @@ impl<B: BufRead> IcalReader<B> {
     }
 }
 
-impl<B: BufRead> Iterator for IcalReader<B> {
+impl<B: BufRead> Iterator for IcalParser<B> {
     type Item = Result<IcalCalendar, IcalError>;
 
     fn next(&mut self) -> Option<Result<IcalCalendar, IcalError>> {
