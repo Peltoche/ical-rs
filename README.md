@@ -21,7 +21,7 @@ Put this in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ical = "0.2"
+ical = "0.2.0"
 ```
 
 
@@ -64,7 +64,18 @@ IcalCalendar {
   properties: [],
   events: [
     IcalEvent {
-      properties: [ Property { ... } ],
+      properties: [
+        Property {
+          name: "ATTENDEE",
+          params: [
+            IcalParam {
+              name: Cn,
+              values: ["FooBar"]
+            }
+          ],
+          value: "mailto:foo3@bar"
+        }
+      ],
       alarms: [
         IcalAlarm { properties: [ Property { ... } ] },
         ...
