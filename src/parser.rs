@@ -16,7 +16,7 @@ use ::line;
 #[derive(Debug, Clone)]
 pub struct LineParsed {
     pub name: String,
-    pub params: Option<Vec<(String, String)>>,
+    pub params: Option<Vec<(String, Vec<String>)>>,
     pub value: String,
 }
 
@@ -27,18 +27,6 @@ impl LineParsed {
             params: None,
             value: String::new(),
         }
-    }
-
-    pub fn set_name(&mut self, name: &str) {
-        self.name = name.to_uppercase();
-    }
-
-    pub fn set_value(&mut self, value: &str) {
-        self.value = value.to_string();
-    }
-
-    pub fn set_parameters(&mut self, params: Option<Vec<(String, String)>>) {
-        self.params = params;
     }
 }
 
@@ -74,18 +62,17 @@ impl<B: BufRead> LineParser<B> {
         let mut property = LineParsed::new();
 
         // Parse name.
-        let name = self.parse_name(line.as_str())
+        property.name = self.parse_name(line.as_str())
+            .and_then(|name| Some(name.to_string()))
             .ok_or(ParseError::MissingName)?;
-        property.set_name(name);
 
         // Parse value
-        let value = self.parse_value(line.as_str())
+        property.value = self.parse_value(line.as_str())
+            .and_then(|value| Some(value.to_string()))
             .ok_or(ParseError::MissingValue)?;
-        property.set_value(value);
 
         // Parse parameters.
-        let parameters = self.parse_parameters(line.as_str())?;
-        property.set_parameters(parameters);
+        property.params = self.parse_parameters(line.as_str())?;
 
         Ok(property)
 
@@ -125,51 +112,78 @@ impl<B: BufRead> LineParser<B> {
     }
 
     /// Return the parameters from the given `Line`.
-    fn parse_parameters(&self, line: &str) -> Result<Option<Vec<(String, String)>>, ParseError> {
-        let params_str;
+    fn parse_parameters(&self, line: &str) -> Result<Option<Vec<(String, Vec<String>)>>, ParseError> {
         let mut param_list = Vec::new();
-
-        let end_param_index = line.find(::VALUE_DELIMITER)
-            .ok_or(ParseError::MissingValueDelimiter)?;
+        let mut params_str;
 
         let start_param_index = match line.find(::PARAM_DELIMITER) {
-            Some(val) => val + 1, // Jump the PARAM_DELIMITER sign.
+            Some(val) => val,
             None => return Ok(None), // there is no params.
         };
 
-        // The first PARAM_DELIMITER is after the VALUE_DELIMITER so it's in the
-        // value section and not a PARAM_DELIMITER.
-        if start_param_index > end_param_index {
-            return Ok(None);
-        }
+        // Remove the attribue name.
+        params_str = line.split_at(start_param_index).1;
 
-        if start_param_index > line.len() {
-            // There is not parameters after PARAM_DELIMITER.
-            return Err(ParseError::InvalidParamFormat);
-        }
+        while params_str.starts_with(::PARAM_DELIMITER) {
+            let mut elements;
+            let name;
 
-        unsafe {
-            params_str = line.slice_unchecked(start_param_index, end_param_index);
-        }
+            params_str = params_str.trim_left_matches(::PARAM_DELIMITER);
 
-        let key_value_list: Vec<&str> = params_str.split(::PARAM_DELIMITER).collect();
+            // Split the first name and the rest of the line
+            elements = params_str.splitn(2, ::PARAM_NAME_DELIMITER);
+            name = elements.next().ok_or(ParseError::InvalidParamFormat)?;
+            params_str = elements.next().ok_or(ParseError::InvalidParamFormat)?;
 
-        for key_value in key_value_list {
+            let (values, param_tmp) = parse_param_value(vec![], &mut params_str)?;
+            params_str = param_tmp;
 
-            let mut elem_list = key_value.split(::PARAM_NAME_DELIMITER);
+            // println!("name: {} / value: {:?} /  params: {}", name, values , params_str);
+            param_list.push((name.to_uppercase(), values));
 
-            let key = elem_list.next()
-                .and_then(|key| Some(key.to_uppercase()))
-                .ok_or(ParseError::InvalidParamFormat)?;
+        };
 
-            let value = elem_list.next()
-                .and_then(|value| Some(value.to_string()))
-                .ok_or(ParseError::InvalidParamFormat)?;
-
-            param_list.push((key, value));
-
-        }
+        println!("params: {:?}", param_list);
         Ok(Some((param_list)))
+    }
+}
+
+fn parse_param_value<'a>(mut values: Vec<String>, params_str: &'a str) -> Result<(Vec<String>, &'a str), ParseError> {
+    let new_params_str;
+
+    if params_str.starts_with('"') {
+        // This is a dquoted value. (NAME:Foo="Bar":value)
+        let mut elements = params_str.splitn(3, '"').skip(1);
+        values.push(elements.next()
+                    .and_then(|value| Some(value.to_string()))
+                    .ok_or(ParseError::InvalidParamFormat)?);
+        new_params_str = elements.next()
+            .ok_or(ParseError::InvalidParamFormat)?;
+    } else {
+        // This is a 'raw' value. (NAME;Foo=Bar:value)
+
+        // Try to find the next param separator.
+        let param_delimiter = params_str.find(::PARAM_DELIMITER).unwrap_or(usize::max_value());
+        let value_delimiter = params_str.find(::VALUE_DELIMITER).unwrap_or(usize::max_value());
+        let end_param_value = {
+            if param_delimiter < value_delimiter {
+                Ok(param_delimiter)
+            } else if value_delimiter != usize::max_value() {
+                Ok(value_delimiter)
+            } else {
+                Err(ParseError::InvalidParamFormat)
+            }
+        }?;
+
+        let elements = params_str.split_at(end_param_value);
+        values.push(elements.0.to_string());
+        new_params_str = elements.1;
+    }
+
+    if new_params_str.starts_with(::PARAM_VALUE_DELIMITER) {
+        parse_param_value(values, new_params_str.trim_left_matches(::PARAM_VALUE_DELIMITER))
+    } else {
+        Ok((values, new_params_str))
     }
 }
 
