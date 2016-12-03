@@ -14,6 +14,7 @@ would like to discuss any API changes, please [contact me](dev@halium.fr) or cre
 The initial goal was to make a port from the [ical.js](https://github.com/mozilla-comm/ical.js) library in JavaScript and
 many code/algorithms was taken from it but in order to but more 'Rusty' a complete rewrite have been made.
 
+## [Documentation](https://peltoche.github.io/ical-rs/ical/)
 
 ## Installing
 
