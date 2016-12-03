@@ -116,10 +116,15 @@ impl<B: BufRead> LineParser<B> {
         let mut param_list = Vec::new();
         let mut params_str;
 
+        let start_value_index = line.find(::VALUE_DELIMITER).unwrap_or(usize::max_value());
         let start_param_index = match line.find(::PARAM_DELIMITER) {
             Some(val) => val,
             None => return Ok(None), // there is no params.
         };
+
+        if start_value_index < start_param_index {
+            return Ok(None);
+        }
 
         // Remove the attribue name.
         params_str = line.split_at(start_param_index).1;
@@ -138,12 +143,10 @@ impl<B: BufRead> LineParser<B> {
             let (values, param_tmp) = parse_param_value(vec![], &mut params_str)?;
             params_str = param_tmp;
 
-            // println!("name: {} / value: {:?} /  params: {}", name, values , params_str);
             param_list.push((name.to_uppercase(), values));
 
         };
 
-        println!("params: {:?}", param_list);
         Ok(Some((param_list)))
     }
 }

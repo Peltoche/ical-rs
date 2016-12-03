@@ -96,6 +96,7 @@ impl<B: BufRead> LineReader<B> {
     }
 }
 
+/// Could Panic
 impl<B: BufRead> LineRead for LineReader<B> {
     fn next_line(&mut self) -> Option<Line> {
         let mut next_line = String::new();
@@ -107,18 +108,23 @@ impl<B: BufRead> LineRead for LineReader<B> {
             self.number += 1;
         } else {
             // This is the first iteration, next_start isn't been filled yet.
-            if self.reader.by_ref().read_line(&mut next_line).is_err() {
-                return None;
-            }
+            for line in self.reader.by_ref().lines() {
+                let line = line.unwrap();
+                self.number += 1;
 
-            next_line = next_line.trim_right().to_string();
+                if !line.is_empty() {
+                    next_line = line.trim_right().to_string();
+                    break;
+                }
+            }
         }
 
         for line in self.reader.by_ref().lines() {
             let mut line = line.unwrap();
 
-
-            if line.is_empty() || line.starts_with(" ") || line.starts_with("  ") {
+            if line.is_empty() {
+                self.number += 1;
+            } else if line.starts_with(" ") || line.starts_with("  ") {
                 // This is a multi-lines attribute.
 
                 // Remove the ' ' charactere and join with the current line.

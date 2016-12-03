@@ -1,50 +1,43 @@
-// extern crate ical;
+extern crate ical;
 
-// use std::io::BufReader;
-// use std::fs::File;
-
-
-// fn test_raw_line(buf: BufReader<File>) {
-    // let reader = ical::IcalParser::new(buf);
-
-    // for res in reader {
-        // match res {
-            // Ok(line_parsed) => println!("{:?}", line_parsed),
-            // Err(err) => println!("{}", err),
-        // };
-    // }
-// }
+use std::io::BufReader;
+use std::io::BufRead;
+use std::fs::File;
 
 
-// #[test]
-// fn test_mltiple_root_components() {
-    // let buf = BufReader::new(File::open("./tests/ressources/multiple_root_components.ics")
-                             // .unwrap());
 
-    // test_raw_line(buf);
-    // assert!(false, "END")
-// }
+#[test]
+fn test_ical_line_reader() {
+    let input = BufReader::new(File::open("./tests/ressources/ical_input.ics")
+                             .unwrap());
 
-// #[test]
-// fn test_rfc() {
-    // let buf = BufReader::new(File::open("./tests/ressources/rfc.ics").unwrap());
+    let mut valids = BufReader::new(File::open("./tests/ressources/ical_line_reader.res")
+                             .unwrap()).lines();
 
-    // test_raw_line(buf);
-    // assert!(false, "END")
-// }
 
-// #[test]
-// fn test_component() {
-    // let buf = BufReader::new(File::open("./tests/ressources/component.ics").unwrap());
+    let reader = ical::LineReader::new(input);
 
-    // test_raw_line(buf);
-    // assert!(false, "END")
-// }
+    for line in reader {
+        let output = format!("{:?}", line);
 
-// #[test]
-// fn test_property_params() {
-    // let buf = BufReader::new(File::open("./tests/ressources/property_params.ics").unwrap());
+        assert_eq!(output, valids.next().unwrap().unwrap());
+    }
+}
 
-    // test_raw_line(buf);
-    // assert!(false, "END")
-// }
+#[test]
+fn test_ical_line_parser() {
+    let input = BufReader::new(File::open("./tests/ressources/ical_input.ics")
+                             .unwrap());
+
+    let mut valids = BufReader::new(File::open("./tests/ressources/ical_line_parser.res")
+                             .unwrap()).lines();
+
+
+    let reader = ical::LineParser::from_reader(input);
+
+    for line in reader {
+        let output = format!("{:?}", line);
+
+        assert_eq!(output, valids.next().unwrap().unwrap());
+    }
+}
