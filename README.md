@@ -27,14 +27,20 @@ ical = "0.2.0"
 
 ## Overview
 
-There is several ways to use Ical depending on the level of parsing you want.
+There is several ways to use Ical depending on the level of parsing you want. Some new wrapper/formater could appeare in
+the next releases.
+
+#### Warning
+  The parsers (LineParser / IcalParser) only parse the content and set to uppercase the case-insensitive fields. No checks
+  are made on the fields validity.
 
 
 ### IcalParser
 
-Parse the file into Ical components. Each component contains other sub-components or properties.
+Wrap the result of the LineParser into components.
 
-A property is juste an alias on LineParsed.
+Each component can contains properties (ie: LineParsed) or sub-components.
+
 
 Code:
 ```rust
@@ -79,11 +85,11 @@ IcalCalendar {
 
 ### LineParser
 
-Parse the unfolded line into three parts:
+Parse the result of LineReader into three parts:
 
 - The name of the line attribute formated in uppercase.
 - A vector of `(key/value)` tuple for the parameters. The key is formatted in uppercase and the value is untouched.
-- The value which stay untouched.
+- The value stay untouched.
 
 #### Example:
 
@@ -108,7 +114,7 @@ fn main() {
 
 Input -> Output:
 ```
-BEGIN:VCALENDAR                           Ok(LineParsed { name: "BEGIN", params: None, value: "VCALENDAR" })
+begin:VCALENDAR                           Ok(LineParsed { name: "BEGIN", params: None, value: "VCALENDAR" })
 ATTENDEE;cn=FooBar:mailto:foo3@bar    ->  Ok(LineParsed { name: "ATTENDEE", params: Some([("CN", "FooBar")]), value: "mailto:foo3@bar" })
 END:VCALENDAR                             Ok(LineParsed { name: "END", params: None, value: "VCALENDAR" })
 ```
