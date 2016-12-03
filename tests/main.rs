@@ -5,7 +5,7 @@
 
 
 // fn test_raw_line(buf: BufReader<File>) {
-// let reader = ical::IcalReader::new(buf);
+// let reader = ical::IcalParser::new(buf);
 
 // for res in reader {
 // match res {

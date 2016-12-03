@@ -1,7 +1,5 @@
 
 mod component;
-mod param;
-mod property;
 
 use std::io::BufRead;
 use std::error::Error;
@@ -66,7 +64,6 @@ impl<B: BufRead> Iterator for IcalParser<B> {
 #[derive(Debug)]
 pub enum IcalError {
     Parse(parser::ParseError),
-    Property(property::PropertyError),
     EndOfFile,
     MissingCalendarHeader,
     NotImplemented,
@@ -83,14 +80,12 @@ impl Error for IcalError {
             IcalError::NotComplete => "Calendar component is not complete.",
             IcalError::InvalidComponent(_) => "Contains an invalid component.",
             IcalError::Parse(ref err) => err.description(),
-            IcalError::Property(ref err) => err.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
         match *self {
             IcalError::Parse(ref err) => Some(err),
-            IcalError::Property(ref err) => Some(err),
             _ => None,
         }
     }
@@ -105,11 +100,5 @@ impl fmt::Display for IcalError {
 impl From<parser::ParseError> for IcalError {
     fn from(err: parser::ParseError) -> IcalError {
         IcalError::Parse(err)
-    }
-}
-
-impl From<property::PropertyError> for IcalError {
-    fn from(err: property::PropertyError) -> IcalError {
-        IcalError::Property(err)
     }
 }

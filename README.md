@@ -34,10 +34,7 @@ There is several ways to use Ical depending on the level of parsing you want.
 
 Parse the file into Ical components. Each component contains other sub-components or properties.
 
-A property contains:
-- A raw name in uppercase
-- A raw value.
-- A struct containing vector of formated  parameters.
+A property is juste an alias on LineParsed.
 
 Code:
 ```rust
@@ -64,21 +61,11 @@ IcalCalendar {
   properties: [],
   events: [
     IcalEvent {
-      properties: [
-        Property {
-          name: "ATTENDEE",
-          params: [
-            IcalParam {
-              name: Cn,
-              values: ["FooBar"]
-            }
-          ],
-          value: "mailto:foo3@bar"
-        }
-      ],
+      properties: [ LineParsed { ... }, ... ],
       alarms: [
-        IcalAlarm { properties: [ Property { ... } ] },
-        ...
+        IcalAlarm {
+          properties: [ LineParsed { ... } ]
+        }
       ]
     }
   ],

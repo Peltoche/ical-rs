@@ -2,23 +2,23 @@
 use std::io::BufRead;
 use std::cell::RefCell;
 
-use super::super::parser;
-use super::property::Property;
+use super::super::parser::{LineParsed, LineParser};
 use super::IcalError;
+
 
 pub trait Component {
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
-                                     line_parser: &RefCell<parser::LineParser<B>>)
+                                     line_parser: &RefCell<LineParser<B>>)
                                      -> Result<(), IcalError>;
-    fn add_property(&mut self, property: Property);
+    fn add_property(&mut self, property: LineParsed);
 
     fn parse<B: BufRead>(&mut self,
-                         line_parser: &RefCell<parser::LineParser<B>>)
+                         line_parser: &RefCell<LineParser<B>>)
                          -> Result<(), IcalError> {
 
         loop {
-            let line: parser::LineParsed;
+            let line: LineParsed;
 
             {
                 line = match line_parser.borrow_mut().next() {
@@ -30,7 +30,7 @@ pub trait Component {
             match line.name.as_str() {
                 "END" => break,
                 "BEGIN" => self.add_sub_component(line.value.as_str(), line_parser)?,
-                _ => self.add_property((Property::parse(line)?)),
+                _ => self.add_property(line),
             };
         }
 
@@ -44,7 +44,7 @@ pub trait Component {
 /// //////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone)]
 pub struct IcalCalendar {
-    pub properties: Vec<Property>,
+    pub properties: Vec<LineParsed>,
     pub events: Vec<IcalEvent>,
     pub alarms: Vec<IcalAlarm>,
     pub todos: Vec<IcalTodo>,
@@ -68,13 +68,13 @@ impl IcalCalendar {
 }
 
 impl Component for IcalCalendar {
-    fn add_property(&mut self, property: Property) {
+    fn add_property(&mut self, property: LineParsed) {
         self.properties.push(property);
     }
 
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
-                                     line_parser: &RefCell<parser::LineParser<B>>)
+                                     line_parser: &RefCell<LineParser<B>>)
                                      -> Result<(), IcalError> {
 
         match value {
@@ -118,7 +118,7 @@ impl Component for IcalCalendar {
 
 #[derive(Debug, Clone)]
 pub struct IcalAlarm {
-    pub properties: Vec<Property>,
+    pub properties: Vec<LineParsed>,
 }
 
 
@@ -129,13 +129,13 @@ impl IcalAlarm {
 }
 
 impl Component for IcalAlarm {
-    fn add_property(&mut self, property: Property) {
+    fn add_property(&mut self, property: LineParsed) {
         self.properties.push(property);
     }
 
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
-                                     _: &RefCell<parser::LineParser<B>>)
+                                     _: &RefCell<LineParser<B>>)
                                      -> Result<(), IcalError> {
         return Err(IcalError::InvalidComponent(value.to_string()));
     }
@@ -144,7 +144,7 @@ impl Component for IcalAlarm {
 
 #[derive(Debug, Clone)]
 pub struct IcalEvent {
-    pub properties: Vec<Property>,
+    pub properties: Vec<LineParsed>,
     pub alarms: Vec<IcalAlarm>,
 }
 
@@ -158,13 +158,13 @@ impl IcalEvent {
 }
 
 impl Component for IcalEvent {
-    fn add_property(&mut self, property: Property) {
+    fn add_property(&mut self, property: LineParsed) {
         self.properties.push(property);
     }
 
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
-                                     line_parser: &RefCell<parser::LineParser<B>>)
+                                     line_parser: &RefCell<LineParser<B>>)
                                      -> Result<(), IcalError> {
 
         match value {
@@ -183,7 +183,7 @@ impl Component for IcalEvent {
 
 #[derive(Debug, Clone)]
 pub struct IcalJournal {
-    pub properties: Vec<Property>,
+    pub properties: Vec<LineParsed>,
 }
 
 
@@ -194,13 +194,13 @@ impl IcalJournal {
 }
 
 impl Component for IcalJournal {
-    fn add_property(&mut self, property: Property) {
+    fn add_property(&mut self, property: LineParsed) {
         self.properties.push(property);
     }
 
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
-                                     _: &RefCell<parser::LineParser<B>>)
+                                     _: &RefCell<LineParser<B>>)
                                      -> Result<(), IcalError> {
         return Err(IcalError::InvalidComponent(value.to_string()));
     }
@@ -209,7 +209,7 @@ impl Component for IcalJournal {
 
 #[derive(Debug, Clone)]
 pub struct IcalTodo {
-    pub properties: Vec<Property>,
+    pub properties: Vec<LineParsed>,
     pub alarms: Vec<IcalAlarm>,
 }
 
@@ -223,13 +223,13 @@ impl IcalTodo {
 }
 
 impl Component for IcalTodo {
-    fn add_property(&mut self, property: Property) {
+    fn add_property(&mut self, property: LineParsed) {
         self.properties.push(property);
     }
 
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
-                                     line_parser: &RefCell<parser::LineParser<B>>)
+                                     line_parser: &RefCell<LineParser<B>>)
                                      -> Result<(), IcalError> {
 
         match value {
@@ -249,7 +249,7 @@ impl Component for IcalTodo {
 
 #[derive(Debug, Clone)]
 pub struct IcalTimeZone {
-    pub properties: Vec<Property>,
+    pub properties: Vec<LineParsed>,
 }
 
 impl IcalTimeZone {
@@ -259,13 +259,13 @@ impl IcalTimeZone {
 }
 
 impl Component for IcalTimeZone {
-    fn add_property(&mut self, property: Property) {
+    fn add_property(&mut self, property: LineParsed) {
         self.properties.push(property);
     }
 
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
-                                     _: &RefCell<parser::LineParser<B>>)
+                                     _: &RefCell<LineParser<B>>)
                                      -> Result<(), IcalError> {
         return Err(IcalError::InvalidComponent(value.to_string()));
     }
@@ -274,7 +274,7 @@ impl Component for IcalTimeZone {
 
 #[derive(Debug, Clone)]
 pub struct IcalFreeBusy {
-    pub properties: Vec<Property>,
+    pub properties: Vec<LineParsed>,
 }
 
 impl IcalFreeBusy {
@@ -284,13 +284,13 @@ impl IcalFreeBusy {
 }
 
 impl Component for IcalFreeBusy {
-    fn add_property(&mut self, property: Property) {
+    fn add_property(&mut self, property: LineParsed) {
         self.properties.push(property);
     }
 
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
-                                     _: &RefCell<parser::LineParser<B>>)
+                                     _: &RefCell<LineParser<B>>)
                                      -> Result<(), IcalError> {
         return Err(IcalError::InvalidComponent(value.to_string()));
     }
