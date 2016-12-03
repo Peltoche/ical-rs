@@ -1,7 +1,7 @@
 
-mod line;
-mod parser;
-mod ical;
+pub mod line;
+pub mod parser;
+pub mod ical;
 
 
 pub const PARAM_VALUE_DELIMITER: char = ',';

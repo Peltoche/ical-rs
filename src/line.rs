@@ -56,10 +56,6 @@ impl Line {
         }
     }
 
-    // pub fn get_number(&mut self) -> usize {
-    // self.number
-    // }
-
     pub fn as_str(&self) -> &str {
         self.inner.as_str()
     }
