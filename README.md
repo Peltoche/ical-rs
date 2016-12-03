@@ -2,7 +2,7 @@
 # ical-rs 0.2.0
 ===============
 
-[![Build Status](https://travis-ci.org/Peltoche/rust-vcard-ical.svg?branch=master)](https://travis-ci.org/Peltoche/rust-vcard-ical)
+[![Build Status](https://travis-ci.org/Peltoche/ical-rs.svg?branch=master)](https://travis-ci.org/Peltoche/ical-rs)
 
 
 This is a library to parse the ICalendar format defined in [RFC5545](http://tools.ietf.org/html/rfc5545), as well asl
