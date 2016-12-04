@@ -104,6 +104,8 @@ Parse the result of LineReader into three parts:
 - A vector of `(key/value)` tuple for the parameters. The key is formatted in uppercase and the value is untouched.
 - The value stay untouched.
 
+It work for both the Vcard and Ical format.
+
 #### Example:
 
 Cargo.toml:
@@ -142,9 +144,9 @@ END:VCALENDAR                             Ok(LineParsed { name: "END", params: N
 
 ### LineReader
 
-This is a very low level parser. It only unfold the lines.
+This is a very low level parser. It clean the empty lines and unfold them.
 
-Individual lines within vCard/ICal are delimited by the [RFC5322](http://tools.ietf.org/html/rfc5322) line break.
+It work for both the Vcard and Ical format.
 
 #### Example:
 
