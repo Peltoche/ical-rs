@@ -2,46 +2,10 @@
 use std::io::BufRead;
 use std::cell::RefCell;
 
-use super::super::parser::{LineParsed, LineParser};
-use super::IcalError;
+use parser::{Component, ParseError};
+use line::parser::{LineParsed, LineParser};
 
 
-pub trait Component {
-    fn add_sub_component<B: BufRead>(&mut self,
-                                     value: &str,
-                                     line_parser: &RefCell<LineParser<B>>)
-                                     -> Result<(), IcalError>;
-    fn add_property(&mut self, property: LineParsed);
-
-    fn parse<B: BufRead>(&mut self,
-                         line_parser: &RefCell<LineParser<B>>)
-                         -> Result<(), IcalError> {
-
-        loop {
-            let line: LineParsed;
-
-            {
-                line = match line_parser.borrow_mut().next() {
-                    Some(val) => val,
-                    None => return Err(IcalError::NotComplete),
-                }?;
-            }
-
-            match line.name.as_str() {
-                "END" => break,
-                "BEGIN" => self.add_sub_component(line.value.as_str(), line_parser)?,
-                _ => self.add_property(line),
-            };
-        }
-
-        Ok(())
-    }
-}
-
-
-/// //////////////////////////////////////////////////////////////////
-/// Components
-/// //////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone)]
 pub struct IcalCalendar {
     pub properties: Vec<LineParsed>,
@@ -75,7 +39,7 @@ impl Component for IcalCalendar {
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
                                      line_parser: &RefCell<LineParser<B>>)
-                                     -> Result<(), IcalError> {
+                                     -> Result<(), ParseError> {
 
         match value {
             "VALARM" => {
@@ -108,7 +72,7 @@ impl Component for IcalCalendar {
                 timezone.parse(line_parser)?;
                 self.timezones.push(timezone);
             }
-            _ => return Err(IcalError::InvalidComponent(value.to_string())),
+            _ => return Err(ParseError::InvalidComponent(value.to_string())),
 
         };
 
@@ -136,8 +100,8 @@ impl Component for IcalAlarm {
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
                                      _: &RefCell<LineParser<B>>)
-                                     -> Result<(), IcalError> {
-        return Err(IcalError::InvalidComponent(value.to_string()));
+                                     -> Result<(), ParseError> {
+        return Err(ParseError::InvalidComponent(value.to_string()));
     }
 }
 
@@ -165,7 +129,7 @@ impl Component for IcalEvent {
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
                                      line_parser: &RefCell<LineParser<B>>)
-                                     -> Result<(), IcalError> {
+                                     -> Result<(), ParseError> {
 
         match value {
             "VALARM" => {
@@ -173,7 +137,7 @@ impl Component for IcalEvent {
                 alarm.parse(line_parser)?;
                 self.alarms.push(alarm);
             }
-            _ => return Err(IcalError::InvalidComponent(value.to_string())),
+            _ => return Err(ParseError::InvalidComponent(value.to_string())),
         };
 
         Ok(())
@@ -201,8 +165,8 @@ impl Component for IcalJournal {
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
                                      _: &RefCell<LineParser<B>>)
-                                     -> Result<(), IcalError> {
-        return Err(IcalError::InvalidComponent(value.to_string()));
+                                     -> Result<(), ParseError> {
+        return Err(ParseError::InvalidComponent(value.to_string()));
     }
 }
 
@@ -230,7 +194,7 @@ impl Component for IcalTodo {
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
                                      line_parser: &RefCell<LineParser<B>>)
-                                     -> Result<(), IcalError> {
+                                     -> Result<(), ParseError> {
 
         match value {
             "VALARM" => {
@@ -238,7 +202,7 @@ impl Component for IcalTodo {
                 alarm.parse(line_parser)?;
                 self.alarms.push(alarm);
             }
-            _ => return Err(IcalError::InvalidComponent(value.to_string())),
+            _ => return Err(ParseError::InvalidComponent(value.to_string())),
 
         };
 
@@ -266,8 +230,8 @@ impl Component for IcalTimeZone {
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
                                      _: &RefCell<LineParser<B>>)
-                                     -> Result<(), IcalError> {
-        return Err(IcalError::InvalidComponent(value.to_string()));
+                                     -> Result<(), ParseError> {
+        return Err(ParseError::InvalidComponent(value.to_string()));
     }
 }
 
@@ -291,7 +255,7 @@ impl Component for IcalFreeBusy {
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
                                      _: &RefCell<LineParser<B>>)
-                                     -> Result<(), IcalError> {
-        return Err(IcalError::InvalidComponent(value.to_string()));
+                                     -> Result<(), ParseError> {
+        return Err(ParseError::InvalidComponent(value.to_string()));
     }
 }
