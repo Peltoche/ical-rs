@@ -1,5 +1,5 @@
 
-# ical-rs 0.2.0
+# ical-rs 0.2.1
 ===============
 
 [![Build Status](https://travis-ci.org/Peltoche/ical-rs.svg?branch=master)](https://travis-ci.org/Peltoche/ical-rs)
