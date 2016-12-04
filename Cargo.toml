@@ -3,7 +3,7 @@ name = "ical"
 version = "0.2.0"
 authors = ["Peltoche <dev@halium.fr>"]
 
-description = "Ical parser for Rust"
+description = "Ical/Vcard parser for Rust"
 homepage = "https://github.com/Peltoche/ical-rs"
 repository = "https://github.com/Peltoche/ical-rs"
 keywords = ["ical", "vcard", "parser"]
