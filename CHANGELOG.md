@@ -1,4 +1,4 @@
-0.2.1 /
+0.2.1 / 2016-12-04
 =================
 
 * Add VcardParser (vcard): Take a buffer and structure the content into components.
