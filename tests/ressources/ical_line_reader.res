@@ -11,15 +11,15 @@ Line { inner: "BEGIN:VALARM", number: 12 }
 Line { inner: "SUMMARY:escaped\\, comma and\\; semicolon\\nnewline", number: 13 }
 Line { inner: "END:VALARM", number: 14 }
 Line { inner: "END:VEVENT", number: 15 }
-Line { inner: "END:VCALENDAR", number: 18 }
+Line { inner: "END:VCALENDAR", number: 16 }
 Line { inner: "BEGIN:VCALENDAR", number: 19 }
-Line { inner: "ATTENDEE;DELEGATED-TO=\"mailto:foo7@bar\",\"mailto:foo8@bar\";CN=\"Foo, Bar\":mailto:foo1@bar", number: 21 }
-Line { inner: "ATTENDEE;DELEGATED-TO=\"mailto:foo7@bar\",\"mailto:foo8@bar\";CN=\"Foo; Bar\":mailto:foo2@bar", number: 23 }
+Line { inner: "ATTENDEE;DELEGATED-TO=\"mailto:foo7@bar\",\"mailto:foo8@bar\";CN=\"Foo, Bar\":mailto:foo1@bar", number: 20 }
+Line { inner: "ATTENDEE;DELEGATED-TO=\"mailto:foo7@bar\",\"mailto:foo8@bar\";CN=\"Foo; Bar\":mailto:foo2@bar", number: 22 }
 Line { inner: "ATTENDEE;CN=\"Foo, Bar\":mailto:foo3@bar", number: 24 }
 Line { inner: "ATTENDEE;CN=\"Foo; Bar\":mailto:foo4@bar", number: 25 }
 Line { inner: "ATTENDEE;DELEGATED-TO=\"mailto:foo7@bar\";CN=\"Foo, Bar\":mailto:foo5@bar", number: 26 }
 Line { inner: "ATTENDEE;DELEGATED-TO=\"mailto:foo7@bar\";CN=\"Foo; Bar\":mailto:foo6@bar", number: 27 }
-Line { inner: "ATTENDEE;ROLE=\"REQ-PARTICIPANT;foo\";DELEGATED-FROM=\"mailto:bar@baz.com\";PARTSTAT=ACCEPTED;RSVP=TRUE:mailto:foo@bar.com", number: 29 }
+Line { inner: "ATTENDEE;ROLE=\"REQ-PARTICIPANT;foo\";DELEGATED-FROM=\"mailto:bar@baz.com\";PARTSTAT=ACCEPTED;RSVP=TRUE:mailto:foo@bar.com", number: 28 }
 Line { inner: "X-FOO;PARAM1=VAL1:FOO;BAR", number: 30 }
 Line { inner: "X-FOO2;PARAM1=VAL1;PARAM2=VAL2:FOO;BAR", number: 31 }
 Line { inner: "X-BAR;PARAM1=\"VAL1:FOO\":BAZ;BAR", number: 32 }

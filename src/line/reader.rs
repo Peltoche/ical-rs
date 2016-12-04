@@ -96,12 +96,14 @@ impl<B: BufRead> LineReader<B> {
 impl<B: BufRead> LineRead for LineReader<B> {
     fn next_line(&mut self) -> Option<Line> {
         let mut next_line = String::new();
+        let mut line_number: usize = 0;
 
 
         if let Some(start) = self.saved.take() {
             // If during the last iteration a new line have been saved, start with.
             next_line.push_str(start.as_str());
             self.number += 1;
+            line_number = self.number;
         } else {
             // This is the first iteration, next_start isn't been filled yet.
             for line in self.reader.by_ref().lines() {
@@ -110,6 +112,7 @@ impl<B: BufRead> LineRead for LineReader<B> {
 
                 if !line.is_empty() {
                     next_line = line.trim_right().to_string();
+                    line_number = self.number;
                     break;
                 }
             }
@@ -139,7 +142,7 @@ impl<B: BufRead> LineRead for LineReader<B> {
         if next_line.is_empty() {
             None
         } else {
-            Some(Line::new(next_line, self.number))
+            Some(Line::new(next_line, line_number))
         }
     }
 }
