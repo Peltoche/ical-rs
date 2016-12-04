@@ -3,12 +3,26 @@ name = "ical"
 version = "0.2.0"
 authors = ["Peltoche <dev@halium.fr>"]
 
-description = "Ical parser for Rust"
+description = "Ical/Vcard parser for Rust"
 homepage = "https://github.com/Peltoche/ical-rs"
 repository = "https://github.com/Peltoche/ical-rs"
 keywords = ["ical", "vcard", "parser"]
 readme = "README.md"
 license = "GPL-3.0"
+
+[lib]
+name = "ical"
+path = "src/lib.rs"
+test = true
+doc = true
+
+[features]
+default = ["vcard-parser", "ical-parser"]
+
+vcard-parser = ["line-parser"]
+ical-parser = ["line-parser"]
+line-parser = ["line-reader"]
+line-reader = []
 
 [dependencies]
 

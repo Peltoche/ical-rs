@@ -31,17 +31,29 @@ ical = "0.2.0"
 There is several ways to use Ical depending on the level of parsing you want. Some new wrapper/formater could appeare in
 the next releases.
 
+By default all the features are included but you can choose to include in you project only the needed ones.
+
 #### Warning
   The parsers (LineParser / IcalParser) only parse the content and set to uppercase the case-insensitive fields. No checks
   are made on the fields validity.
 
 
-### IcalParser
+### IcalParser / VcardParser
 
 Wrap the result of the LineParser into components.
 
 Each component can contains properties (ie: LineParsed) or sub-components.
 
+* The IcalParser return IcalCalendar
+* The VcardParser return VcardContact
+
+Cargo.toml:
+```toml
+[dependencies.ical]
+version = "0.2.*"
+default-features = false
+features = ["ical-parser", "vcard-parser"]
+```
 
 Code:
 ```rust
@@ -92,7 +104,17 @@ Parse the result of LineReader into three parts:
 - A vector of `(key/value)` tuple for the parameters. The key is formatted in uppercase and the value is untouched.
 - The value stay untouched.
 
+It work for both the Vcard and Ical format.
+
 #### Example:
+
+Cargo.toml:
+```toml
+[dependencies.ical]
+version = "0.2.*"
+default-features = false
+features = ["line-parser"]
+```
 
 Code:
 ```rust
@@ -122,11 +144,19 @@ END:VCALENDAR                             Ok(LineParsed { name: "END", params: N
 
 ### LineReader
 
-This is a very low level parser. It only unfold the lines.
+This is a very low level parser. It clean the empty lines and unfold them.
 
-Individual lines within vCard/ICal are delimited by the [RFC5322](http://tools.ietf.org/html/rfc5322) line break.
+It work for both the Vcard and Ical format.
 
 #### Example:
+
+Cargo.toml:
+```toml
+[dependencies.ical]
+version = "0.2.*"
+default-features = false
+features = ["line-reader"]
+```
 
 Code:
 ```rust

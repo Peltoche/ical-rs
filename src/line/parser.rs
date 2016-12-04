@@ -5,7 +5,7 @@ use std::io::BufRead;
 use std::error::Error;
 use std::fmt;
 
-use ::line;
+use line::reader::{LineReader, Line};
 
 /// A parsed `Line`.
 ///
@@ -40,25 +40,25 @@ impl fmt::Display for LineParsed {
     }
 }
 
-/// A splitted `Line`.
+/// Take a `LineReader` and parse the content for Ical or Vcard file.
 #[derive(Debug, Clone)]
 pub struct LineParser<B> {
-    line_reader: line::LineReader<B>,
+    line_reader: LineReader<B>,
 }
 
 impl<B: BufRead> LineParser<B> {
-    pub fn new(line_reader: line::LineReader<B>) -> LineParser<B> {
+    pub fn new(line_reader: LineReader<B>) -> LineParser<B> {
         LineParser { line_reader: line_reader }
     }
 
     pub fn from_reader(reader: B) -> LineParser<B> {
-        let line_reader = line::LineReader::new(reader);
+        let line_reader = LineReader::new(reader);
 
         LineParser { line_reader: line_reader }
     }
 
 
-    fn parse(&self, line: line::Line) -> Result<LineParsed, ParseError> {
+    fn parse(&self, line: Line) -> Result<LineParsed, ParseError> {
         let mut property = LineParsed::new();
 
         // Parse name.
