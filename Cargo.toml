@@ -10,5 +10,19 @@ keywords = ["ical", "vcard", "parser"]
 readme = "README.md"
 license = "GPL-3.0"
 
+[lib]
+name = "ical"
+path = "src/lib.rs"
+test = true
+doc = true
+
+[features]
+default = ["vcard-parser", "ical-parser"]
+
+vcard-parser = ["line-parser"]
+ical-parser = ["line-parser"]
+line-parser = ["line-reader"]
+line-reader = []
+
 [dependencies]
 

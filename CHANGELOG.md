@@ -5,6 +5,7 @@
 * Line Parser is officialy working with vcard format.
 * Add some basic tests on LineReader (vcard).
 * Add some basic tests on LineParser (vcard).
+* Add conditionnal compilation.
 
 0.2.0 / 2016-12-03
 =================
