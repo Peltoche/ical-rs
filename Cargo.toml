@@ -1,6 +1,6 @@
 [package]
 name = "ical"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["Peltoche <dev@halium.fr>"]
 
 description = "Ical/Vcard parser for Rust"

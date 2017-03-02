@@ -26,4 +26,15 @@ Line { inner: "X-BAR;PARAM1=\"VAL1:FOO\":BAZ;BAR", number: 32 }
 Line { inner: "X-BAZ;PARAM1=\"VAL1:FOO\";PARAM2=VAL2:BAZ;BAR", number: 33 }
 Line { inner: "X-BAZ2;PARAM1=VAL1;PARAM2=\"VAL2:FOO\":BAZ;BAR", number: 34 }
 Line { inner: "END:VCALENDAR", number: 35 }
-
+Line { inner: "BEGIN:VCALENDAR", number: 38 }
+Line { inner: "CALSCALE:GREGORIAN", number: 39 }
+Line { inner: "PRODID:-//Example Inc.//Example Calendar//EN", number: 40 }
+Line { inner: "VERSION:2.0", number: 41 }
+Line { inner: "BEGIN:VEVENT", number: 42 }
+Line { inner: "DTSTAMP:20080205T191224Z", number: 43 }
+Line { inner: "DTSTART;VALUE=DATE:20081006", number: 44 }
+Line { inner: "SUMMARY:Missing description value, but includes header", number: 45 }
+Line { inner: "DESCRIPTION:", number: 46 }
+Line { inner: "UID:4088E990AD89CB3DBB484909", number: 47 }
+Line { inner: "END:VEVENT", number: 48 }
+Line { inner: "END:VCALENDAR", number: 49 }

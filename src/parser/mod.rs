@@ -32,7 +32,11 @@ pub trait Component {
 
             match line.name.as_str() {
                 "END" => break,
-                "BEGIN" => self.add_sub_component(line.value.as_str(), line_parser)?,
+                "BEGIN" => match line.value {
+                    Some(v) => self.add_sub_component(v.as_str(), line_parser)?,
+                    None    => self.add_sub_component("", line_parser)?,
+                },
+
                 _ => self.add_property(line),
             };
         }
