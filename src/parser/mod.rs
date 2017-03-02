@@ -34,7 +34,7 @@ pub trait Component {
                 "END" => break,
                 "BEGIN" => match line.value {
                     Some(v) => self.add_sub_component(v.as_str(), line_parser)?,
-                    None    => self.add_sub_component("", line_parser)?,
+                    None    => return Err(ParseError::NotComplete),
                 },
 
                 _ => self.add_property(line),
