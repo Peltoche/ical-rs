@@ -27,7 +27,8 @@ impl<B: BufRead> VcardParser<B> {
             None => return Ok(None),
         };
 
-        if line.name != "BEGIN" || line.value != "VCARD" || line.params != None {
+        if line.name != "BEGIN" || line.value.is_none() || line.value.unwrap() != "VCARD" ||
+           line.params != None {
             return Err(ParseError::MissingHeader);
         }
 

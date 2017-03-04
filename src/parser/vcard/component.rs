@@ -5,15 +5,14 @@ use std::cell::RefCell;
 use parser::{Component, ParseError};
 use line::parser::{LineParsed, LineParser};
 
+#[derive(Debug, Clone)]
 pub struct VcardContact {
     pub properties: Vec<LineParsed>,
 }
 
 impl VcardContact {
     pub fn new() -> VcardContact {
-        VcardContact {
-            properties: Vec::new(),
-        }
+        VcardContact { properties: Vec::new() }
     }
 }
 
