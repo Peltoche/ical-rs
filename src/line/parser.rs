@@ -63,8 +63,6 @@ impl<B: BufRead> LineParser<B> {
 
         let mut content = line.as_str();
 
-        println!("\n\nstart: {}", content);
-
         // Parse name.
         property.name = self.parse_name(content)
             .and_then(|name| Some(name.to_string()))
@@ -82,7 +80,7 @@ impl<B: BufRead> LineParser<B> {
             .and_then(|value| {
                 match value.len() {
                     0 => None,
-                    _ => Some(value.to_string())
+                    _ => Some(value.to_string()),
                 }
             });
 
@@ -109,8 +107,10 @@ impl<B: BufRead> LineParser<B> {
     }
 
     /// Return the parameters from the given `Line`.
-    fn parse_parameters<'a>(&self, line: &'a str) -> Result<(Option<Vec<(String, Vec<String>)>>, &'a str), ParseError> {
-        println!("param line: {}", line);
+    fn parse_parameters<'a>
+        (&self,
+         line: &'a str)
+         -> Result<(Option<Vec<(String, Vec<String>)>>, &'a str), ParseError> {
         let mut param_list = Vec::new();
         let mut params_str;
 
@@ -143,7 +143,7 @@ impl<B: BufRead> LineParser<B> {
 
             param_list.push((name.to_uppercase(), values));
 
-        };
+        }
 
         Ok((Some(param_list), params_str))
     }
@@ -151,7 +151,6 @@ impl<B: BufRead> LineParser<B> {
 
     /// Return the value from the given `Line`.
     fn parse_value<'a>(&self, line: &'a str) -> Option<&'a str> {
-        println!("value line: {}", line);
         let value_index = match line.find(::VALUE_DELIMITER) {
             Some(val) => val + 1, // Jump the VALUE_DELIMITER
             None => return None,
@@ -165,15 +164,17 @@ impl<B: BufRead> LineParser<B> {
     }
 }
 
-fn parse_param_value<'a>(mut values: Vec<String>, params_str: &'a str) -> Result<(Vec<String>, &'a str), ParseError> {
+fn parse_param_value<'a>(mut values: Vec<String>,
+                         params_str: &'a str)
+                         -> Result<(Vec<String>, &'a str), ParseError> {
     let new_params_str;
 
     if params_str.starts_with('"') {
         // This is a dquoted value. (NAME:Foo="Bar":value)
         let mut elements = params_str.splitn(3, '"').skip(1);
         values.push(elements.next()
-                    .and_then(|value| Some(value.to_string()))
-                    .ok_or(ParseError::InvalidParamFormat)?);
+            .and_then(|value| Some(value.to_string()))
+            .ok_or(ParseError::InvalidParamFormat)?);
         new_params_str = elements.next()
             .ok_or(ParseError::InvalidParamFormat)?;
     } else {
@@ -198,7 +199,8 @@ fn parse_param_value<'a>(mut values: Vec<String>, params_str: &'a str) -> Result
     }
 
     if new_params_str.starts_with(::PARAM_VALUE_DELIMITER) {
-        parse_param_value(values, new_params_str.trim_left_matches(::PARAM_VALUE_DELIMITER))
+        parse_param_value(values,
+                          new_params_str.trim_left_matches(::PARAM_VALUE_DELIMITER))
     } else {
         Ok((values, new_params_str))
     }
