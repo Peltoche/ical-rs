@@ -28,7 +28,7 @@ impl<B: BufRead> IcalParser<B> {
             None => return Ok(None),
         };
 
-        if line.name != "BEGIN" || line.value != "VCALENDAR" || line.params != None {
+        if line.name != "BEGIN" || line.value.is_none() || line.value.unwrap() != "VCALENDAR" || line.params != None {
             return Err(ParseError::MissingHeader);
         }
 

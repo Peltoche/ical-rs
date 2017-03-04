@@ -1,5 +1,5 @@
 
-# ical-rs 0.2.1
+# ical-rs 0.3.0
 ===============
 
 [![Build Status](https://travis-ci.org/Peltoche/ical-rs.svg?branch=master)](https://travis-ci.org/Peltoche/ical-rs)
@@ -22,7 +22,7 @@ Put this in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ical = "0.2.0"
+ical = "0.3.0"
 ```
 
 
@@ -50,7 +50,7 @@ Each component can contains properties (ie: LineParsed) or sub-components.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.2.*"
+version = "0.3.*"
 default-features = false
 features = ["ical-parser", "vcard-parser"]
 ```
@@ -111,7 +111,7 @@ It work for both the Vcard and Ical format.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.2.*"
+version = "0.3.*"
 default-features = false
 features = ["line-parser"]
 ```
@@ -137,9 +137,10 @@ fn main() {
 
 Input -> Output:
 ```
-begin:VCALENDAR                           Ok(LineParsed { name: "BEGIN", params: None, value: "VCALENDAR" })
-ATTENDEE;cn=FooBar:mailto:foo3@bar    ->  Ok(LineParsed { name: "ATTENDEE", params: Some([("CN", "FooBar")]), value: "mailto:foo3@bar" })
-END:VCALENDAR                             Ok(LineParsed { name: "END", params: None, value: "VCALENDAR" })
+begin:VCALENDAR                           Ok(LineParsed { name: "BEGIN", params: None, value: Some("VCALENDAR") })
+ATTENDEE;cn=FooBar:mailto:foo3@bar    ->  Ok(LineParsed { name: "ATTENDEE", params: Some([("CN", "FooBar")]), value: Some("mailto:foo3@bar") })
+DESCRIPTION:                              Ok(LineParsed { name: "DESCRIPTION": params: None, value: None })
+END:VCALENDAR                             Ok(LineParsed { name: "END", params: None, value: Some("VCALENDAR") })
 ```
 
 ### LineReader
@@ -153,7 +154,7 @@ It work for both the Vcard and Ical format.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.2.*"
+version = "0.3.*"
 default-features = false
 features = ["line-reader"]
 ```

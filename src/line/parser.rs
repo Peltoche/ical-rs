@@ -17,7 +17,7 @@ use line::reader::{LineReader, Line};
 pub struct LineParsed {
     pub name: String,
     pub params: Option<Vec<(String, Vec<String>)>>,
-    pub value: String,
+    pub value: Option<String>,
 }
 
 impl LineParsed {
@@ -25,7 +25,7 @@ impl LineParsed {
         LineParsed {
             name: String::new(),
             params: None,
-            value: String::new(),
+            value: None,
         }
     }
 }
@@ -33,7 +33,7 @@ impl LineParsed {
 impl fmt::Display for LineParsed {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f,
-               "name: {}\nparams: {:?}\nvalue: {}",
+               "name: {}\nparams: {:?}\nvalue: {:?}",
                self.name,
                self.params,
                self.value)
@@ -68,8 +68,12 @@ impl<B: BufRead> LineParser<B> {
 
         // Parse value
         property.value = self.parse_value(line.as_str())
-            .and_then(|value| Some(value.to_string()))
-            .ok_or(ParseError::MissingValue)?;
+            .and_then(|value| {
+                match value.len() {
+                    0 => None,
+                    _ => Some(value.to_string())
+                }
+            });
 
         // Parse parameters.
         property.params = self.parse_parameters(line.as_str())?;
