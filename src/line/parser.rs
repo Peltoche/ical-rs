@@ -61,13 +61,24 @@ impl<B: BufRead> LineParser<B> {
     fn parse(&self, line: Line) -> Result<LineParsed, ParseError> {
         let mut property = LineParsed::new();
 
+        let mut content = line.as_str();
+
+        println!("\n\nstart: {}", content);
+
         // Parse name.
-        property.name = self.parse_name(line.as_str())
+        property.name = self.parse_name(content)
             .and_then(|name| Some(name.to_string()))
             .ok_or(ParseError::MissingName)?;
 
+        content = content.split_at(property.name.len()).1;
+
+        // Parse parameters.
+        let res = self.parse_parameters(content)?;
+        property.params = res.0;
+        content = res.1;
+
         // Parse value
-        property.value = self.parse_value(line.as_str())
+        property.value = self.parse_value(content)
             .and_then(|value| {
                 match value.len() {
                     0 => None,
@@ -75,15 +86,12 @@ impl<B: BufRead> LineParser<B> {
                 }
             });
 
-        // Parse parameters.
-        property.params = self.parse_parameters(line.as_str())?;
-
         Ok(property)
 
     }
 
     /// Return the name from the given `Line`.
-    fn parse_name<'a>(&self, line: &'a str) -> Option<&'a str> {
+    fn parse_name<'a>(&self, line: &'a str) -> Option<(&'a str)> {
         let end_name_index;
 
         let param_index = line.find(::PARAM_DELIMITER).unwrap_or(usize::max_value());
@@ -100,34 +108,20 @@ impl<B: BufRead> LineParser<B> {
         Some(line.split_at(end_name_index).0)
     }
 
-
-    /// Return the value from the given `Line`.
-    fn parse_value<'a>(&self, line: &'a str) -> Option<&'a str> {
-        let value_index = match line.find(::VALUE_DELIMITER) {
-            Some(val) => val + 1, // Jump the VALUE_DELIMITER
-            None => return None,
-        };
-
-        if value_index < line.len() {
-            Some(line.split_at(value_index).1)
-        } else {
-            None
-        }
-    }
-
     /// Return the parameters from the given `Line`.
-    fn parse_parameters(&self, line: &str) -> Result<Option<Vec<(String, Vec<String>)>>, ParseError> {
+    fn parse_parameters<'a>(&self, line: &'a str) -> Result<(Option<Vec<(String, Vec<String>)>>, &'a str), ParseError> {
+        println!("param line: {}", line);
         let mut param_list = Vec::new();
         let mut params_str;
 
         let start_value_index = line.find(::VALUE_DELIMITER).unwrap_or(usize::max_value());
         let start_param_index = match line.find(::PARAM_DELIMITER) {
             Some(val) => val,
-            None => return Ok(None), // there is no params.
+            None => return Ok((None, line)), // there is no params.
         };
 
         if start_value_index < start_param_index {
-            return Ok(None);
+            return Ok((None, line));
         }
 
         // Remove the attribue name.
@@ -151,7 +145,23 @@ impl<B: BufRead> LineParser<B> {
 
         };
 
-        Ok(Some((param_list)))
+        Ok((Some(param_list), params_str))
+    }
+
+
+    /// Return the value from the given `Line`.
+    fn parse_value<'a>(&self, line: &'a str) -> Option<&'a str> {
+        println!("value line: {}", line);
+        let value_index = match line.find(::VALUE_DELIMITER) {
+            Some(val) => val + 1, // Jump the VALUE_DELIMITER
+            None => return None,
+        };
+
+        if value_index < line.len() {
+            Some(line.split_at(value_index).1)
+        } else {
+            None
+        }
     }
 }
 
