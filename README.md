@@ -66,7 +66,7 @@ fn main() {
     let buf = BufReader::new(File::open("/tmp/component.ics")
         .unwrap());
 
-    let reader = ical::IcalReader::new(buf);
+    let reader = ical::IcalParser::new(buf);
 
     for line in reader {
         println!("{:?}", line);
@@ -132,7 +132,7 @@ fn main() {
     for line in reader {
         println!("{:?}", line);
     }
-
+}
 ```
 
 Input -> Output:
