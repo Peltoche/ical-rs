@@ -1,11 +1,51 @@
-//! Return parsed property from a `Line`.
+//! Parse the result of `LineReader` into parts.
+//!
+//! Split the result ov `LineReader` into:
+//! - The name of the line attribute formated in uppercase.
+//! - A vector of `(key/value)` tuple for the parameters. The key is formatted in uppercase and the
+//! value is untouched.
+//! - The value stay untouched.
+//!
+//! It work for both the Vcard and Ical format.
+//!
+//! #### Warning
+//!   The parsers LineParser only parse the content and set to uppercase the case-insensitive
+//!   fields. No checks are made on the fields validity.
+//!
+//! # Examples
+//!
+//! Cargo.toml:
+//! ```toml
+//! [dependencies.ical]
+//! version = "0.3.*"
+//! default-features = false
+//! features = ["line-parser"]
+//! ```
+//!
+//! ```rust
+//! extern crate ical;
+//!
+//! use std::io::BufReader;
+//! use std::fs::File;
+//!
+//! let buf = BufReader::new(File::open("./tests/ressources/vcard_input.vcf")
+//!     .unwrap());
+//!
+//! let reader = ical::LineParser::from_reader(buf);
+//!
+//! for line in reader {
+//!     println!("{:?}", line);
+//! }
+//! ```
 
+// Sys mods
 use std::iter::Iterator;
 use std::io::BufRead;
-use std::error::Error;
 use std::fmt;
 
+// Internal mods
 use line::reader::{LineReader, Line};
+use ::errors::*;
 
 /// A parsed `Line`.
 ///
@@ -15,12 +55,16 @@ use line::reader::{LineReader, Line};
 /// - value: Property Value.
 #[derive(Debug, Clone)]
 pub struct LineParsed {
+    /// Component name.
     pub name: String,
+    /// Component list of parameters.
     pub params: Option<Vec<(String, Vec<String>)>>,
+    /// Component value.
     pub value: Option<String>,
 }
 
 impl LineParsed {
+    /// Return a new `LineParsed` object.
     pub fn new() -> LineParsed {
         LineParsed {
             name: String::new(),
@@ -47,10 +91,12 @@ pub struct LineParser<B> {
 }
 
 impl<B: BufRead> LineParser<B> {
+    /// Return a new `LineParser` from a `LineReader`.
     pub fn new(line_reader: LineReader<B>) -> LineParser<B> {
         LineParser { line_reader: line_reader }
     }
 
+    /// Return a new `LineParser` from a `Reader`.
     pub fn from_reader(reader: B) -> LineParser<B> {
         let line_reader = LineReader::new(reader);
 
@@ -58,7 +104,7 @@ impl<B: BufRead> LineParser<B> {
     }
 
 
-    fn parse(&self, line: Line) -> Result<LineParsed, ParseError> {
+    fn parse(&self, line: Line) -> Result<LineParsed> {
         let mut property = LineParsed::new();
 
         let mut content = line.as_str();
@@ -66,7 +112,7 @@ impl<B: BufRead> LineParser<B> {
         // Parse name.
         property.name = self.parse_name(content)
             .and_then(|name| Some(name.to_string()))
-            .ok_or(ParseError::MissingName)?;
+            .ok_or(ErrorKind::MissingName)?;
 
         content = content.split_at(property.name.len()).1;
 
@@ -110,7 +156,7 @@ impl<B: BufRead> LineParser<B> {
     fn parse_parameters<'a>
         (&self,
          line: &'a str)
-         -> Result<(Option<Vec<(String, Vec<String>)>>, &'a str), ParseError> {
+         -> Result<(Option<Vec<(String, Vec<String>)>>, &'a str)> {
         let mut param_list = Vec::new();
         let mut params_str;
 
@@ -135,8 +181,8 @@ impl<B: BufRead> LineParser<B> {
 
             // Split the first name and the rest of the line
             elements = params_str.splitn(2, ::PARAM_NAME_DELIMITER);
-            name = elements.next().ok_or(ParseError::InvalidParamFormat)?;
-            params_str = elements.next().ok_or(ParseError::InvalidParamFormat)?;
+            name = elements.next().ok_or(ErrorKind::InvalidParamFormat)?;
+            params_str = elements.next().ok_or(ErrorKind::InvalidParamFormat)?;
 
             let (values, param_tmp) = parse_param_value(vec![], &mut params_str)?;
             params_str = param_tmp;
@@ -166,7 +212,7 @@ impl<B: BufRead> LineParser<B> {
 
 fn parse_param_value<'a>(mut values: Vec<String>,
                          params_str: &'a str)
-                         -> Result<(Vec<String>, &'a str), ParseError> {
+                         -> Result<(Vec<String>, &'a str)> {
     let new_params_str;
 
     if params_str.starts_with('"') {
@@ -174,9 +220,9 @@ fn parse_param_value<'a>(mut values: Vec<String>,
         let mut elements = params_str.splitn(3, '"').skip(1);
         values.push(elements.next()
             .and_then(|value| Some(value.to_string()))
-            .ok_or(ParseError::InvalidParamFormat)?);
+            .ok_or(ErrorKind::InvalidParamFormat)?);
         new_params_str = elements.next()
-            .ok_or(ParseError::InvalidParamFormat)?;
+            .ok_or(ErrorKind::InvalidParamFormat)?;
     } else {
         // This is a 'raw' value. (NAME;Foo=Bar:value)
 
@@ -189,7 +235,7 @@ fn parse_param_value<'a>(mut values: Vec<String>,
             } else if value_delimiter != usize::max_value() {
                 Ok(value_delimiter)
             } else {
-                Err(ParseError::InvalidParamFormat)
+                Err(ErrorKind::InvalidParamFormat)
             }
         }?;
 
@@ -207,40 +253,11 @@ fn parse_param_value<'a>(mut values: Vec<String>,
 }
 
 impl<B: BufRead> Iterator for LineParser<B> {
-    type Item = Result<LineParsed, ParseError>;
+    type Item = Result<LineParsed>;
 
-    fn next(&mut self) -> Option<Result<LineParsed, ParseError>> {
+    fn next(&mut self) -> Option<Result<LineParsed>> {
         self.line_reader
             .next()
             .map(|line| self.parse(line))
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum ParseError {
-    MissingValueDelimiter,
-    MissingName,
-    MissingValue,
-    InvalidParamFormat,
-}
-
-impl Error for ParseError {
-    fn description(&self) -> &str {
-        match *self {
-            ParseError::MissingValueDelimiter => "Missing value delimiter.",
-            ParseError::MissingName => "Missing name.",
-            ParseError::MissingValue => "Missing value.",
-            ParseError::InvalidParamFormat => "Invalid parameter format.",
-        }
-    }
-
-    fn cause(&self) -> Option<&Error> {
-        None
-    }
-}
-
-impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
     }
 }

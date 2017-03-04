@@ -1,9 +1,12 @@
 
+// Sys mods
 use std::io::BufRead;
 use std::cell::RefCell;
 
-use parser::{Component, ParseError};
+// Internal mods
+use parser::Component;
 use line::parser::{LineParsed, LineParser};
+use ::errors::*;
 
 #[derive(Debug, Clone)]
 pub struct VcardContact {
@@ -22,9 +25,9 @@ impl Component for VcardContact {
     }
 
     fn add_sub_component<B: BufRead>(&mut self,
-                                     value: &str,
+                                     _: &str,
                                      _: &RefCell<LineParser<B>>)
-                                     -> Result<(), ParseError> {
-        return Err(ParseError::InvalidComponent(value.to_string()));
+                                     -> Result<()> {
+        return Err(ErrorKind::InvalidComponent.into());
     }
 }

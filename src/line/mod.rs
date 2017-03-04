@@ -1,4 +1,4 @@
-
+//! Handle line reading / parsing.
 
 #[cfg(feature = "line-parser")]
 pub mod parser;

@@ -98,8 +98,8 @@ pub mod parser {
     fn ical() {
         let input = BufReader::new(File::open("./tests/ressources/ical_input.ics").unwrap());
 
-        let mut valids =
-            BufReader::new(File::open("./tests/ressources/ical_parser.res").unwrap()).lines();
+        let mut valids = BufReader::new(File::open("./tests/ressources/ical_parser.res").unwrap())
+            .lines();
 
 
         let reader = ical::IcalParser::new(input);
@@ -115,8 +115,8 @@ pub mod parser {
     fn vcard() {
         let input = BufReader::new(File::open("./tests/ressources/vcard_input.vcf").unwrap());
 
-        let mut valids =
-            BufReader::new(File::open("./tests/ressources/vcard_parser.res").unwrap()).lines();
+        let mut valids = BufReader::new(File::open("./tests/ressources/vcard_parser.res").unwrap())
+            .lines();
 
 
         let reader = ical::VcardParser::new(input);

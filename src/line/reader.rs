@@ -17,20 +17,27 @@
 //!
 //! # Examples
 //!
-//! ```text
-//!   NOTE:This is a long description that exists on a long line.
+//! Cargo.toml:
+//! ```toml
+//! [dependencies.ical]
+//! version = "0.3.*"
+//! default-features = false
+//! features = ["line-reader"]
+//! ```
 //!
-//! can be represented as:
+//! ```rust
+//! extern crate ical;
 //!
-//!   NOTE:This is a long description
-//!     that exists on a long line.
+//! use std::io::BufReader;
+//! use std::fs::File;
 //!
-//! It could also be represented as:
+//! let buf = BufReader::new(File::open("./tests/ressources/vcard_input.vcf").unwrap());
 //!
-//!   NOTE:This is a long descrip
-//!    tion that exists o
-//!    n a long line.
+//! let reader = ical::LineReader::new(buf);
 //!
+//! for line in reader {
+//!     println!("{}", line);
+//! }
 //! ```
 
 use std::iter::Iterator;
@@ -49,6 +56,7 @@ pub struct Line {
 }
 
 impl Line {
+    /// Return a new `Line` object.
     pub fn new(line: String, line_number: usize) -> Line {
         Line {
             inner: line,
@@ -56,6 +64,7 @@ impl Line {
         }
     }
 
+    /// Return a `&str`
     pub fn as_str(&self) -> &str {
         self.inner.as_str()
     }
@@ -68,14 +77,15 @@ impl fmt::Display for Line {
 }
 
 
-/// A trait generic for implementing line reading.
+/// A trait generic for implementing line reading use by `LineParser`.
 pub trait LineRead {
+    /// Return the next line unwrapped and formated.
     fn next_line(&mut self) -> Option<Line>;
 }
 
 
-/// Take a `BufRead` and return the merged `Line`.
 #[derive(Debug, Clone)]
+/// Take a `BufRead` and return the merged `Line`.
 pub struct LineReader<B> {
     reader: B,
     saved: Option<String>,
@@ -83,6 +93,7 @@ pub struct LineReader<B> {
 }
 
 impl<B: BufRead> LineReader<B> {
+    /// Return a new `LineReader` from a `Reader`.
     pub fn new(reader: B) -> LineReader<B> {
         LineReader {
             reader: reader,
@@ -92,7 +103,6 @@ impl<B: BufRead> LineReader<B> {
     }
 }
 
-/// Could Panic
 impl<B: BufRead> LineRead for LineReader<B> {
     fn next_line(&mut self) -> Option<Line> {
         let mut next_line = String::new();
