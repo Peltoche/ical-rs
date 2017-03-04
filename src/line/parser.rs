@@ -89,7 +89,7 @@ impl<B: BufRead> LineParser<B> {
     }
 
     /// Return the name from the given `Line`.
-    fn parse_name<'a>(&self, line: &'a str) -> Option<(&'a str)> {
+    fn parse_name<'a>(&self, line: &'a str) -> Option<&'a str> {
         let end_name_index;
 
         let param_index = line.find(::PARAM_DELIMITER).unwrap_or(usize::max_value());

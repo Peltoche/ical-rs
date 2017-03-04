@@ -7,8 +7,13 @@ description = "Ical/Vcard parser for Rust"
 homepage = "https://github.com/Peltoche/ical-rs"
 repository = "https://github.com/Peltoche/ical-rs"
 keywords = ["ical", "vcard", "parser"]
-readme = "README.md"
+categories = ["parsing"]
+readme = "./README.md"
 license = "GPL-3.0"
+license-file = "./LICENSE"
+
+[badges]
+travis-ci = { repository = "https://travis-ci.org/Peltoche/ical-rs", branch = "master" }
 
 [lib]
 name = "ical"
