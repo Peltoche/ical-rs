@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["VcardParser","Reader returning `VcardContact` object from a `BufRead`."]]});

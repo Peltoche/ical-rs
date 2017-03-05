@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["errors","The property errors"]],"struct":[["Property","A VCARD/ICAL property."],["PropertyParser","Take a `LineReader` and return a list of `Property`."]]});
