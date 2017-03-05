@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Line","An unfolded raw line."],["LineReader","Take a `BufRead` and return the unfolded `Line`."]],"trait":[["LineRead","A trait generic for implementing line reading use by `PropertyParser`."]]});

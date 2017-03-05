@@ -9,6 +9,7 @@
 
     <title>ical - Rust</title>
 
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
     
@@ -43,61 +44,61 @@
     </nav>
 
     <section id='main' class="content mod">
-<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>ical</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>ical</a></span><span class='out-of-band'><span id='render-detail'>
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-0' class='srclink' href='../src/ical/src/lib.rs.html#2-14' title='goto source code'>[src]</a></span></h1>
-<h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+               </span><a class='srclink' href='../src/ical/lib.rs.html#1-63' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>ical-rs 0.3.0</p>
+
+<p>This is a library to parse the <code>ICalendar</code> format defined in
+<a href="http://tools.ietf.org/html/rfc5545">RFC5545</a>, as well as similar formats
+like <code>VCard</code>.</p>
+
+<p>There are probably some issues to be taken care of, but the library should work for most
+cases. If you like to help out and
+would like to discuss any API changes, please <a href="dev@halium.fr">contact me</a> or create an issue.</p>
+
+<p>The initial goal was to make a port from the <a href="https://github.com/mozilla-comm/ical.js">ical.js</a>
+library in JavaScript and
+many code/algorithms was taken from it but in order to but more &#39;Rusty&#39; a complete rewrite
+have been made.</p>
+
+<h2 id='a-hrefhttpspeltochegithubioical-rsicaldocumentationa' class='section-header'><a href='#a-hrefhttpspeltochegithubioical-rsicaldocumentationa'><a href="https://peltoche.github.io/ical-rs/ical/">Documentation</a></a></h2>
+<h2 id='installing' class='section-header'><a href='#installing'>Installing</a></h2>
+<p>Put this in your <code>Cargo.toml</code>:</p>
+
+<pre><code class="language-toml">[dependencies]
+ical = &quot;0.4.*&quot;
+</code></pre>
+
+<p>There is several ways to use Ical depending on the level of parsing you want. Some new
+wrapper/formater could appeare in the next releases.</p>
+
+<p>By default all the features are included but you can choose to include in you
+project only the needed ones.</p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Reexports</a></h2>
+<table><tr><td><code>pub use parser::ical::<a class="struct" href="../ical/parser/ical/struct.IcalParser.html" title="struct ical::parser::ical::IcalParser">IcalParser</a>;</code></td></tr><tr><td><code>pub use parser::vcard::<a class="struct" href="../ical/parser/vcard/struct.VcardParser.html" title="struct ical::parser::vcard::VcardParser">VcardParser</a>;</code></td></tr><tr><td><code>pub use property::<a class="struct" href="../ical/property/struct.PropertyParser.html" title="struct ical::property::PropertyParser">PropertyParser</a>;</code></td></tr><tr><td><code>pub use line::<a class="struct" href="../ical/line/struct.LineReader.html" title="struct ical::line::LineReader">LineReader</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
 <table>
                        <tr class=' module-item'>
-                           <td><a class='struct' href='struct.IcalParser.html'
-                                  title='ical::IcalParser'>IcalParser</a></td>
+                           <td><a class="mod" href="line/index.html"
+                                  title='mod ical::line'>line</a></td>
                            <td class='docblock-short'>
-                                <p>Reader returning Ical object from a <code>BufRead</code>.</p>
+                                <p>Read and unfold a line from a <code>BufRead</code>.</p>
                            </td>
                        </tr>
                        <tr class=' module-item'>
-                           <td><a class='struct' href='struct.LineParser.html'
-                                  title='ical::LineParser'>LineParser</a></td>
+                           <td><a class="mod" href="parser/index.html"
+                                  title='mod ical::parser'>parser</a></td>
                            <td class='docblock-short'>
-                                <p>A splitted <code>Line</code>.</p>
+                                <p>Wrapper around <code>PropertyParser</code></p>
                            </td>
                        </tr>
                        <tr class=' module-item'>
-                           <td><a class='struct' href='struct.LineReader.html'
-                                  title='ical::LineReader'>LineReader</a></td>
+                           <td><a class="mod" href="property/index.html"
+                                  title='mod ical::property'>property</a></td>
                            <td class='docblock-short'>
-                                <p>Take a <code>BufRead</code> and return the merged <code>Line</code>.</p>
-                           </td>
-                       </tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
-<table>
-                       <tr class=' module-item'>
-                           <td><a class='constant' href='constant.PARAM_DELIMITER.html'
-                                  title='ical::PARAM_DELIMITER'>PARAM_DELIMITER</a></td>
-                           <td class='docblock-short'>
-                                
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class='constant' href='constant.PARAM_NAME_DELIMITER.html'
-                                  title='ical::PARAM_NAME_DELIMITER'>PARAM_NAME_DELIMITER</a></td>
-                           <td class='docblock-short'>
-                                
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class='constant' href='constant.PARAM_VALUE_DELIMITER.html'
-                                  title='ical::PARAM_VALUE_DELIMITER'>PARAM_VALUE_DELIMITER</a></td>
-                           <td class='docblock-short'>
-                                
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class='constant' href='constant.VALUE_DELIMITER.html'
-                                  title='ical::VALUE_DELIMITER'>VALUE_DELIMITER</a></td>
-                           <td class='docblock-short'>
-                                
+                                <p>Parse the result of <code>LineReader</code> into parts.</p>
                            </td>
                        </tr></table></section>
     <section id='search' class="content hidden"></section>

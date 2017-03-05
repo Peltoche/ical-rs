@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["PARAM_DELIMITER",""],["PARAM_NAME_DELIMITER",""],["PARAM_VALUE_DELIMITER",""],["VALUE_DELIMITER",""]],"struct":[["IcalParser","Reader returning Ical object from a `BufRead`."],["LineParser","A splitted `Line`."],["LineReader","Take a `BufRead` and return the merged `Line`."]]});
+initSidebarItems({"mod":[["line","Read and unfold a line from a `BufRead`."],["parser","Wrapper around `PropertyParser`"],["property","Parse the result of `LineReader` into parts."]]});
