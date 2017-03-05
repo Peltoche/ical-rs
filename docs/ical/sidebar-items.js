@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["line","Read and unfold a line from a `BufRead`."],["parser","Wrapper around `PropertyParser`"],["property","Parse the result of `LineReader` into parts."]]});
