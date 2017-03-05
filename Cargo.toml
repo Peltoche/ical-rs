@@ -9,7 +9,7 @@ license-file = "./LICENSE"
 name = "ical"
 readme = "./README.md"
 repository = "https://github.com/Peltoche/ical-rs"
-version = "0.3.0"
+version = "0.4.0"
 
 [badges]
 
@@ -21,11 +21,11 @@ repository = "https://travis-ci.org/Peltoche/ical-rs"
 error-chain = "0.10.0"
 
 [features]
-default = ["vcard-parser", "ical-parser"]
-ical-parser = ["line-parser"]
-line-parser = ["line-reader"]
-line-reader = []
-vcard-parser = ["line-parser"]
+default = ["vcard", "ical"]
+ical = ["property"]
+vcard = ["property"]
+property = ["line"]
+line = []
 
 [lib]
 doc = true

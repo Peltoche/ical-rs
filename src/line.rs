@@ -68,6 +68,11 @@ impl Line {
     pub fn as_str(&self) -> &str {
         self.inner.as_str()
     }
+
+    /// Return the line number.
+    pub fn number(&self) -> usize {
+        self.number
+    }
 }
 
 impl fmt::Display for Line {
@@ -77,7 +82,7 @@ impl fmt::Display for Line {
 }
 
 
-/// A trait generic for implementing line reading use by `LineParser`.
+/// A trait generic for implementing line reading use by `PropertyParser`.
 pub trait LineRead {
     /// Return the next line unwrapped and formated.
     fn next_line(&mut self) -> Option<Line>;

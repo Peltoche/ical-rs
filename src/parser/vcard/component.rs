@@ -5,12 +5,13 @@ use std::cell::RefCell;
 
 // Internal mods
 use parser::Component;
-use line::parser::{LineParsed, LineParser};
-use ::errors::*;
+use parser::errors::*;
+use property::{Property, PropertyParser};
 
 #[derive(Debug, Clone)]
+/// A VCARD contact.
 pub struct VcardContact {
-    pub properties: Vec<LineParsed>,
+    pub properties: Vec<Property>,
 }
 
 impl VcardContact {
@@ -20,13 +21,13 @@ impl VcardContact {
 }
 
 impl Component for VcardContact {
-    fn add_property(&mut self, property: LineParsed) {
+    fn add_property(&mut self, property: Property) {
         self.properties.push(property);
     }
 
     fn add_sub_component<B: BufRead>(&mut self,
                                      _: &str,
-                                     _: &RefCell<LineParser<B>>)
+                                     _: &RefCell<PropertyParser<B>>)
                                      -> Result<()> {
         return Err(ErrorKind::InvalidComponent.into());
     }

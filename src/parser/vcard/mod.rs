@@ -1,8 +1,8 @@
 //! Parse a VCARD address book.
 //!
-//! Wrap the result of the `LineParser` into components.
+//! Wrap the result of the `PropertyParser` into components.
 //!
-//! Each component contains properties (ie: LineParsed) or sub-components.
+//! Each component contains properties (ie: Property) or sub-components.
 //!
 //! * The VcardParser return `VcardContact` objects.
 //!
@@ -37,23 +37,24 @@ mod component;
 // Sys mods
 use std::io::BufRead;
 use std::cell::RefCell;
+use parser::errors::*;
 
 // Internal mods
-use line::{parser, reader};
-use self::component::VcardContact;
-use super::Component;
-use ::errors::*;
+use property::PropertyParser;
+use line::LineReader;
+use parser::vcard::component::VcardContact;
+use parser::Component;
 
 /// Reader returning `VcardContact` object from a `BufRead`.
 pub struct VcardParser<B> {
-    line_parser: RefCell<parser::LineParser<B>>,
+    line_parser: RefCell<PropertyParser<B>>,
 }
 
 impl<B: BufRead> VcardParser<B> {
     /// Create a new `VcardParser` from a reader.
     pub fn new(reader: B) -> VcardParser<B> {
-        let line_reader = reader::LineReader::new(reader);
-        let line_parser = parser::LineParser::new(line_reader);
+        let line_reader = LineReader::new(reader);
+        let line_parser = PropertyParser::new(line_reader);
 
         VcardParser { line_parser: RefCell::new(line_parser) }
     }

@@ -1,8 +1,8 @@
 //! Parse an ICAL calendar.
 //!
-//! Wrap the result of the `LineParser` into components.
+//! Wrap the result of the `PropertyParser` into components.
 //!
-//! Each component contains properties (ie: LineParsed) or sub-components.
+//! Each component contains properties (ie: Property) or sub-components.
 //!
 //! * The VcardParser return `IcalCalendar` objects.
 //!
@@ -40,21 +40,22 @@ use std::io::BufRead;
 use std::cell::RefCell;
 
 // Internal mods
-use line::{parser, reader};
-use self::component::IcalCalendar;
-use super::Component;
-use ::errors::*;
+use line::LineReader;
+use property::PropertyParser;
+use parser::ical::component::IcalCalendar;
+use parser::Component;
+use parser::errors::*;
 
 /// Reader returning `IcalCalendar` object from a `BufRead`.
 pub struct IcalParser<B> {
-    line_parser: RefCell<parser::LineParser<B>>,
+    line_parser: RefCell<PropertyParser<B>>,
 }
 
 impl<B: BufRead> IcalParser<B> {
     /// Return a new `IcalParser` from a `Reader`.
     pub fn new(reader: B) -> IcalParser<B> {
-        let line_reader = reader::LineReader::new(reader);
-        let line_parser = parser::LineParser::new(line_reader);
+        let line_reader = LineReader::new(reader);
+        let line_parser = PropertyParser::new(line_reader);
 
         IcalParser { line_parser: RefCell::new(line_parser) }
     }

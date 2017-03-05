@@ -21,7 +21,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! ical = "0.3.0"
+//! ical = "0.4.*"
 //! ```
 //!
 //! There is several ways to use Ical depending on the level of parsing you want. Some new
@@ -37,86 +37,27 @@
 extern crate error_chain;
 
 
-#[cfg(any(feature = "line-parser", feature = "line-reader"))]
-pub mod line;
-
-#[cfg(any(feature = "ical-parser", feature = "vcard-parser"))]
-pub mod parser;
-
 const PARAM_VALUE_DELIMITER: char = ',';
 const VALUE_DELIMITER: char = ':';
 const PARAM_DELIMITER: char = ';';
 const PARAM_NAME_DELIMITER: char = '=';
+const PARAM_QUOTE: char = '"';
 
+#[cfg(any(feature = "ical", feature = "vcard"))]
+pub mod parser;
 
-#[cfg(feature = "ical-parser")]
+#[cfg(feature = "ical")]
 pub use parser::ical::IcalParser;
 
-#[cfg(feature = "vcard-parser")]
+#[cfg(feature = "vcard")]
 pub use parser::vcard::VcardParser;
 
-#[cfg(feature = "line-parser")]
-pub use line::parser::LineParser;
+#[cfg(feature = "property")]
+pub mod property;
+#[cfg(feature = "property")]
+pub use property::PropertyParser;
 
-#[cfg(feature = "line-reader")]
-pub use line::reader::LineReader;
-
-
-
-mod errors {
-    error_chain! {
-        types {
-            Error, ErrorKind, ResultExt, Result;
-        }
-
-        foreign_links {
-        }
-
-        errors {
-            MissingHeader {
-                description("A header is missing.")
-                    display("missing header")
-            }
-
-            EndOfFile {
-                description("The end of file with an unfinished object.")
-                    display("end of file")
-            }
-
-            NotImplemented {
-                description("This feature is not implemented yet.")
-                    display("not implemented")
-            }
-
-            NotComplete {
-                description("The current object is not complete.")
-                    display("incomplete object")
-            }
-
-            InvalidComponent {
-                description("The current component is invalid.")
-                    display("invalid component")
-            }
-
-            MissingValueDelimiter {
-                description("Missing value delimiter.")
-                    display("missing value delimiter")
-            }
-
-            MissingName {
-                description("Missing name.")
-                    display("missing name")
-            }
-
-            MissingValue {
-                description("Missing value.")
-                    display("missing value")
-            }
-
-            InvalidParamFormat {
-                description("Invalid param format.")
-                    display("invalid param format")
-            }
-        }
-    }
-}
+#[cfg(feature = "line")]
+pub mod line;
+#[cfg(feature = "line")]
+pub use line::LineReader;

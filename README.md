@@ -1,11 +1,11 @@
 
-# ical-rs 0.3.0
+# ical-rs 0.4.0
 ===============
 
 [![Build Status](https://travis-ci.org/Peltoche/ical-rs.svg?branch=master)](https://travis-ci.org/Peltoche/ical-rs)
 
 
-This is a library to parse the ICalendar format defined in [RFC5545](http://tools.ietf.org/html/rfc5545), as well asl
+This library parse the ICalendar format defined in [RFC5545](http://tools.ietf.org/html/rfc5545), as well asl
 similar formats like VCard.
 
 There are probably some issues to be taken care of, but the library should work for most cases. If you like to help out and
@@ -22,7 +22,7 @@ Put this in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ical = "0.3.0"
+ical = "0.4.*"
 ```
 
 
@@ -34,15 +34,15 @@ the next releases.
 By default all the features are included but you can choose to include in you project only the needed ones.
 
 #### Warning
-  The parsers (LineParser / IcalParser) only parse the content and set to uppercase the case-insensitive fields. No checks
+  The parsers (PropertyParser / IcalParser) only parse the content and set to uppercase the case-insensitive fields. No checks
   are made on the fields validity.
 
 
 ### IcalParser / VcardParser
 
-Wrap the result of the LineParser into components.
+Wrap the result of the PropertyParser into components.
 
-Each component can contains properties (ie: LineParsed) or sub-components.
+Each component can contains properties (ie: Property) or sub-components.
 
 * The IcalParser return IcalCalendar
 * The VcardParser return VcardContact
@@ -50,9 +50,9 @@ Each component can contains properties (ie: LineParsed) or sub-components.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.3.*"
+version = "0.4.*"
 default-features = false
-features = ["ical-parser", "vcard-parser"]
+features = ["ical", "vcard"]
 ```
 
 Code:
@@ -80,10 +80,10 @@ IcalCalendar {
   properties: [],
   events: [
     IcalEvent {
-      properties: [ LineParsed { ... }, ... ],
+      properties: [ Property { ... }, ... ],
       alarms: [
         IcalAlarm {
-          properties: [ LineParsed { ... } ]
+          properties: [ Property { ... } ]
         }
       ]
     }
@@ -96,7 +96,7 @@ IcalCalendar {
 }
 ```
 
-### LineParser
+### PropertyParser
 
 Parse the result of LineReader into three parts:
 
@@ -111,9 +111,9 @@ It work for both the Vcard and Ical format.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.3.*"
+version = "0.4.*"
 default-features = false
-features = ["line-parser"]
+features = ["property"]
 ```
 
 Code:
@@ -127,7 +127,7 @@ fn main() {
     let buf = BufReader::new(File::open("/tmp/component.ics")
         .unwrap());
 
-    let reader = ical::LineParser::from_reader(buf);
+    let reader = ical::PropertyParser::from_reader(buf);
 
     for line in reader {
         println!("{:?}", line);
@@ -137,10 +137,10 @@ fn main() {
 
 Input -> Output:
 ```
-begin:VCALENDAR                           Ok(LineParsed { name: "BEGIN", params: None, value: Some("VCALENDAR") })
-ATTENDEE;cn=FooBar:mailto:foo3@bar    ->  Ok(LineParsed { name: "ATTENDEE", params: Some([("CN", "FooBar")]), value: Some("mailto:foo3@bar") })
-DESCRIPTION:                              Ok(LineParsed { name: "DESCRIPTION": params: None, value: None })
-END:VCALENDAR                             Ok(LineParsed { name: "END", params: None, value: Some("VCALENDAR") })
+begin:VCALENDAR                           Ok(Property { name: "BEGIN", params: None, value: Some("VCALENDAR") })
+ATTENDEE;cn=FooBar:mailto:foo3@bar    ->  Ok(Property { name: "ATTENDEE", params: Some([("CN", "FooBar")]), value: Some("mailto:foo3@bar") })
+DESCRIPTION:                              Ok(Property { name: "DESCRIPTION": params: None, value: None })
+END:VCALENDAR                             Ok(Property { name: "END", params: None, value: Some("VCALENDAR") })
 ```
 
 ### LineReader
@@ -156,7 +156,7 @@ Cargo.toml:
 [dependencies.ical]
 version = "0.3.*"
 default-features = false
-features = ["line-reader"]
+features = ["line"]
 ```
 
 Code:
