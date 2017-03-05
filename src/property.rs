@@ -9,17 +9,16 @@
 //! It work for both the Vcard and Ical format.
 //!
 //! #### Warning
-//!   The parsers PropertyParser only parse the content and set to uppercase the case-insensitive
+//!   The parsers `PropertyParser` only parse the content and set to uppercase the case-insensitive
 //!   fields. No checks are made on the fields validity.
 //!
 //! # Examples
 //!
-//! Cargo.toml:
 //! ```toml
 //! [dependencies.ical]
 //! version = "0.3.*"
 //! default-features = false
-//! features = ["line-parser"]
+//! features = ["property"]
 //! ```
 //!
 //! ```rust
@@ -48,18 +47,13 @@ use line::{LineReader, Line};
 use property::errors::*;
 
 /// A VCARD/ICAL property.
-///
-/// It's only a split of a raw line into the mains elements:
-/// - name: Property name.
-/// - params: Vector of (key,value) parameter.
-/// - value: Property Value.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Property {
-    /// Component name.
+    /// Property name.
     pub name: String,
-    /// Component list of parameters.
+    /// Property list of parameters.
     pub params: Option<Vec<(String, Vec<String>)>>,
-    /// Component value.
+    /// Property value.
     pub value: Option<String>,
 }
 
@@ -84,7 +78,7 @@ impl fmt::Display for Property {
     }
 }
 
-/// Take a `LineReader` and parse the content for Ical or Vcard file.
+/// Take a `LineReader` and return a list of `Property`.
 #[derive(Debug, Clone)]
 pub struct PropertyParser<B> {
     line_reader: LineReader<B>,
@@ -150,16 +144,16 @@ impl<B: BufRead> PropertyParser<B> {
 
                 let key = param_elements.next()
                     .and_then(|key| {
-                        if key.len() == 0 {
+                        if key.is_empty() {
                             return None;
                         }
 
-                        return Some(key);
+                        Some(key)
                     })
-                    .ok_or(ErrorKind::MissingParamKey(line.number()))?;
+                    .ok_or_else(|| ErrorKind::MissingParamKey(line.number()))?;
 
                 to_parse = param_elements.next()
-                    .ok_or(ErrorKind::MissingDelimiter(::PARAM_NAME_DELIMITER, line.number()))?;
+                    .ok_or_else(|| ErrorKind::MissingDelimiter(::PARAM_NAME_DELIMITER, line.number()))?;
 
                 let mut values = Vec::new();
 
@@ -174,11 +168,11 @@ impl<B: BufRead> PropertyParser<B> {
                         let mut elements = to_parse.splitn(3, ::PARAM_QUOTE).skip(1);
                         // unwrap is safe here as we have already check above if there is on '"'.
                         values.push(elements.next()
-                            .ok_or(ErrorKind::MissingClosingQuote(line.number()))?
+                            .ok_or_else(|| ErrorKind::MissingClosingQuote(line.number()))?
                             .to_string());
 
                         to_parse = elements.next()
-                            .ok_or(ErrorKind::MissingClosingQuote(line.number()))?
+                            .ok_or_else(|| ErrorKind::MissingClosingQuote(line.number()))?
                     } else {
                         // This is a 'raw' value. (NAME;Foo=Bar:value)
 
@@ -228,10 +222,10 @@ impl<B: BufRead> PropertyParser<B> {
 
         // Parse value
         to_parse = to_parse.trim_left_matches(::VALUE_DELIMITER);
-        if to_parse.len() > 0 {
-            property.value = Some(to_parse.to_string());
-        } else {
+        if to_parse.is_empty() {
             property.value = None;
+        } else {
+            property.value = Some(to_parse.to_string());
         }
 
         Ok(property)

@@ -2,14 +2,13 @@
 //!
 //! Wrap the result of the `PropertyParser` into components.
 //!
-//! Each component contains properties (ie: Property) or sub-components.
+//! Each component contains properties (ie: `Property`) or sub-components.
 //!
-//! * The VcardParser return `IcalCalendar` objects.
+//! * The `VcardParser` return `IcalCalendar` objects.
 //!
 //! # Examples
 //!
 //!
-//! Cargo.toml:
 //! ```toml
 //! [dependencies.ical]
 //! version = "0.3.*"

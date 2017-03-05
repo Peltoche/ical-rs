@@ -9,7 +9,7 @@ use property::{Property, PropertyParser};
 use parser::errors::*;
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 /// An ICAL calendar.
 pub struct IcalCalendar {
     pub properties: Vec<Property>,
@@ -84,7 +84,7 @@ impl Component for IcalCalendar {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct IcalAlarm {
     pub properties: Vec<Property>,
 }
@@ -105,12 +105,12 @@ impl Component for IcalAlarm {
                                      _: &str,
                                      _: &RefCell<PropertyParser<B>>)
                                      -> Result<()> {
-        return Err(ErrorKind::InvalidComponent.into());
+        Err(ErrorKind::InvalidComponent.into())
     }
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct IcalEvent {
     pub properties: Vec<Property>,
     pub alarms: Vec<IcalAlarm>,
@@ -149,7 +149,7 @@ impl Component for IcalEvent {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct IcalJournal {
     pub properties: Vec<Property>,
 }
@@ -170,12 +170,12 @@ impl Component for IcalJournal {
                                      _: &str,
                                      _: &RefCell<PropertyParser<B>>)
                                      -> Result<()> {
-        return Err(ErrorKind::InvalidComponent.into());
+        Err(ErrorKind::InvalidComponent.into())
     }
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct IcalTodo {
     pub properties: Vec<Property>,
     pub alarms: Vec<IcalAlarm>,
@@ -215,7 +215,7 @@ impl Component for IcalTodo {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct IcalTimeZone {
     pub properties: Vec<Property>,
 }
@@ -235,12 +235,12 @@ impl Component for IcalTimeZone {
                                      _: &str,
                                      _: &RefCell<PropertyParser<B>>)
                                      -> Result<()> {
-        return Err(ErrorKind::InvalidComponent.into());
+        Err(ErrorKind::InvalidComponent.into())
     }
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct IcalFreeBusy {
     pub properties: Vec<Property>,
 }
@@ -260,6 +260,6 @@ impl Component for IcalFreeBusy {
                                      _: &str,
                                      _: &RefCell<PropertyParser<B>>)
                                      -> Result<()> {
-        return Err(ErrorKind::InvalidComponent.into());
+        Err(ErrorKind::InvalidComponent.into())
     }
 }

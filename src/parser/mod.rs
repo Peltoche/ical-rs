@@ -1,7 +1,7 @@
 //! Wrapper around `PropertyParser`
 //!
 //! #### Warning
-//!   The parsers (VcardParser / IcalParser) only parse the content and set to uppercase
+//!   The parsers (`VcardParser` / `IcalParser`) only parse the content and set to uppercase
 //!   the case-insensitive fields.  No checks are made on the fields validity.
 //!
 //!
