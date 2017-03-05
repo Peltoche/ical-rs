@@ -8,7 +8,7 @@ use parser::Component;
 use parser::errors::*;
 use property::{Property, PropertyParser};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 /// A VCARD contact.
 pub struct VcardContact {
     pub properties: Vec<Property>,
@@ -29,6 +29,7 @@ impl Component for VcardContact {
                                      _: &str,
                                      _: &RefCell<PropertyParser<B>>)
                                      -> Result<()> {
-        return Err(ErrorKind::InvalidComponent.into());
+
+        Err(ErrorKind::InvalidComponent.into())
     }
 }

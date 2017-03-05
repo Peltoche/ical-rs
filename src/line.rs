@@ -17,7 +17,6 @@
 //!
 //! # Examples
 //!
-//! Cargo.toml:
 //! ```toml
 //! [dependencies.ical]
 //! version = "0.3.*"
@@ -49,7 +48,7 @@ use std::fmt;
 ///
 /// Its inner is only a raw line from the file. No parsing or checking have
 /// been made yet.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Line {
     inner: String,
     number: usize,
@@ -89,8 +88,8 @@ pub trait LineRead {
 }
 
 
-#[derive(Debug, Clone)]
-/// Take a `BufRead` and return the merged `Line`.
+#[derive(Debug, Clone, Default)]
+/// Take a `BufRead` and return the unfolded `Line`.
 pub struct LineReader<B> {
     reader: B,
     saved: Option<String>,
@@ -138,7 +137,7 @@ impl<B: BufRead> LineRead for LineReader<B> {
 
             if line.is_empty() {
                 self.number += 1;
-            } else if line.starts_with(" ") || line.starts_with("  ") {
+            } else if line.starts_with(' ') || line.starts_with("  ") {
                 // This is a multi-lines attribute.
 
                 // Remove the ' ' charactere and join with the current line.

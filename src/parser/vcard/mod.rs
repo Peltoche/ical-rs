@@ -4,11 +4,10 @@
 //!
 //! Each component contains properties (ie: Property) or sub-components.
 //!
-//! * The VcardParser return `VcardContact` objects.
+//! * The `VcardParser` return `VcardContact` objects.
 //!
 //! # Examples
 //!
-//! Cargo.toml:
 //! ```toml
 //! [dependencies.ical]
 //! version = "0.3.*"
