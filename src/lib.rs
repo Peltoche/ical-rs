@@ -1,24 +1,63 @@
+//! ical-rs 0.3.0
+//!
+//! This is a library to parse the ICalendar format defined in
+//! [RFC5545](http://tools.ietf.org/html/rfc5545), as well as similar formats
+//! like VCard.
+//!
+//! There are probably some issues to be taken care of, but the library should work for most
+//! cases. If you like to help out and
+//! would like to discuss any API changes, please [contact me](dev@halium.fr) or create an issue.
+//!
+//! The initial goal was to make a port from the [ical.js](https://github.com/mozilla-comm/ical.js)
+//! library in JavaScript and
+//! many code/algorithms was taken from it but in order to but more 'Rusty' a complete rewrite
+//! have been made.
+//!
+//! ## [Documentation](https://peltoche.github.io/ical-rs/ical/)
+//!
+//! ## Installing
+//!
+//! Put this in your `Cargo.toml`:
+//!
+//! ```toml
+//! [dependencies]
+//! ical = "0.4.*"
+//! ```
+//!
+//! There is several ways to use Ical depending on the level of parsing you want. Some new
+//! wrapper/formater could appeare in the next releases.
+//!
+//! By default all the features are included but you can choose to include in you
+//! project only the needed ones.
+//!
 
-#[cfg(any(feature = "line-parser", feature = "line-reader"))]
-pub mod line;
+#![deny(missing_docs)]
 
-#[cfg(any(feature = "ical-parser", feature = "vcard-parser"))]
+#[macro_use]
+extern crate error_chain;
+
+
+const PARAM_VALUE_DELIMITER: char = ',';
+const VALUE_DELIMITER: char = ':';
+const PARAM_DELIMITER: char = ';';
+const PARAM_NAME_DELIMITER: char = '=';
+const PARAM_QUOTE: char = '"';
+
+#[cfg(any(feature = "ical", feature = "vcard"))]
 pub mod parser;
 
-pub const PARAM_VALUE_DELIMITER: char = ',';
-pub const VALUE_DELIMITER: char = ':';
-pub const PARAM_DELIMITER: char = ';';
-pub const PARAM_NAME_DELIMITER: char = '=';
-
-
-#[cfg(feature = "ical-parser")]
+#[cfg(feature = "ical")]
 pub use parser::ical::IcalParser;
 
-#[cfg(feature = "vcard-parser")]
+#[cfg(feature = "vcard")]
 pub use parser::vcard::VcardParser;
 
-#[cfg(feature = "line-parser")]
-pub use line::parser::LineParser;
+#[cfg(feature = "property")]
+pub mod property;
+#[cfg(feature = "property")]
+pub use property::PropertyParser;
 
-#[cfg(feature = "line-reader")]
-pub use line::reader::LineReader;
+#[cfg(feature = "line")]
+pub mod line;
+#[cfg(feature = "line")]
+pub use line::LineReader;

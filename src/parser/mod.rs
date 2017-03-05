@@ -1,32 +1,46 @@
+//! Wrapper around `PropertyParser`
+//!
+//! #### Warning
+//!   The parsers (VcardParser / IcalParser) only parse the content and set to uppercase
+//!   the case-insensitive fields.  No checks are made on the fields validity.
+//!
+//!
 
 pub mod ical;
 pub mod vcard;
 
+// Sys mods
 use std::io::BufRead;
 use std::cell::RefCell;
-use std::error::Error;
-use std::fmt;
 
-use line::parser;
+// Internal mods
+use property::{Property, PropertyParser};
+use parser::errors::*;
 
+/// An interface for an Ical/Vcard component.
+///
+/// It take a `PropertyParser` and fill the component with. It's also able to create
+/// sub-component used by event and alarms.
 pub trait Component {
+    /// Add the givent sub component.
     fn add_sub_component<B: BufRead>(&mut self,
                                      value: &str,
-                                     line_parser: &RefCell<parser::LineParser<B>>)
-                                     -> Result<(), ParseError>;
-    fn add_property(&mut self, property: parser::LineParsed);
+                                     line_parser: &RefCell<PropertyParser<B>>)
+                                     -> Result<()>;
 
-    fn parse<B: BufRead>(&mut self,
-                         line_parser: &RefCell<parser::LineParser<B>>)
-                         -> Result<(), ParseError> {
+    /// Add the givent property.
+    fn add_property(&mut self, property: Property);
+
+    /// Parse the content from `line_parser` and fill the component with.
+    fn parse<B: BufRead>(&mut self, line_parser: &RefCell<PropertyParser<B>>) -> Result<()> {
 
         loop {
-            let line: parser::LineParsed;
+            let line: Property;
 
             {
                 line = match line_parser.borrow_mut().next() {
                     Some(val) => val,
-                    None => return Err(ParseError::NotComplete),
+                    None => return Err(ErrorKind::NotComplete.into()),
                 }?;
             }
 
@@ -35,7 +49,7 @@ pub trait Component {
                 "BEGIN" => {
                     match line.value {
                         Some(v) => self.add_sub_component(v.as_str(), line_parser)?,
-                        None => return Err(ParseError::NotComplete),
+                        None => return Err(ErrorKind::NotComplete.into()),
                     }
                 }
 
@@ -48,44 +62,40 @@ pub trait Component {
 }
 
 
-#[derive(Debug)]
-pub enum ParseError {
-    Parse(parser::ParseError),
-    EndOfFile,
-    MissingHeader,
-    NotImplemented,
-    NotComplete,
-    InvalidComponent(String),
-}
+#[allow(missing_docs)]
+pub mod errors {
+    //! The parser errors.
 
-impl Error for ParseError {
-    fn description(&self) -> &str {
-        match *self {
-            ParseError::MissingHeader => "Missing VCALENDAR header.",
-            ParseError::EndOfFile => "End of file.",
-            ParseError::NotImplemented => "Element parsing not implemented yet.",
-            ParseError::NotComplete => "Calendar component is not complete.",
-            ParseError::InvalidComponent(_) => "Contains an invalid component.",
-            ParseError::Parse(ref err) => err.description(),
+    use property;
+
+    error_chain! {
+        types {
+            Error, ErrorKind, ResultExt, Result;
         }
-    }
 
-    fn cause(&self) -> Option<&Error> {
-        match *self {
-            ParseError::Parse(ref err) => Some(err),
-            _ => None,
+        foreign_links {
+            Property(property::errors::Error);
         }
-    }
-}
 
-impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
+        errors {
 
-impl From<parser::ParseError> for ParseError {
-    fn from(err: parser::ParseError) -> ParseError {
-        ParseError::Parse(err)
+            /// The current component is invalid.
+            InvalidComponent {
+                description("The current component is invalid.")
+                    display("invalid component")
+            }
+
+            /// the current object is not complete.
+            NotComplete {
+                description("The current object is not complete.")
+                    display("incomplete object")
+            }
+
+            /// A header is missing.
+            MissingHeader {
+                description("A header is missing.")
+                    display("missing header")
+            }
+        }
     }
 }
