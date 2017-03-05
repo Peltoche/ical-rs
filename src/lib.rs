@@ -1,4 +1,4 @@
-//! ical-rs 0.3.0
+//! ical-rs 0.4.0
 //!
 //! This is a library to parse the `ICalendar` format defined in
 //! [RFC5545](http://tools.ietf.org/html/rfc5545), as well as similar formats
