@@ -235,7 +235,17 @@ impl Component for IcalTimeZone {
                                      _: &str,
                                      _: &RefCell<PropertyParser<B>>)
                                      -> Result<()> {
-        Err(ErrorKind::InvalidComponent.into())
+        match value {
+            "STANDARD" => {
+
+            }
+            "DAYLIGHT" => {
+
+            }
+            _ => return Err(ErrorKind::InvalidComponent.into())
+        };
+
+        Ok(())
     }
 }
 
