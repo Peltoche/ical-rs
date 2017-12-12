@@ -232,8 +232,8 @@ impl Component for IcalTimeZone {
     }
 
     fn add_sub_component<B: BufRead>(&mut self,
-                                     _: &str,
-                                     _: &RefCell<PropertyParser<B>>)
+                                     value: &str,
+                                     _line_parser: &RefCell<PropertyParser<B>>)
                                      -> Result<()> {
         match value {
             "STANDARD" => {
