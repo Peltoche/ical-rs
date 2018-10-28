@@ -1,8 +1,7 @@
+[![Build Status](https://travis-ci.org/Peltoche/ical-rs.svg?branch=master)](https://travis-ci.org/Peltoche/ical-rs)
 
 # ical-rs 0.4.0
-===============
 
-[![Build Status](https://travis-ci.org/Peltoche/ical-rs.svg?branch=master)](https://travis-ci.org/Peltoche/ical-rs)
 
 
 This library parse the ICalendar format defined in [RFC5545](http://tools.ietf.org/html/rfc5545), as well asl
