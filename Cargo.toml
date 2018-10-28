@@ -2,7 +2,7 @@
 authors = ["Peltoche <dev@halium.fr>"]
 categories = ["parsing"]
 description = "Ical/Vcard parser for Rust"
-documentation = "https://peltoche.github.io/ical-rs/ical/index.html"
+documentation = "https://docs.rs/ical"
 homepage = "https://github.com/Peltoche/ical-rs"
 keywords = ["ical", "vcard", "parser"]
 license-file = "./LICENSE"
