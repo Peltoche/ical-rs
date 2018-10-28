@@ -3,7 +3,7 @@
 [![Latest version](https://img.shields.io/crates/v/ical.svg)](https://crates.io/crates/ical)
 [![Documentation](https://docs.rs/ical/badge.svg)](https://docs.rs/ical)
 
-# ical-rs 0.4.0
+# ical-rs
 
 
 
