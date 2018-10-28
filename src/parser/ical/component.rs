@@ -218,15 +218,50 @@ impl Component for IcalTodo {
 #[derive(Debug, Clone, Default)]
 pub struct IcalTimeZone {
     pub properties: Vec<Property>,
+    pub transitions: Vec<IcalTimeZoneTransition>,
 }
 
 impl IcalTimeZone {
     pub fn new() -> IcalTimeZone {
-        IcalTimeZone { properties: Vec::new() }
+        IcalTimeZone { properties: Vec::new(), transitions: Vec::new() }
     }
 }
 
 impl Component for IcalTimeZone {
+    fn add_property(&mut self, property: Property) {
+        self.properties.push(property);
+    }
+
+    fn add_sub_component<B: BufRead>(&mut self,
+                                     value: &str,
+                                     line_parser: &RefCell<PropertyParser<B>>)
+                                     -> Result<()> {
+        match value {
+            "STANDARD" | "DAYLIGHT" => {
+                let mut transition = IcalTimeZoneTransition::new();
+                transition.parse(line_parser)?;
+                self.transitions.push(transition);
+            }
+            _ => return Err(ErrorKind::InvalidComponent.into())
+        };
+
+        Ok(())
+    }
+}
+
+
+#[derive(Debug, Clone, Default)]
+pub struct IcalTimeZoneTransition {
+    pub properties: Vec<Property>,
+}
+
+impl IcalTimeZoneTransition {
+    pub fn new() -> IcalTimeZoneTransition {
+        IcalTimeZoneTransition { properties: Vec::new() }
+    }
+}
+
+impl Component for IcalTimeZoneTransition {
     fn add_property(&mut self, property: Property) {
         self.properties.push(property);
     }
