@@ -31,18 +31,17 @@
 //! }
 //! ```
 
-mod component;
+pub mod component;
 
 // Sys mods
-use std::io::BufRead;
-use std::cell::RefCell;
 use parser::errors::*;
+use std::cell::RefCell;
+use std::io::BufRead;
 
 // Internal mods
-use property::PropertyParser;
 use line::LineReader;
-use parser::vcard::component::VcardContact;
 use parser::Component;
+use property::PropertyParser;
 
 /// Reader returning `VcardContact` object from a `BufRead`.
 pub struct VcardParser<B> {
@@ -55,7 +54,9 @@ impl<B: BufRead> VcardParser<B> {
         let line_reader = LineReader::new(reader);
         let line_parser = PropertyParser::new(line_reader);
 
-        VcardParser { line_parser: RefCell::new(line_parser) }
+        VcardParser {
+            line_parser: RefCell::new(line_parser),
+        }
     }
 
     /// Read the next line and check if it's a valid VCARD start.
@@ -65,8 +66,11 @@ impl<B: BufRead> VcardParser<B> {
             None => return Ok(None),
         };
 
-        if line.name != "BEGIN" || line.value.is_none() || line.value.unwrap() != "VCARD" ||
-           line.params != None {
+        if line.name != "BEGIN"
+            || line.value.is_none()
+            || line.value.unwrap() != "VCARD"
+            || line.params != None
+        {
             return Err(ErrorKind::MissingHeader.into());
         }
 
@@ -74,11 +78,10 @@ impl<B: BufRead> VcardParser<B> {
     }
 }
 
-
 impl<B: BufRead> Iterator for VcardParser<B> {
-    type Item = Result<VcardContact>;
+    type Item = Result<component::VcardContact>;
 
-    fn next(&mut self) -> Option<Result<VcardContact>> {
+    fn next(&mut self) -> Option<Result<component::VcardContact>> {
         match self.check_header() {
             Ok(res) => {
                 if res == None {
@@ -88,7 +91,7 @@ impl<B: BufRead> Iterator for VcardParser<B> {
             Err(err) => return Some(Err(err)),
         };
 
-        let mut contact = VcardContact::new();
+        let mut contact = component::VcardContact::new();
         let result = match contact.parse(&self.line_parser) {
             Ok(_) => Ok(contact),
             Err(err) => Err(err),

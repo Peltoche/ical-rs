@@ -31,11 +31,8 @@
 //! project only the needed ones.
 //!
 
-#![deny(missing_docs)]
-
 #[macro_use]
 extern crate error_chain;
-
 
 const PARAM_VALUE_DELIMITER: char = ',';
 const VALUE_DELIMITER: char = ':';

@@ -32,18 +32,17 @@
 //! }
 //! ```
 
-mod component;
+pub mod component;
 
 // Sys mods.
-use std::io::BufRead;
 use std::cell::RefCell;
+use std::io::BufRead;
 
 // Internal mods
 use line::LineReader;
-use property::PropertyParser;
-use parser::ical::component::IcalCalendar;
-use parser::Component;
 use parser::errors::*;
+use parser::Component;
+use property::PropertyParser;
 
 /// Reader returning `IcalCalendar` object from a `BufRead`.
 pub struct IcalParser<B> {
@@ -56,7 +55,9 @@ impl<B: BufRead> IcalParser<B> {
         let line_reader = LineReader::new(reader);
         let line_parser = PropertyParser::new(line_reader);
 
-        IcalParser { line_parser: RefCell::new(line_parser) }
+        IcalParser {
+            line_parser: RefCell::new(line_parser),
+        }
     }
 
     /// Read the next line and check if it's a valid VCALENDAR start.
@@ -66,8 +67,11 @@ impl<B: BufRead> IcalParser<B> {
             None => return Ok(None),
         };
 
-        if line.name != "BEGIN" || line.value.is_none() || line.value.unwrap() != "VCALENDAR" ||
-           line.params != None {
+        if line.name != "BEGIN"
+            || line.value.is_none()
+            || line.value.unwrap() != "VCALENDAR"
+            || line.params != None
+        {
             return Err(ErrorKind::MissingHeader.into());
         }
 
@@ -76,9 +80,9 @@ impl<B: BufRead> IcalParser<B> {
 }
 
 impl<B: BufRead> Iterator for IcalParser<B> {
-    type Item = Result<IcalCalendar>;
+    type Item = Result<component::IcalCalendar>;
 
-    fn next(&mut self) -> Option<Result<IcalCalendar>> {
+    fn next(&mut self) -> Option<Result<component::IcalCalendar>> {
         match self.check_header() {
             Ok(res) => {
                 if res == None {
@@ -88,8 +92,7 @@ impl<B: BufRead> Iterator for IcalParser<B> {
             Err(err) => return Some(Err(err)),
         };
 
-
-        let mut calendar = IcalCalendar::new();
+        let mut calendar = component::IcalCalendar::new();
         let result = match calendar.parse(&self.line_parser) {
             Ok(_) => Ok(calendar),
             Err(err) => Err(err),
