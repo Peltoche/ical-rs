@@ -24,7 +24,7 @@ Put this in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ical = "0.4.*"
+ical = "0.5.*"
 ```
 
 
@@ -52,7 +52,7 @@ Each component can contains properties (ie: Property) or sub-components.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.4.*"
+version = "0.5.*"
 default-features = false
 features = ["ical", "vcard"]
 ```
@@ -113,7 +113,7 @@ It work for both the Vcard and Ical format.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.4.*"
+version = "0.5.*"
 default-features = false
 features = ["property"]
 ```
@@ -156,7 +156,7 @@ It work for both the Vcard and Ical format.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.3.*"
+version = "0.5.*"
 default-features = false
 features = ["line"]
 ```
