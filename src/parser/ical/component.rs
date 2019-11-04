@@ -1,13 +1,11 @@
-
 // Sys mods
-use std::io::BufRead;
 use std::cell::RefCell;
+use std::io::BufRead;
 
 // Internal mods
+use crate::parser::errors::*;
 use crate::parser::Component;
 use crate::property::{Property, PropertyParser};
-use crate::parser::errors::*;
-
 
 #[derive(Debug, Clone, Default)]
 /// An ICAL calendar.
@@ -40,11 +38,11 @@ impl Component for IcalCalendar {
         self.properties.push(property);
     }
 
-    fn add_sub_component<B: BufRead>(&mut self,
-                                     value: &str,
-                                     line_parser: &RefCell<PropertyParser<B>>)
-                                     -> Result<()> {
-
+    fn add_sub_component<B: BufRead>(
+        &mut self,
+        value: &str,
+        line_parser: &RefCell<PropertyParser<B>>,
+    ) -> Result<()> {
         match value {
             "VALARM" => {
                 let mut alarm = IcalAlarm::new();
@@ -77,7 +75,6 @@ impl Component for IcalCalendar {
                 self.timezones.push(timezone);
             }
             _ => return Err(ErrorKind::InvalidComponent.into()),
-
         };
 
         Ok(())
@@ -89,10 +86,11 @@ pub struct IcalAlarm {
     pub properties: Vec<Property>,
 }
 
-
 impl IcalAlarm {
     pub fn new() -> IcalAlarm {
-        IcalAlarm { properties: Vec::new() }
+        IcalAlarm {
+            properties: Vec::new(),
+        }
     }
 }
 
@@ -101,14 +99,14 @@ impl Component for IcalAlarm {
         self.properties.push(property);
     }
 
-    fn add_sub_component<B: BufRead>(&mut self,
-                                     _: &str,
-                                     _: &RefCell<PropertyParser<B>>)
-                                     -> Result<()> {
+    fn add_sub_component<B: BufRead>(
+        &mut self,
+        _: &str,
+        _: &RefCell<PropertyParser<B>>,
+    ) -> Result<()> {
         Err(ErrorKind::InvalidComponent.into())
     }
 }
-
 
 #[derive(Debug, Clone, Default)]
 pub struct IcalEvent {
@@ -130,11 +128,11 @@ impl Component for IcalEvent {
         self.properties.push(property);
     }
 
-    fn add_sub_component<B: BufRead>(&mut self,
-                                     value: &str,
-                                     line_parser: &RefCell<PropertyParser<B>>)
-                                     -> Result<()> {
-
+    fn add_sub_component<B: BufRead>(
+        &mut self,
+        value: &str,
+        line_parser: &RefCell<PropertyParser<B>>,
+    ) -> Result<()> {
         match value {
             "VALARM" => {
                 let mut alarm = IcalAlarm::new();
@@ -148,16 +146,16 @@ impl Component for IcalEvent {
     }
 }
 
-
 #[derive(Debug, Clone, Default)]
 pub struct IcalJournal {
     pub properties: Vec<Property>,
 }
 
-
 impl IcalJournal {
     pub fn new() -> IcalJournal {
-        IcalJournal { properties: Vec::new() }
+        IcalJournal {
+            properties: Vec::new(),
+        }
     }
 }
 
@@ -166,14 +164,14 @@ impl Component for IcalJournal {
         self.properties.push(property);
     }
 
-    fn add_sub_component<B: BufRead>(&mut self,
-                                     _: &str,
-                                     _: &RefCell<PropertyParser<B>>)
-                                     -> Result<()> {
+    fn add_sub_component<B: BufRead>(
+        &mut self,
+        _: &str,
+        _: &RefCell<PropertyParser<B>>,
+    ) -> Result<()> {
         Err(ErrorKind::InvalidComponent.into())
     }
 }
-
 
 #[derive(Debug, Clone, Default)]
 pub struct IcalTodo {
@@ -195,11 +193,11 @@ impl Component for IcalTodo {
         self.properties.push(property);
     }
 
-    fn add_sub_component<B: BufRead>(&mut self,
-                                     value: &str,
-                                     line_parser: &RefCell<PropertyParser<B>>)
-                                     -> Result<()> {
-
+    fn add_sub_component<B: BufRead>(
+        &mut self,
+        value: &str,
+        line_parser: &RefCell<PropertyParser<B>>,
+    ) -> Result<()> {
         match value {
             "VALARM" => {
                 let mut alarm = IcalAlarm::new();
@@ -207,13 +205,11 @@ impl Component for IcalTodo {
                 self.alarms.push(alarm);
             }
             _ => return Err(ErrorKind::InvalidComponent.into()),
-
         };
 
         Ok(())
     }
 }
-
 
 #[derive(Debug, Clone, Default)]
 pub struct IcalTimeZone {
@@ -223,7 +219,10 @@ pub struct IcalTimeZone {
 
 impl IcalTimeZone {
     pub fn new() -> IcalTimeZone {
-        IcalTimeZone { properties: Vec::new(), transitions: Vec::new() }
+        IcalTimeZone {
+            properties: Vec::new(),
+            transitions: Vec::new(),
+        }
     }
 }
 
@@ -232,23 +231,23 @@ impl Component for IcalTimeZone {
         self.properties.push(property);
     }
 
-    fn add_sub_component<B: BufRead>(&mut self,
-                                     value: &str,
-                                     line_parser: &RefCell<PropertyParser<B>>)
-                                     -> Result<()> {
+    fn add_sub_component<B: BufRead>(
+        &mut self,
+        value: &str,
+        line_parser: &RefCell<PropertyParser<B>>,
+    ) -> Result<()> {
         match value {
             "STANDARD" | "DAYLIGHT" => {
                 let mut transition = IcalTimeZoneTransition::new();
                 transition.parse(line_parser)?;
                 self.transitions.push(transition);
             }
-            _ => return Err(ErrorKind::InvalidComponent.into())
+            _ => return Err(ErrorKind::InvalidComponent.into()),
         };
 
         Ok(())
     }
 }
-
 
 #[derive(Debug, Clone, Default)]
 pub struct IcalTimeZoneTransition {
@@ -257,7 +256,9 @@ pub struct IcalTimeZoneTransition {
 
 impl IcalTimeZoneTransition {
     pub fn new() -> IcalTimeZoneTransition {
-        IcalTimeZoneTransition { properties: Vec::new() }
+        IcalTimeZoneTransition {
+            properties: Vec::new(),
+        }
     }
 }
 
@@ -266,14 +267,14 @@ impl Component for IcalTimeZoneTransition {
         self.properties.push(property);
     }
 
-    fn add_sub_component<B: BufRead>(&mut self,
-                                     _: &str,
-                                     _: &RefCell<PropertyParser<B>>)
-                                     -> Result<()> {
+    fn add_sub_component<B: BufRead>(
+        &mut self,
+        _: &str,
+        _: &RefCell<PropertyParser<B>>,
+    ) -> Result<()> {
         Err(ErrorKind::InvalidComponent.into())
     }
 }
-
 
 #[derive(Debug, Clone, Default)]
 pub struct IcalFreeBusy {
@@ -282,7 +283,9 @@ pub struct IcalFreeBusy {
 
 impl IcalFreeBusy {
     pub fn new() -> IcalFreeBusy {
-        IcalFreeBusy { properties: Vec::new() }
+        IcalFreeBusy {
+            properties: Vec::new(),
+        }
     }
 }
 
@@ -291,10 +294,11 @@ impl Component for IcalFreeBusy {
         self.properties.push(property);
     }
 
-    fn add_sub_component<B: BufRead>(&mut self,
-                                     _: &str,
-                                     _: &RefCell<PropertyParser<B>>)
-                                     -> Result<()> {
+    fn add_sub_component<B: BufRead>(
+        &mut self,
+        _: &str,
+        _: &RefCell<PropertyParser<B>>,
+    ) -> Result<()> {
         Err(ErrorKind::InvalidComponent.into())
     }
 }

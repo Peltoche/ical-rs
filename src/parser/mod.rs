@@ -10,12 +10,12 @@ pub mod ical;
 pub mod vcard;
 
 // Sys mods
-use std::io::BufRead;
 use std::cell::RefCell;
+use std::io::BufRead;
 
 // Internal mods
-use crate::property::{Property, PropertyParser};
 use crate::parser::errors::*;
+use crate::property::{Property, PropertyParser};
 
 /// An interface for an Ical/Vcard component.
 ///
@@ -23,17 +23,17 @@ use crate::parser::errors::*;
 /// sub-component used by event and alarms.
 pub trait Component {
     /// Add the givent sub component.
-    fn add_sub_component<B: BufRead>(&mut self,
-                                     value: &str,
-                                     line_parser: &RefCell<PropertyParser<B>>)
-                                     -> Result<()>;
+    fn add_sub_component<B: BufRead>(
+        &mut self,
+        value: &str,
+        line_parser: &RefCell<PropertyParser<B>>,
+    ) -> Result<()>;
 
     /// Add the givent property.
     fn add_property(&mut self, property: Property);
 
     /// Parse the content from `line_parser` and fill the component with.
     fn parse<B: BufRead>(&mut self, line_parser: &RefCell<PropertyParser<B>>) -> Result<()> {
-
         loop {
             let line: Property;
 
@@ -46,12 +46,10 @@ pub trait Component {
 
             match line.name.as_str() {
                 "END" => break,
-                "BEGIN" => {
-                    match line.value {
-                        Some(v) => self.add_sub_component(v.as_str(), line_parser)?,
-                        None => return Err(ErrorKind::NotComplete.into()),
-                    }
-                }
+                "BEGIN" => match line.value {
+                    Some(v) => self.add_sub_component(v.as_str(), line_parser)?,
+                    None => return Err(ErrorKind::NotComplete.into()),
+                },
 
                 _ => self.add_property(line),
             };
@@ -60,7 +58,6 @@ pub trait Component {
         Ok(())
     }
 }
-
 
 #[allow(missing_docs)]
 pub mod errors {

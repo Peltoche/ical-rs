@@ -1,11 +1,10 @@
-
 #[cfg(feature = "property")]
 pub mod property {
     extern crate ical;
 
-    use std::io::BufReader;
-    use std::io::BufRead;
     use std::fs::File;
+    use std::io::BufRead;
+    use std::io::BufReader;
 
     #[test]
     fn ical() {
@@ -13,7 +12,6 @@ pub mod property {
 
         let mut valids =
             BufReader::new(File::open("./tests/ressources/ical_property.res").unwrap()).lines();
-
 
         let reader = ical::PropertyParser::from_reader(input);
 
@@ -29,14 +27,12 @@ pub mod property {
         }
     }
 
-
     #[test]
     fn vcard() {
         let input = BufReader::new(File::open("./tests/ressources/vcard_input.vcf").unwrap());
 
         let mut valids =
             BufReader::new(File::open("./tests/ressources/vcard_property.res").unwrap()).lines();
-
 
         let reader = ical::PropertyParser::from_reader(input);
 
@@ -59,7 +55,6 @@ pub mod property {
         let mut valids =
             BufReader::new(File::open("./tests/ressources/property_error.res").unwrap()).lines();
 
-
         let reader = ical::PropertyParser::from_reader(input);
 
         for res in reader {
@@ -75,22 +70,20 @@ pub mod property {
     }
 }
 
-
 #[cfg(feature = "line")]
 pub mod line {
     extern crate ical;
 
-    use std::io::BufReader;
-    use std::io::BufRead;
     use std::fs::File;
+    use std::io::BufRead;
+    use std::io::BufReader;
 
     #[test]
     fn ical() {
         let input = BufReader::new(File::open("./tests/ressources/ical_input.ics").unwrap());
 
-        let mut valids = BufReader::new(File::open("./tests/ressources/ical_line.res").unwrap())
-            .lines();
-
+        let mut valids =
+            BufReader::new(File::open("./tests/ressources/ical_line.res").unwrap()).lines();
 
         let reader = ical::LineReader::new(input);
 
@@ -105,9 +98,8 @@ pub mod line {
     fn vcard() {
         let input = BufReader::new(File::open("./tests/ressources/vcard_input.vcf").unwrap());
 
-        let mut valids = BufReader::new(File::open("./tests/ressources/vcard_line.res").unwrap())
-            .lines();
-
+        let mut valids =
+            BufReader::new(File::open("./tests/ressources/vcard_line.res").unwrap()).lines();
 
         let reader = ical::LineReader::new(input);
 
@@ -123,17 +115,16 @@ pub mod line {
 pub mod parser {
     extern crate ical;
 
-    use std::io::BufReader;
-    use std::io::BufRead;
     use std::fs::File;
+    use std::io::BufRead;
+    use std::io::BufReader;
 
     #[test]
     fn ical() {
         let input = BufReader::new(File::open("./tests/ressources/ical_input.ics").unwrap());
 
-        let mut valids = BufReader::new(File::open("./tests/ressources/ical_parser.res").unwrap())
-            .lines();
-
+        let mut valids =
+            BufReader::new(File::open("./tests/ressources/ical_parser.res").unwrap()).lines();
 
         let reader = ical::IcalParser::new(input);
 
@@ -153,9 +144,8 @@ pub mod parser {
     fn vcard() {
         let input = BufReader::new(File::open("./tests/ressources/vcard_input.vcf").unwrap());
 
-        let mut valids = BufReader::new(File::open("./tests/ressources/vcard_parser.res").unwrap())
-            .lines();
-
+        let mut valids =
+            BufReader::new(File::open("./tests/ressources/vcard_parser.res").unwrap()).lines();
 
         let reader = ical::VcardParser::new(input);
 
@@ -164,7 +154,6 @@ pub mod parser {
                 Ok(res) => res,
                 Err(err) => panic!("Throw errror: {}", err),
             };
-
 
             let output = format!("{:?}", contact);
 
