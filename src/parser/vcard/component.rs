@@ -4,9 +4,9 @@ use std::io::BufRead;
 use std::cell::RefCell;
 
 // Internal mods
-use parser::Component;
-use parser::errors::*;
-use property::{Property, PropertyParser};
+use crate::parser::Component;
+use crate::parser::errors::*;
+use crate::property::{Property, PropertyParser};
 
 #[derive(Debug, Clone, Default)]
 /// A VCARD contact.

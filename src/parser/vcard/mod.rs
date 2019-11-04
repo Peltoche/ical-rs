@@ -34,14 +34,14 @@
 pub mod component;
 
 // Sys mods
-use parser::errors::*;
+use crate::parser::errors::*;
 use std::cell::RefCell;
 use std::io::BufRead;
 
 // Internal mods
-use line::LineReader;
-use parser::Component;
-use property::PropertyParser;
+use crate::line::LineReader;
+use crate::parser::Component;
+use crate::property::PropertyParser;
 
 /// Reader returning `VcardContact` object from a `BufRead`.
 pub struct VcardParser<B> {

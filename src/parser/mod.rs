@@ -14,8 +14,8 @@ use std::io::BufRead;
 use std::cell::RefCell;
 
 // Internal mods
-use property::{Property, PropertyParser};
-use parser::errors::*;
+use crate::property::{Property, PropertyParser};
+use crate::parser::errors::*;
 
 /// An interface for an Ical/Vcard component.
 ///
@@ -66,7 +66,7 @@ pub trait Component {
 pub mod errors {
     //! The parser errors.
 
-    use property;
+    use crate::property;
 
     error_chain! {
         types {
