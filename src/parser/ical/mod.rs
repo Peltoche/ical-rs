@@ -39,10 +39,10 @@ use std::cell::RefCell;
 use std::io::BufRead;
 
 // Internal mods
-use line::LineReader;
-use parser::errors::*;
-use parser::Component;
-use property::PropertyParser;
+use crate::line::LineReader;
+use crate::parser::errors::*;
+use crate::parser::Component;
+use crate::property::PropertyParser;
 
 /// Reader returning `IcalCalendar` object from a `BufRead`.
 pub struct IcalParser<B> {

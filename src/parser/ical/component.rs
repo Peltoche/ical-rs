@@ -4,9 +4,9 @@ use std::io::BufRead;
 use std::cell::RefCell;
 
 // Internal mods
-use parser::Component;
-use property::{Property, PropertyParser};
-use parser::errors::*;
+use crate::parser::Component;
+use crate::property::{Property, PropertyParser};
+use crate::parser::errors::*;
 
 
 #[derive(Debug, Clone, Default)]

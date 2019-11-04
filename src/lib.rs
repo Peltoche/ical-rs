@@ -24,7 +24,7 @@
 //! ical = "0.4.*"
 //! ```
 //!
-//! There is several ways to use Ical depending on the level of parsing you want. Some new
+//! There is several ways to use crate::Ical depending on the level of parsing you want. Some new
 //! wrapper/formater could appeare in the next releases.
 //!
 //! By default all the features are included but you can choose to include in you
@@ -44,17 +44,17 @@ const PARAM_QUOTE: char = '"';
 pub mod parser;
 
 #[cfg(feature = "ical")]
-pub use parser::ical::IcalParser;
+pub use crate::parser::ical::IcalParser;
 
 #[cfg(feature = "vcard")]
-pub use parser::vcard::VcardParser;
+pub use crate::parser::vcard::VcardParser;
 
 #[cfg(feature = "property")]
 pub mod property;
 #[cfg(feature = "property")]
-pub use property::PropertyParser;
+pub use crate::property::PropertyParser;
 
 #[cfg(feature = "line")]
 pub mod line;
 #[cfg(feature = "line")]
-pub use line::LineReader;
+pub use crate::line::LineReader;

@@ -39,10 +39,9 @@
 //! }
 //! ```
 
-use std::iter::Iterator;
-use std::io::BufRead;
 use std::fmt;
-
+use std::io::BufRead;
+use std::iter::Iterator;
 
 /// An unfolded raw line.
 ///
@@ -80,13 +79,11 @@ impl fmt::Display for Line {
     }
 }
 
-
-/// A trait generic for implementing line reading use by `PropertyParser`.
+/// A trait generic for implementing line reading use crate::by `PropertyParser`.
 pub trait LineRead {
     /// Return the next line unwrapped and formated.
     fn next_line(&mut self) -> Option<Line>;
 }
-
 
 #[derive(Debug, Clone, Default)]
 /// Take a `BufRead` and return the unfolded `Line`.
@@ -111,7 +108,6 @@ impl<B: BufRead> LineRead for LineReader<B> {
     fn next_line(&mut self) -> Option<Line> {
         let mut next_line = String::new();
         let mut line_number: usize = 0;
-
 
         if let Some(start) = self.saved.take() {
             // If during the last iteration a new line have been saved, start with.
@@ -144,7 +140,6 @@ impl<B: BufRead> LineRead for LineReader<B> {
                 line.remove(0);
                 next_line.push_str(line.trim_right());
                 self.number += 1;
-
             } else {
                 // This is a new attribute so it need to be saved it for
                 // the next iteration.

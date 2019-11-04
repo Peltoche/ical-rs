@@ -38,13 +38,13 @@
 //! ```
 
 // Sys mods
-use std::iter::Iterator;
-use std::io::BufRead;
 use std::fmt;
+use std::io::BufRead;
+use std::iter::Iterator;
 
 // Internal mods
-use line::{LineReader, Line};
-use property::errors::*;
+use crate::line::{Line, LineReader};
+use crate::property::errors::*;
 
 /// A VCARD/ICAL property.
 #[derive(Debug, Clone, Default)]
@@ -70,11 +70,11 @@ impl Property {
 
 impl fmt::Display for Property {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "name: {}\nparams: {:?}\nvalue: {:?}",
-               self.name,
-               self.params,
-               self.value)
+        write!(
+            f,
+            "name: {}\nparams: {:?}\nvalue: {:?}",
+            self.name, self.params, self.value
+        )
     }
 }
 
@@ -87,16 +87,19 @@ pub struct PropertyParser<B> {
 impl<B: BufRead> PropertyParser<B> {
     /// Return a new `PropertyParser` from a `LineReader`.
     pub fn new(line_reader: LineReader<B>) -> PropertyParser<B> {
-        PropertyParser { line_reader: line_reader }
+        PropertyParser {
+            line_reader: line_reader,
+        }
     }
 
     /// Return a new `PropertyParser` from a `Reader`.
     pub fn from_reader(reader: B) -> PropertyParser<B> {
         let line_reader = LineReader::new(reader);
 
-        PropertyParser { line_reader: line_reader }
+        PropertyParser {
+            line_reader: line_reader,
+        }
     }
-
 
     fn parse(&self, line: Line) -> Result<Property> {
         let mut property = Property::new();
@@ -106,9 +109,11 @@ impl<B: BufRead> PropertyParser<B> {
         // Parse name.
         let end_name_index;
 
-        let mut param_index = to_parse.find(::PARAM_DELIMITER)
+        let mut param_index = to_parse
+            .find(::PARAM_DELIMITER)
             .unwrap_or(usize::max_value());
-        let mut value_index = to_parse.find(::VALUE_DELIMITER)
+        let mut value_index = to_parse
+            .find(::VALUE_DELIMITER)
             .unwrap_or(usize::max_value());
 
         if param_index < value_index && param_index != 0 {
@@ -126,9 +131,11 @@ impl<B: BufRead> PropertyParser<B> {
         }
 
         // Parse parameters.
-        value_index = to_parse.find(::VALUE_DELIMITER)
+        value_index = to_parse
+            .find(::VALUE_DELIMITER)
             .unwrap_or(usize::max_value());
-        param_index = to_parse.find(::PARAM_DELIMITER)
+        param_index = to_parse
+            .find(::PARAM_DELIMITER)
             .unwrap_or(usize::max_value());
 
         // If there is a PARAM_DELIMITER and it not after the VALUE_DELIMITER
@@ -142,7 +149,8 @@ impl<B: BufRead> PropertyParser<B> {
                 // Split the param key and the rest of the line
                 let mut param_elements = to_parse.splitn(2, ::PARAM_NAME_DELIMITER);
 
-                let key = param_elements.next()
+                let key = param_elements
+                    .next()
                     .and_then(|key| {
                         if key.is_empty() {
                             return None;
@@ -152,13 +160,13 @@ impl<B: BufRead> PropertyParser<B> {
                     })
                     .ok_or_else(|| ErrorKind::MissingParamKey(line.number()))?;
 
-                to_parse = param_elements.next()
-                    .ok_or_else(|| ErrorKind::MissingDelimiter(::PARAM_NAME_DELIMITER, line.number()))?;
+                to_parse = param_elements.next().ok_or_else(|| {
+                    ErrorKind::MissingDelimiter(::PARAM_NAME_DELIMITER, line.number())
+                })?;
 
                 let mut values = Vec::new();
 
                 let mut i = 10;
-
 
                 // Parse parameter value.
                 while i > 0 {
@@ -167,35 +175,46 @@ impl<B: BufRead> PropertyParser<B> {
                         // This is a dquoted value. (NAME:Foo="Bar":value)
                         let mut elements = to_parse.splitn(3, ::PARAM_QUOTE).skip(1);
                         // unwrap is safe here as we have already check above if there is on '"'.
-                        values.push(elements.next()
-                            .ok_or_else(|| ErrorKind::MissingClosingQuote(line.number()))?
-                            .to_string());
+                        values.push(
+                            elements
+                                .next()
+                                .ok_or_else(|| ErrorKind::MissingClosingQuote(line.number()))?
+                                .to_string(),
+                        );
 
-                        to_parse = elements.next()
+                        to_parse = elements
+                            .next()
                             .ok_or_else(|| ErrorKind::MissingClosingQuote(line.number()))?
                     } else {
                         // This is a 'raw' value. (NAME;Foo=Bar:value)
 
                         // Try to find the next param separator.
-                        let param_delimiter = to_parse.find(::PARAM_DELIMITER)
+                        let param_delimiter = to_parse
+                            .find(::PARAM_DELIMITER)
                             .unwrap_or(usize::max_value());
-                        let value_delimiter = to_parse.find(::VALUE_DELIMITER)
+                        let value_delimiter = to_parse
+                            .find(::VALUE_DELIMITER)
                             .unwrap_or(usize::max_value());
-                        let param_value_delimiter = to_parse.find(::PARAM_VALUE_DELIMITER)
+                        let param_value_delimiter = to_parse
+                            .find(::PARAM_VALUE_DELIMITER)
                             .unwrap_or(usize::max_value());
 
                         let end_param_value = {
-                            if param_value_delimiter < value_delimiter &&
-                               param_value_delimiter < param_delimiter {
+                            if param_value_delimiter < value_delimiter
+                                && param_value_delimiter < param_delimiter
+                            {
                                 Ok(param_value_delimiter)
-                            } else if param_delimiter < value_delimiter &&
-                                      param_delimiter < param_value_delimiter {
+                            } else if param_delimiter < value_delimiter
+                                && param_delimiter < param_value_delimiter
+                            {
                                 Ok(param_delimiter)
                             } else if value_delimiter != usize::max_value() {
                                 Ok(value_delimiter)
                             } else {
-                                Err(ErrorKind::MissingContentAfter(::PARAM_NAME_DELIMITER,
-                                                                   line.number()))
+                                Err(ErrorKind::MissingContentAfter(
+                                    ::PARAM_NAME_DELIMITER,
+                                    line.number(),
+                                ))
                             }
                         }?;
 
@@ -219,7 +238,6 @@ impl<B: BufRead> PropertyParser<B> {
             property.params = None;
         }
 
-
         // Parse value
         to_parse = to_parse.trim_left_matches(::VALUE_DELIMITER);
         if to_parse.is_empty() {
@@ -229,64 +247,59 @@ impl<B: BufRead> PropertyParser<B> {
         }
 
         Ok(property)
-
     }
 }
-
 
 impl<B: BufRead> Iterator for PropertyParser<B> {
     type Item = Result<Property>;
 
     fn next(&mut self) -> Option<Result<Property>> {
-        self.line_reader
-            .next()
-            .map(|line| self.parse(line))
+        self.line_reader.next().map(|line| self.parse(line))
     }
 }
-
 
 pub mod errors {
     //! The property errors
 
     error_chain! {
-    types {
-        Error, ErrorKind, ResultExt, Result;
+        types {
+            Error, ErrorKind, ResultExt, Result;
+        }
+
+        foreign_links {
+        }
+
+        errors {
+
+            /// A property name is missing.
+            MissingName(line: usize) {
+                description("missing property name")
+                    display("Line {}: Missing property name.", line)
+            }
+
+            /// A quote is not closed.
+            MissingClosingQuote(line: usize) {
+                description("missing closing quote")
+                    display("Line {}: Missing a closing quote.", line)
+            }
+
+            /// A delimiter is missing.
+            MissingDelimiter(delimiter: char, line: usize) {
+                description("missing delimiter")
+                    display("Line {}: Missing a \"{}\" delimiter.", line, delimiter)
+            }
+
+            /// A delimiter is missing.
+            MissingContentAfter(letter: char, line: usize) {
+                description("missing content")
+                    display("Line {}: Missing content after \"{}\".", line, letter)
+            }
+
+            /// A parameter need a key.
+            MissingParamKey(line: usize) {
+                description("missing param key")
+                    display("Line {}: Missing a parameter key.", line)
+            }
+        }
     }
-
-    foreign_links {
-    }
-
-    errors {
-
-        /// A property name is missing.
-        MissingName(line: usize) {
-            description("missing property name")
-                display("Line {}: Missing property name.", line)
-        }
-
-        /// A quote is not closed.
-        MissingClosingQuote(line: usize) {
-            description("missing closing quote")
-                display("Line {}: Missing a closing quote.", line)
-        }
-
-        /// A delimiter is missing.
-        MissingDelimiter(delimiter: char, line: usize) {
-            description("missing delimiter")
-                display("Line {}: Missing a \"{}\" delimiter.", line, delimiter)
-        }
-
-        /// A delimiter is missing.
-        MissingContentAfter(letter: char, line: usize) {
-            description("missing content")
-                display("Line {}: Missing content after \"{}\".", line, letter)
-        }
-
-        /// A parameter need a key.
-        MissingParamKey(line: usize) {
-            description("missing param key")
-                display("Line {}: Missing a parameter key.", line)
-        }
-    }
-}
 }
