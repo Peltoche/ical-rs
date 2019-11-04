@@ -121,7 +121,7 @@ impl<B: BufRead> LineRead for LineReader<B> {
                 self.number += 1;
 
                 if !line.is_empty() {
-                    next_line = line.trim_right().to_string();
+                    next_line = line.trim_end().to_string();
                     line_number = self.number;
                     break;
                 }
@@ -138,7 +138,7 @@ impl<B: BufRead> LineRead for LineReader<B> {
 
                 // Remove the ' ' charactere and join with the current line.
                 line.remove(0);
-                next_line.push_str(line.trim_right());
+                next_line.push_str(line.trim_end());
                 self.number += 1;
             } else {
                 // This is a new attribute so it need to be saved it for
