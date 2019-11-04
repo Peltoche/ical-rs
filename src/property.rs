@@ -144,7 +144,7 @@ impl<B: BufRead> PropertyParser<B> {
             let mut param_list = Vec::new();
 
             while to_parse.starts_with(::PARAM_DELIMITER) {
-                to_parse = to_parse.trim_left_matches(::PARAM_DELIMITER);
+                to_parse = to_parse.trim_start_matches(::PARAM_DELIMITER);
 
                 // Split the param key and the rest of the line
                 let mut param_elements = to_parse.splitn(2, ::PARAM_NAME_DELIMITER);
@@ -227,7 +227,7 @@ impl<B: BufRead> PropertyParser<B> {
                         break;
                     }
 
-                    to_parse = to_parse.trim_left_matches(::PARAM_VALUE_DELIMITER);
+                    to_parse = to_parse.trim_start_matches(::PARAM_VALUE_DELIMITER);
                 }
 
                 param_list.push((key.to_uppercase(), values));
@@ -239,7 +239,7 @@ impl<B: BufRead> PropertyParser<B> {
         }
 
         // Parse value
-        to_parse = to_parse.trim_left_matches(::VALUE_DELIMITER);
+        to_parse = to_parse.trim_start_matches(::VALUE_DELIMITER);
         if to_parse.is_empty() {
             property.value = None;
         } else {
