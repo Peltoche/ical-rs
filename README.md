@@ -24,7 +24,7 @@ Put this in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ical = "0.5.*"
+ical = "0.6.*"
 ```
 
 
@@ -52,7 +52,7 @@ Each component can contains properties (ie: Property) or sub-components.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.5.*"
+version = "0.6.*"
 default-features = false
 features = ["ical", "vcard"]
 ```
