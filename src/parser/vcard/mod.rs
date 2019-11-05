@@ -34,7 +34,7 @@
 pub mod component;
 
 // Sys mods
-use crate::parser::errors::*;
+use crate::parser::ParserError;
 use std::cell::RefCell;
 use std::io::BufRead;
 
@@ -60,9 +60,9 @@ impl<B: BufRead> VcardParser<B> {
     }
 
     /// Read the next line and check if it's a valid VCARD start.
-    fn check_header(&mut self) -> Result<Option<()>> {
+    fn check_header(&mut self) -> Result<Option<()>, ParserError> {
         let line = match self.line_parser.borrow_mut().next() {
-            Some(val) => val?,
+            Some(val) => val.map_err(|e| ParserError::PropertyError(e))?,
             None => return Ok(None),
         };
 
@@ -71,7 +71,7 @@ impl<B: BufRead> VcardParser<B> {
             || line.value.unwrap() != "VCARD"
             || line.params != None
         {
-            return Err(ErrorKind::MissingHeader.into());
+            return Err(ParserError::MissingHeader.into());
         }
 
         Ok(Some(()))
@@ -79,9 +79,9 @@ impl<B: BufRead> VcardParser<B> {
 }
 
 impl<B: BufRead> Iterator for VcardParser<B> {
-    type Item = Result<component::VcardContact>;
+    type Item = Result<component::VcardContact, ParserError>;
 
-    fn next(&mut self) -> Option<Result<component::VcardContact>> {
+    fn next(&mut self) -> Option<Result<component::VcardContact, ParserError>> {
         match self.check_header() {
             Ok(res) => {
                 if res == None {

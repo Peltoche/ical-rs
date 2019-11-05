@@ -3,8 +3,8 @@ use std::cell::RefCell;
 use std::io::BufRead;
 
 // Internal mods
-use crate::parser::errors::*;
 use crate::parser::Component;
+use crate::parser::ParserError;
 use crate::property::{Property, PropertyParser};
 
 #[derive(Debug, Clone, Default)]
@@ -42,7 +42,7 @@ impl Component for IcalCalendar {
         &mut self,
         value: &str,
         line_parser: &RefCell<PropertyParser<B>>,
-    ) -> Result<()> {
+    ) -> Result<(), ParserError> {
         match value {
             "VALARM" => {
                 let mut alarm = IcalAlarm::new();
@@ -74,7 +74,7 @@ impl Component for IcalCalendar {
                 timezone.parse(line_parser)?;
                 self.timezones.push(timezone);
             }
-            _ => return Err(ErrorKind::InvalidComponent.into()),
+            _ => return Err(ParserError::InvalidComponent.into()),
         };
 
         Ok(())
@@ -103,8 +103,8 @@ impl Component for IcalAlarm {
         &mut self,
         _: &str,
         _: &RefCell<PropertyParser<B>>,
-    ) -> Result<()> {
-        Err(ErrorKind::InvalidComponent.into())
+    ) -> Result<(), ParserError> {
+        Err(ParserError::InvalidComponent.into())
     }
 }
 
@@ -132,14 +132,14 @@ impl Component for IcalEvent {
         &mut self,
         value: &str,
         line_parser: &RefCell<PropertyParser<B>>,
-    ) -> Result<()> {
+    ) -> Result<(), ParserError> {
         match value {
             "VALARM" => {
                 let mut alarm = IcalAlarm::new();
                 alarm.parse(line_parser)?;
                 self.alarms.push(alarm);
             }
-            _ => return Err(ErrorKind::InvalidComponent.into()),
+            _ => return Err(ParserError::InvalidComponent.into()),
         };
 
         Ok(())
@@ -168,8 +168,8 @@ impl Component for IcalJournal {
         &mut self,
         _: &str,
         _: &RefCell<PropertyParser<B>>,
-    ) -> Result<()> {
-        Err(ErrorKind::InvalidComponent.into())
+    ) -> Result<(), ParserError> {
+        Err(ParserError::InvalidComponent.into())
     }
 }
 
@@ -197,14 +197,14 @@ impl Component for IcalTodo {
         &mut self,
         value: &str,
         line_parser: &RefCell<PropertyParser<B>>,
-    ) -> Result<()> {
+    ) -> Result<(), ParserError> {
         match value {
             "VALARM" => {
                 let mut alarm = IcalAlarm::new();
                 alarm.parse(line_parser)?;
                 self.alarms.push(alarm);
             }
-            _ => return Err(ErrorKind::InvalidComponent.into()),
+            _ => return Err(ParserError::InvalidComponent.into()),
         };
 
         Ok(())
@@ -235,14 +235,14 @@ impl Component for IcalTimeZone {
         &mut self,
         value: &str,
         line_parser: &RefCell<PropertyParser<B>>,
-    ) -> Result<()> {
+    ) -> Result<(), ParserError> {
         match value {
             "STANDARD" | "DAYLIGHT" => {
                 let mut transition = IcalTimeZoneTransition::new();
                 transition.parse(line_parser)?;
                 self.transitions.push(transition);
             }
-            _ => return Err(ErrorKind::InvalidComponent.into()),
+            _ => return Err(ParserError::InvalidComponent.into()),
         };
 
         Ok(())
@@ -271,8 +271,8 @@ impl Component for IcalTimeZoneTransition {
         &mut self,
         _: &str,
         _: &RefCell<PropertyParser<B>>,
-    ) -> Result<()> {
-        Err(ErrorKind::InvalidComponent.into())
+    ) -> Result<(), ParserError> {
+        Err(ParserError::InvalidComponent.into())
     }
 }
 
@@ -298,7 +298,7 @@ impl Component for IcalFreeBusy {
         &mut self,
         _: &str,
         _: &RefCell<PropertyParser<B>>,
-    ) -> Result<()> {
-        Err(ErrorKind::InvalidComponent.into())
+    ) -> Result<(), ParserError> {
+        Err(ParserError::InvalidComponent.into())
     }
 }
