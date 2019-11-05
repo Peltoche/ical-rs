@@ -97,7 +97,7 @@ impl<B: BufRead> LineReader<B> {
     /// Return a new `LineReader` from a `Reader`.
     pub fn new(reader: B) -> LineReader<B> {
         LineReader {
-            reader: reader,
+            reader,
             saved: None,
             number: 0,
         }

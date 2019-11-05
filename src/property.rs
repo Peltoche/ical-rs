@@ -87,18 +87,14 @@ pub struct PropertyParser<B> {
 impl<B: BufRead> PropertyParser<B> {
     /// Return a new `PropertyParser` from a `LineReader`.
     pub fn new(line_reader: LineReader<B>) -> PropertyParser<B> {
-        PropertyParser {
-            line_reader: line_reader,
-        }
+        PropertyParser { line_reader }
     }
 
     /// Return a new `PropertyParser` from a `Reader`.
     pub fn from_reader(reader: B) -> PropertyParser<B> {
         let line_reader = LineReader::new(reader);
 
-        PropertyParser {
-            line_reader: line_reader,
-        }
+        PropertyParser { line_reader }
     }
 
     fn parse(&self, line: Line) -> Result<Property> {
