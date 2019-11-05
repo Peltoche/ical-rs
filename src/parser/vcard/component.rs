@@ -3,8 +3,7 @@ use std::cell::RefCell;
 use std::io::BufRead;
 
 // Internal mods
-use crate::parser::errors::*;
-use crate::parser::Component;
+use crate::parser::{Component, ParserError};
 use crate::property::{Property, PropertyParser};
 
 #[derive(Debug, Clone, Default)]
@@ -30,7 +29,7 @@ impl Component for VcardContact {
         &mut self,
         _: &str,
         _: &RefCell<PropertyParser<B>>,
-    ) -> Result<()> {
-        Err(ErrorKind::InvalidComponent.into())
+    ) -> Result<(), ParserError> {
+        Err(ParserError::InvalidComponent.into())
     }
 }

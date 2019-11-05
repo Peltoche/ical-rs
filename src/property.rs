@@ -44,7 +44,20 @@ use std::iter::Iterator;
 
 // Internal mods
 use crate::line::{Line, LineReader};
-use crate::property::errors::*;
+
+#[derive(Debug, Fail)]
+pub enum PropertyError {
+    #[fail(display = "Line {}: Missing property name.", line)]
+    MissingName { line: usize },
+    #[fail(display = "Line {}: Missing a closing quote.", line)]
+    MissingClosingQuote { line: usize },
+    #[fail(display = "Line {}: Missing a \"{}\" delimiter.", line, delimiter)]
+    MissingDelimiter { line: usize, delimiter: char },
+    #[fail(display = "Line {}: Missing content after \"{}\".", line, letter)]
+    MissingContentAfter { line: usize, letter: char },
+    #[fail(display = "Line {}: Missing a parameter key.", line)]
+    MissingParamKey { line: usize },
+}
 
 /// A VCARD/ICAL property.
 #[derive(Debug, Clone, Default)]
@@ -97,7 +110,7 @@ impl<B: BufRead> PropertyParser<B> {
         PropertyParser { line_reader }
     }
 
-    fn parse(&self, line: Line) -> Result<Property> {
+    fn parse(&self, line: Line) -> Result<Property, PropertyError> {
         let mut property = Property::new();
 
         let mut to_parse = line.as_str();
@@ -117,7 +130,10 @@ impl<B: BufRead> PropertyParser<B> {
         } else if value_index != usize::max_value() && value_index != 0 {
             end_name_index = value_index;
         } else {
-            return Err(ErrorKind::MissingName(line.number()).into());
+            return Err(PropertyError::MissingName {
+                line: line.number(),
+            })
+            .into();
         }
 
         {
@@ -154,11 +170,17 @@ impl<B: BufRead> PropertyParser<B> {
 
                         Some(key)
                     })
-                    .ok_or_else(|| ErrorKind::MissingParamKey(line.number()))?;
+                    .ok_or_else(|| PropertyError::MissingParamKey {
+                        line: line.number(),
+                    })?;
 
-                to_parse = param_elements.next().ok_or_else(|| {
-                    ErrorKind::MissingDelimiter(::PARAM_NAME_DELIMITER, line.number())
-                })?;
+                to_parse =
+                    param_elements
+                        .next()
+                        .ok_or_else(|| PropertyError::MissingDelimiter {
+                            delimiter: ::PARAM_NAME_DELIMITER,
+                            line: line.number(),
+                        })?;
 
                 let mut values = Vec::new();
 
@@ -174,13 +196,18 @@ impl<B: BufRead> PropertyParser<B> {
                         values.push(
                             elements
                                 .next()
-                                .ok_or_else(|| ErrorKind::MissingClosingQuote(line.number()))?
+                                .ok_or_else(|| PropertyError::MissingClosingQuote {
+                                    line: line.number(),
+                                })?
                                 .to_string(),
                         );
 
-                        to_parse = elements
-                            .next()
-                            .ok_or_else(|| ErrorKind::MissingClosingQuote(line.number()))?
+                        to_parse =
+                            elements
+                                .next()
+                                .ok_or_else(|| PropertyError::MissingClosingQuote {
+                                    line: line.number(),
+                                })?
                     } else {
                         // This is a 'raw' value. (NAME;Foo=Bar:value)
 
@@ -207,10 +234,10 @@ impl<B: BufRead> PropertyParser<B> {
                             } else if value_delimiter != usize::max_value() {
                                 Ok(value_delimiter)
                             } else {
-                                Err(ErrorKind::MissingContentAfter(
-                                    ::PARAM_NAME_DELIMITER,
-                                    line.number(),
-                                ))
+                                Err(PropertyError::MissingContentAfter {
+                                    letter: ::PARAM_NAME_DELIMITER,
+                                    line: line.number(),
+                                })
                             }
                         }?;
 
@@ -247,55 +274,9 @@ impl<B: BufRead> PropertyParser<B> {
 }
 
 impl<B: BufRead> Iterator for PropertyParser<B> {
-    type Item = Result<Property>;
+    type Item = Result<Property, PropertyError>;
 
-    fn next(&mut self) -> Option<Result<Property>> {
+    fn next(&mut self) -> Option<Result<Property, PropertyError>> {
         self.line_reader.next().map(|line| self.parse(line))
-    }
-}
-
-pub mod errors {
-    //! The property errors
-
-    error_chain! {
-        types {
-            Error, ErrorKind, ResultExt, Result;
-        }
-
-        foreign_links {
-        }
-
-        errors {
-
-            /// A property name is missing.
-            MissingName(line: usize) {
-                description("missing property name")
-                    display("Line {}: Missing property name.", line)
-            }
-
-            /// A quote is not closed.
-            MissingClosingQuote(line: usize) {
-                description("missing closing quote")
-                    display("Line {}: Missing a closing quote.", line)
-            }
-
-            /// A delimiter is missing.
-            MissingDelimiter(delimiter: char, line: usize) {
-                description("missing delimiter")
-                    display("Line {}: Missing a \"{}\" delimiter.", line, delimiter)
-            }
-
-            /// A delimiter is missing.
-            MissingContentAfter(letter: char, line: usize) {
-                description("missing content")
-                    display("Line {}: Missing content after \"{}\".", line, letter)
-            }
-
-            /// A parameter need a key.
-            MissingParamKey(line: usize) {
-                description("missing param key")
-                    display("Line {}: Missing a parameter key.", line)
-            }
-        }
     }
 }

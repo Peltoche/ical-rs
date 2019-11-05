@@ -40,8 +40,7 @@ use std::io::BufRead;
 
 // Internal mods
 use crate::line::LineReader;
-use crate::parser::errors::*;
-use crate::parser::Component;
+use crate::parser::{Component, ParserError};
 use crate::property::PropertyParser;
 
 /// Reader returning `IcalCalendar` object from a `BufRead`.
@@ -61,9 +60,9 @@ impl<B: BufRead> IcalParser<B> {
     }
 
     /// Read the next line and check if it's a valid VCALENDAR start.
-    fn check_header(&mut self) -> Result<Option<()>> {
+    fn check_header(&mut self) -> Result<Option<()>, ParserError> {
         let line = match self.line_parser.borrow_mut().next() {
-            Some(val) => val?,
+            Some(val) => val.map_err(|e| ParserError::PropertyError(e))?,
             None => return Ok(None),
         };
 
@@ -72,7 +71,7 @@ impl<B: BufRead> IcalParser<B> {
             || line.value.unwrap() != "VCALENDAR"
             || line.params != None
         {
-            return Err(ErrorKind::MissingHeader.into());
+            return Err(ParserError::MissingHeader.into());
         }
 
         Ok(Some(()))
@@ -80,9 +79,9 @@ impl<B: BufRead> IcalParser<B> {
 }
 
 impl<B: BufRead> Iterator for IcalParser<B> {
-    type Item = Result<component::IcalCalendar>;
+    type Item = Result<component::IcalCalendar, ParserError>;
 
-    fn next(&mut self) -> Option<Result<component::IcalCalendar>> {
+    fn next(&mut self) -> Option<Result<component::IcalCalendar, ParserError>> {
         match self.check_header() {
             Ok(res) => {
                 if res == None {

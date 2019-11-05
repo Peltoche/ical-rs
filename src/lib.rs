@@ -32,7 +32,7 @@
 //!
 
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 
 const PARAM_VALUE_DELIMITER: char = ',';
 const VALUE_DELIMITER: char = ':';
