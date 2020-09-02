@@ -20,7 +20,7 @@ repository = "https://travis-ci.org/Peltoche/ical-rs"
 
 
 [dependencies]
-failure = "0.1.*"
+thiserror = "1.0"
 
 
 [features]

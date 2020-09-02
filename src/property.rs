@@ -41,21 +41,22 @@
 use std::fmt;
 use std::io::BufRead;
 use std::iter::Iterator;
+use thiserror::Error;
 
 // Internal mods
 use crate::line::{Line, LineReader};
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
 pub enum PropertyError {
-    #[fail(display = "Line {}: Missing property name.", line)]
+    #[error("Line {line}: Missing property name.")]
     MissingName { line: usize },
-    #[fail(display = "Line {}: Missing a closing quote.", line)]
+    #[error("Line {line}: Missing a closing quote.")]
     MissingClosingQuote { line: usize },
-    #[fail(display = "Line {}: Missing a \"{}\" delimiter.", line, delimiter)]
+    #[error("Line {line}: Missing a \"{delimiter}\" delimiter.")]
     MissingDelimiter { line: usize, delimiter: char },
-    #[fail(display = "Line {}: Missing content after \"{}\".", line, letter)]
+    #[error("Line {line}: Missing content after \"{letter}\".")]
     MissingContentAfter { line: usize, letter: char },
-    #[fail(display = "Line {}: Missing a parameter key.", line)]
+    #[error("Line {line}: Missing a parameter key.")]
     MissingParamKey { line: usize },
 }
 
