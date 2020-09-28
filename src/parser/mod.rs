@@ -16,16 +16,16 @@ use std::io::BufRead;
 // Internal mods
 use crate::property::{Property, PropertyError, PropertyParser};
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
 pub enum ParserError {
-    #[fail(display = "invalid component")]
+    #[error("invalid component")]
     InvalidComponent,
-    #[fail(display = "incomplete object")]
+    #[error("incomplete object")]
     NotComplete,
-    #[fail(display = "missing header")]
+    #[error("missing header")]
     MissingHeader,
-    #[fail(display = "property error")]
-    PropertyError(#[fail(cause)] PropertyError),
+    #[error("property error")]
+    PropertyError(#[from] PropertyError),
 }
 
 /// An interface for an Ical/Vcard component.
