@@ -45,17 +45,17 @@ use std::iter::Iterator;
 // Internal mods
 use crate::line::{Line, LineReader};
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
 pub enum PropertyError {
-    #[fail(display = "Line {}: Missing property name.", line)]
+    #[error("Line {}: Missing property name.", line)]
     MissingName { line: usize },
-    #[fail(display = "Line {}: Missing a closing quote.", line)]
+    #[error("Line {}: Missing a closing quote.", line)]
     MissingClosingQuote { line: usize },
-    #[fail(display = "Line {}: Missing a \"{}\" delimiter.", line, delimiter)]
+    #[error("Line {}: Missing a \"{}\" delimiter.", line, delimiter)]
     MissingDelimiter { line: usize, delimiter: char },
-    #[fail(display = "Line {}: Missing content after \"{}\".", line, letter)]
+    #[error("Line {}: Missing content after \"{}\".", line, letter)]
     MissingContentAfter { line: usize, letter: char },
-    #[fail(display = "Line {}: Missing a parameter key.", line)]
+    #[error("Line {}: Missing a parameter key.", line)]
     MissingParamKey { line: usize },
 }
 
