@@ -66,9 +66,9 @@ impl<B: BufRead> VcardParser<B> {
             None => return Ok(None),
         };
 
-        if line.name != "BEGIN"
+        if line.name.to_uppercase() != "BEGIN"
             || line.value.is_none()
-            || line.value.unwrap() != "VCARD"
+            || line.value.unwrap().to_uppercase() != "VCARD"
             || line.params != None
         {
             return Err(ParserError::MissingHeader.into());
