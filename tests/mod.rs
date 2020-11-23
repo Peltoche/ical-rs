@@ -160,4 +160,25 @@ pub mod parser {
             assert_eq!(output, valids.next().unwrap().unwrap());
         }
     }
+
+    #[test]
+    fn vcard_lowercase() {
+        let input = BufReader::new(File::open("./tests/ressources/vcard_lowercase.vcf").unwrap());
+
+        let mut valids =
+            BufReader::new(File::open("./tests/ressources/vcard_lowercase.res").unwrap()).lines();
+
+        let reader = ical::VcardParser::new(input);
+
+        for res in reader {
+            let contact = match res {
+                Ok(res) => res,
+                Err(err) => panic!("Throw error: {:?}", err),
+            };
+
+            let output = format!("{:?}", contact);
+
+            assert_eq!(output, valids.next().unwrap().unwrap());
+        }
+    }
 }

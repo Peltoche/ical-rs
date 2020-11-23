@@ -58,7 +58,7 @@ pub trait Component {
                 };
             }
 
-            match line.name.as_str() {
+            match line.name.to_uppercase().as_str() {
                 "END" => break,
                 "BEGIN" => match line.value {
                     Some(v) => self.add_sub_component(v.as_str(), line_parser)?,
