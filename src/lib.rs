@@ -58,3 +58,8 @@ pub use crate::property::PropertyParser;
 pub mod line;
 #[cfg(feature = "line")]
 pub use crate::line::LineReader;
+
+#[cfg(feature = "generator")]
+pub mod generator;
+#[cfg(feature = "generator")]
+pub use crate::generator::ical::*;
