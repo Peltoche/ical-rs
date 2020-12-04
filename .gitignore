@@ -7,3 +7,6 @@
 Cargo.lock
 target
 Cargo.lock
+
+# Idea
+.idea/

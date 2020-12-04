@@ -24,11 +24,12 @@ thiserror = "1.0.20"
 
 
 [features]
-default = ["vcard", "ical"]
+default = ["ical", "vcard", "generator"]
 ical = ["property"]
 line = []
 property = ["line"]
 vcard = ["property"]
+generator = ["ical"]
 
 [lib]
 doc = true
