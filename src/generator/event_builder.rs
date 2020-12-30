@@ -147,10 +147,7 @@ impl Finalizer {
 
 #[test]
 fn test_ical_event_builder_from() {
-    use chrono::DateTime;
     use generator::Emitter;
-    let _start = DateTime::parse_from_rfc3339("2020-12-06T17:00:00+01:00").unwrap();
-    let _end = DateTime::parse_from_rfc3339("2020-12-06T19:00:00+01:00").unwrap();
     let ev = IcalEventBuilder::tzid("Europe/Berlin")
         .uid("UID_@_test")
         .changed("20201201T120423")
