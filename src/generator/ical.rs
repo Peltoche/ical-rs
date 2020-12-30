@@ -1,27 +1,21 @@
+use crate::{PARAM_DELIMITER, PARAM_VALUE_DELIMITER, VALUE_DELIMITER};
 use parser::ical::component::{
     IcalAlarm, IcalCalendar, IcalEvent, IcalFreeBusy, IcalJournal, IcalTimeZone,
     IcalTimeZoneTransition, IcalTodo,
 };
 use property::Property;
 
+///
+/// Emits the content of the Component in ical-format.
+///
 pub trait Emitter {
+    /// creates a textual-representation of this object and all it's properties
+    /// in ical-format.
     fn generate(&self) -> String;
 }
 
 fn get_value(value: &Option<String>) -> String {
-    if value.is_none() {
-        return String::from(":");
-    }
-
-    // protect comma if needed.
-    let str = value.as_ref().unwrap();
-    let mut ret = str.clone();
-    for (u, _) in str.char_indices().filter(|(_, c)| *c == ',').rev() {
-        if u > 0 && str.get(u - 1..u) != Some(&"\\") {
-            ret.insert_str(u, "\\");
-        }
-    }
-    String::from(":") + &ret
+    VALUE_DELIMITER.to_string() + &value.as_ref().unwrap_or(&String::new())
 }
 
 fn split_line<T: Into<String>>(str: T) -> String {
@@ -34,12 +28,80 @@ fn split_line<T: Into<String>>(str: T) -> String {
     str
 }
 
-fn protect_params(str: &String) -> String {
-    if str.contains(',') {
-        format!("\"{}\",", str)
-    } else {
-        format!("{},", str)
+#[test]
+fn split_line_test() {
+    let text = "The ability to return a type that is only specified by the trait it impleme\n \
+                     nts is especially useful in the context closures and iterators, which we c\n \
+                     over in Chapter 13. Closures and iterators create types that only the comp\n \
+                     iler knows or types that are very long to specify.";
+    assert_eq!(text, split_line(text.replace("\n ", "")));
+}
+
+//
+// @see: https://tools.ietf.org/html/rfc5545#section-3.3.11
+//
+// `text = *(TSAFE-CHAR / ":" / DQUOTE / ESCAPED-CHAR)`
+//     Folded according to description above
+//
+// `ESCAPED-CHAR = ("\\" / "\;" / "\," / "\N" / "\n")`
+//     \\ encodes \, \N or \n encodes newline
+//     \; encodes ;, \, encodes ,
+//
+// `TSAFE-CHAR = WSP / %x21 / %x23-2B / %x2D-39 / %x3C-5B /
+//              %x5D-7E / NON-US-ASCII`
+//     Any character except CONTROLs not needed by the current
+//     character set, DQUOTE, ";", ":", "\", ","
+//
+#[allow(clippy::ptr_arg)]
+fn protect_params(param: &String) -> String {
+    let str = param.as_str();
+    let len = str.len() - 1;
+    // starts and ends the param with quotes?
+    let in_quotes = len > 1 && &str[0..1] == "\"" && &str[len..] == "\"";
+
+    let to_escape: Vec<(usize, char)> = str
+        .chars()
+        .enumerate()
+        .filter(|(_, c)| {
+            c == &'\"'
+                || c == &'\n'
+                || !in_quotes && (c == &';' || c == &':' || c == &',' || c == &'\\')
+        })
+        .collect();
+    let mut ret = param.to_string();
+    for (pos, ch) in to_escape.iter().rev() {
+        let pos = *pos;
+        if ch == &'\n' {
+            ret.replace_range(pos..pos + 1, "\\n");
+        } else if pos > 0 && pos < len && &str[pos - 1..pos] != "\\" {
+            ret.insert_str(pos, "\\");
+        }
     }
+    ret + &PARAM_VALUE_DELIMITER.to_string()
+}
+
+#[test]
+fn test_protect_params() {
+    assert_eq!(
+        protect_params(&String::from("\"value: in quotes;\"")),
+        "\"value: in quotes;\","
+    );
+    assert_eq!(
+        protect_params(&String::from("\"value, in quotes\"")),
+        "\"value, in quotes\","
+    );
+    assert_eq!(
+        protect_params(&String::from("value, \"with\" something")),
+        "value\\, \\\"with\\\" something,"
+    );
+    assert_eq!(
+        protect_params(&String::from("\"Directory; C:\\\\Programme\"")),
+        "\"Directory; C:\\\\Programme\","
+    );
+    assert_eq!(
+        protect_params(&String::from("First\nSecond")),
+        "First\\nSecond,"
+    );
 }
 
 fn get_params(params: &Option<Vec<(String, Vec<String>)>>) -> String {
@@ -50,7 +112,7 @@ fn get_params(params: &Option<Vec<(String, Vec<String>)>>) -> String {
                 .map(|(name, values)| {
                     let mut value = values.iter().map(protect_params).collect::<String>();
                     value.pop(); // remove last comma
-                    format!(";{}={}", name, value)
+                    format!("{}{}={}", PARAM_DELIMITER, name, value)
                 })
                 .collect::<String>()
         }
@@ -59,24 +121,8 @@ fn get_params(params: &Option<Vec<(String, Vec<String>)>>) -> String {
 
 impl Emitter for Property {
     fn generate(&self) -> String {
-        split_line(self.name.clone() + &get_params(&self.params) + &get_value(&self.value) + "\n")
+        split_line(self.name.clone() + &get_params(&self.params) + &get_value(&self.value)) + "\n"
     }
-}
-
-macro_rules! generate_emitter {
-    ($struct:ident, $key:literal, $($prop:ident),+) => {
-        impl Emitter for $struct {
-            fn generate(&self) -> String {
-                let mut text = String::from("BEGIN:") + $key + "\n";
-                $(text = text + &self.$prop
-                .iter()
-                .map(|emitter| emitter.generate())
-                .collect::<String>();)+
-
-                text + "END:" + $key + "\n"
-            }
-        }
-    };
 }
 
 impl Emitter for IcalTimeZoneTransition {
@@ -98,6 +144,22 @@ impl Emitter for IcalTimeZoneTransition {
             + key
             + "\n"
     }
+}
+
+macro_rules! generate_emitter {
+    ($struct:ident, $key:literal, $($prop:ident),+) => {
+        impl Emitter for $struct {
+            fn generate(&self) -> String {
+                let mut text = String::from("BEGIN:") + $key + "\n";
+                $(text = text + &self.$prop
+                .iter()
+                .map(|emitter| emitter.generate())
+                .collect::<String>();)+
+
+                text + "END:" + $key + "\n"
+            }
+        }
+    };
 }
 
 #[cfg(feature = "vcard")]
@@ -123,12 +185,3 @@ generate_emitter!(
     journals,
     free_busys
 );
-
-#[test]
-fn split_line_test() {
-    let text = "The ability to return a type that is only specified by the trait it impleme\n \
-                     nts is especially useful in the context closures and iterators, which we c\n \
-                     over in Chapter 13. Closures and iterators create types that only the comp\n \
-                     iler knows or types that are very long to specify.";
-    assert_eq!(text, split_line(text.replace("\n ", "")));
-}

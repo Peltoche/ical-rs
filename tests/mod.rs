@@ -206,7 +206,7 @@ pub mod parser {
 #[cfg(all(feature = "ical", feature = "generator"))]
 pub mod generator {
     extern crate ical;
-    use self::ical::*;
+    use self::ical::generator::Emitter;
     use std::fs::File;
     use std::io::BufRead;
     use std::io::BufReader;
