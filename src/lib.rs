@@ -25,7 +25,7 @@
 //! ```
 //!
 //! There is several ways to use crate::Ical depending on the level of parsing you want. Some new
-//! wrapper/formater could appeare in the next releases.
+//! wrapper/formatter could appear in the next releases.
 //!
 //! By default all the features are included but you can choose to include in you
 //! project only the needed ones.
@@ -61,5 +61,6 @@ pub use crate::line::LineReader;
 
 #[cfg(feature = "generator")]
 pub mod generator;
+
 #[cfg(feature = "generator")]
-pub use crate::generator::ical::*;
+pub use crate::generator::helper::*;

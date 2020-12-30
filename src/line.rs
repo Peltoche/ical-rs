@@ -15,6 +15,7 @@
 //! sequence of CRLF followed immediately by a single white space
 //! character is ignored (removed) when processing the content type.
 //!
+//! [RFC5322]: https://tools.ietf.org/html/rfc5322
 //! # Examples
 //!
 //! ```toml

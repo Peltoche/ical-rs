@@ -17,14 +17,11 @@ version = "0.6.0"
 branch = "master"
 repository = "https://travis-ci.org/Peltoche/ical-rs"
 
-
-
 [dependencies]
 thiserror = "1.0.20"
 
-
 [features]
-default = ["ical", "vcard", "generator"]
+default = ["ical", "vcard"]
 ical = ["property"]
 line = []
 property = ["line"]
