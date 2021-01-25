@@ -5,18 +5,44 @@ use property::Property;
 pub struct IcalCalendarBuilder {
     cal: IcalCalendar,
 }
+pub struct CalScale(IcalCalendarBuilder);
 pub struct ProdId(IcalCalendarBuilder);
 pub struct Finalizer(IcalCalendarBuilder);
 
 /// Builds a new Ical-Calendar.
 /// https://tools.ietf.org/html/rfc5545#section-3.6.1
 impl IcalCalendarBuilder {
-    pub fn version<S: Into<String>>(version: S) -> ProdId {
-        let mut e = ProdId(Self {
+    pub fn version<S: Into<String>>(version: S) -> CalScale {
+        let mut e = CalScale(Self {
             cal: IcalCalendar::new(),
         });
         e.0.cal.properties.push(ical_property!("VERSION", version));
         e
+    }
+}
+
+impl CalScale {
+    /// sets the calendar scale to GREGORIAN (the default)
+    pub fn gregorian(mut self) -> ProdId {
+        self.0
+            .cal
+            .properties
+            .push(ical_property!("CALSCALE", "GREGORIAN"));
+        ProdId(self.0)
+    }
+
+    /// sets the calendar scale to the given `scale`.
+    pub fn scale<S: Into<String>>(mut self, scale: S) -> ProdId {
+        self.0
+            .cal
+            .properties
+            .push(ical_property!("CALSCALE", scale));
+        ProdId(self.0)
+    }
+
+    /// sets no calendar scale.
+    pub fn noscale(self) -> ProdId {
+        ProdId(self.0)
     }
 }
 

@@ -61,6 +61,3 @@ pub use crate::line::LineReader;
 
 #[cfg(feature = "generator")]
 pub mod generator;
-
-#[cfg(feature = "generator")]
-pub use crate::generator::helper::*;

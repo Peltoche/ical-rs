@@ -18,7 +18,7 @@ fn get_value(value: &Option<String>) -> String {
     VALUE_DELIMITER.to_string() + &value.as_ref().unwrap_or(&String::new())
 }
 
-fn split_line<T: Into<String>>(str: T) -> String {
+pub(crate) fn split_line<T: Into<String>>(str: T) -> String {
     let mut str = str.into();
     let mut x = 75;
     while x < str.len() {
@@ -26,15 +26,6 @@ fn split_line<T: Into<String>>(str: T) -> String {
         x += 76;
     }
     str
-}
-
-#[test]
-fn split_line_test() {
-    let text = "The ability to return a type that is only specified by the trait it impleme\n \
-                     nts is especially useful in the context closures and iterators, which we c\n \
-                     over in Chapter 13. Closures and iterators create types that only the comp\n \
-                     iler knows or types that are very long to specify.";
-    assert_eq!(text, split_line(text.replace("\n ", "")));
 }
 
 //
@@ -53,7 +44,7 @@ fn split_line_test() {
 //     character set, DQUOTE, ";", ":", "\", ","
 //
 #[allow(clippy::ptr_arg)]
-fn protect_params(param: &String) -> String {
+pub(crate) fn protect_params(param: &String) -> String {
     let str = param.as_str();
     let len = str.len() - 1;
     // starts and ends the param with quotes?
@@ -74,34 +65,49 @@ fn protect_params(param: &String) -> String {
         if ch == &'\n' {
             ret.replace_range(pos..pos + 1, "\\n");
         } else if pos > 0 && pos < len && &str[pos - 1..pos] != "\\" {
-            ret.insert_str(pos, "\\");
+            ret.insert(pos, '\\');
         }
     }
     ret + &PARAM_VALUE_DELIMITER.to_string()
 }
 
-#[test]
-fn test_protect_params() {
-    assert_eq!(
-        protect_params(&String::from("\"value: in quotes;\"")),
-        "\"value: in quotes;\","
-    );
-    assert_eq!(
-        protect_params(&String::from("\"value, in quotes\"")),
-        "\"value, in quotes\","
-    );
-    assert_eq!(
-        protect_params(&String::from("value, \"with\" something")),
-        "value\\, \\\"with\\\" something,"
-    );
-    assert_eq!(
-        protect_params(&String::from("\"Directory; C:\\\\Programme\"")),
-        "\"Directory; C:\\\\Programme\","
-    );
-    assert_eq!(
-        protect_params(&String::from("First\nSecond")),
-        "First\\nSecond,"
-    );
+#[allow(unused)]
+mod should {
+    use generator::protect_params;
+    use generator::split_line;
+
+    #[test]
+    fn split_long_line() {
+        let text = "The ability to return a type that is only specified by the trait it impleme\n \
+                     nts is especially useful in the context closures and iterators, which we c\n \
+                     over in Chapter 13. Closures and iterators create types that only the comp\n \
+                     iler knows or types that are very long to specify.";
+        assert_eq!(text, split_line(text.replace("\n ", "")));
+    }
+
+    #[test]
+    fn protect_chars_in_params() {
+        assert_eq!(
+            protect_params(&String::from("\"value: in quotes;\"")),
+            "\"value: in quotes;\","
+        );
+        assert_eq!(
+            protect_params(&String::from("\"value, in quotes\"")),
+            "\"value, in quotes\","
+        );
+        assert_eq!(
+            protect_params(&String::from("value, \"with\" something")),
+            "value\\, \\\"with\\\" something,"
+        );
+        assert_eq!(
+            protect_params(&String::from("\"Directory; C:\\\\Programme\"")),
+            "\"Directory; C:\\\\Programme\","
+        );
+        assert_eq!(
+            protect_params(&String::from("First\nSecond")),
+            "First\\nSecond,"
+        );
+    }
 }
 
 fn get_params(params: &Option<Vec<(String, Vec<String>)>>) -> String {
