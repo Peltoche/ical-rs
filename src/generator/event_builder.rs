@@ -91,7 +91,9 @@ impl DtStart {
 }
 
 impl DtEndDate {
-    /// Sets the `DTEND` of the event.
+    /// Sets the `DTEND` of the event. Since a event from 9:00 - 10:00 has stoppt
+    /// at 10 and a new one can start. The `end_day` has to be the next day. This
+    /// `value` is **not inclusive**.     
     pub fn end_day<S: Into<String>>(mut self, value: S) -> Finalizer {
         self.0.event.properties.push(ical_property!(
             "DTEND",
@@ -145,30 +147,36 @@ impl Finalizer {
     }
 }
 
-#[test]
-fn test_ical_event_builder_from() {
-    use generator::Emitter;
-    let ev = IcalEventBuilder::tzid("Europe/Berlin")
-        .uid("UID_@_test")
-        .changed("20201201T120423")
-        .start("20201206T170000")
-        .duration("PT2H45M0S")
-        .0
-        .event;
-    let e = Emitter::generate(&ev);
-    //let e = start.format(ICAL_DATE_FORMAT).to_string();
-    assert_eq!(
-        e,
-        "BEGIN:VEVENT\nUID:UID_@_test\nDTSTAMP;TZID=Europe/Berlin:20201201T120423\n\
+#[allow(unused)]
+mod should {
+    use crate::*;
+    use generator::event_builder::IcalEventBuilder;
+    use property::Property;
+
+    #[test]
+    fn build_minimal_ical_event() {
+        use generator::Emitter;
+        let ev = IcalEventBuilder::tzid("Europe/Berlin")
+            .uid("UID_@_test")
+            .changed("20201201T120423")
+            .start("20201206T170000")
+            .duration("PT2H45M0S")
+            .0
+            .event;
+        let e = Emitter::generate(&ev);
+        //let e = start.format(ICAL_DATE_FORMAT).to_string();
+        assert_eq!(
+            e,
+            "BEGIN:VEVENT\nUID:UID_@_test\nDTSTAMP;TZID=Europe/Berlin:20201201T120423\n\
             DTSTART;TZID=Europe/Berlin:20201206T170000\n\
             DURATION:PT2H45M0S\nEND:VEVENT\n"
-    );
-}
+        );
+    }
 
-#[test]
-fn test_event_builder_example1() {
-    use generator::Emitter;
-    let expect = "BEGIN:VEVENT\n\
+    #[test]
+    fn build_whole_day_event() {
+        use generator::Emitter;
+        let expect = "BEGIN:VEVENT\n\
        UID:20070423T123432Z-541111@example.com\n\
        DTSTAMP:20070423T123432Z\n\
        DTSTART;VALUE=DATE:20070628\n\
@@ -177,25 +185,25 @@ fn test_event_builder_example1() {
        TRANSP:TRANSPARENT\n\
        END:VEVENT\n\
       ";
-    let event = IcalEventBuilder::tzid("America/Montreal")
-        .uid("20070423T123432Z-541111@example.com")
-        .changed_utc("20070423T123432Z")
-        .start_day("20070628")
-        .end_day("20070709")
-        .set(ical_property!(
-            "SUMMARY",
-            "Festival International de Jazz de Montreal"
-        ))
-        .set(ical_property!("TRANSP", "TRANSPARENT"))
-        .build();
+        let event = IcalEventBuilder::tzid("America/Montreal")
+            .uid("20070423T123432Z-541111@example.com")
+            .changed_utc("20070423T123432Z")
+            .start_day("20070628")
+            .end_day("20070709")
+            .set(ical_property!(
+                "SUMMARY",
+                "Festival International de Jazz de Montreal"
+            ))
+            .set(ical_property!("TRANSP", "TRANSPARENT"))
+            .build();
 
-    assert_eq!(expect, event.generate());
-}
+        assert_eq!(expect, event.generate());
+    }
 
-#[test]
-fn test_event_builder_example2() {
-    use generator::Emitter;
-    let expect = "BEGIN:VEVENT\n\
+    #[test]
+    fn build_frequent_ical_event() {
+        use generator::Emitter;
+        let expect = "BEGIN:VEVENT\n\
        UID:19970901T130000Z-123403@example.com\n\
        DTSTAMP:19970901T130000Z\n\
        DTSTART;VALUE=DATE:19971102\n\
@@ -206,18 +214,19 @@ fn test_event_builder_example2() {
        CATEGORIES:ANNIVERSARY,PERSONAL,SPECIAL OCCASION\n\
        END:VEVENT\n\
       ";
-    let event = IcalEventBuilder::tzid("America/Montreal")
-        .uid("19970901T130000Z-123403@example.com")
-        .changed_utc("19970901T130000Z")
-        .start_day("19971102")
-        .repeat_rule("FREQ=YEARLY")
-        .set(ical_property!("SUMMARY", "Our Blissful Anniversary"))
-        .set(ical_property!("TRANSP", "TRANSPARENT"))
-        .set(ical_property!("CLASS", "CONFIDENTIAL"))
-        .set(ical_property!(
-            "CATEGORIES",
-            "ANNIVERSARY,PERSONAL,SPECIAL OCCASION"
-        ))
-        .build();
-    assert_eq!(expect, event.generate());
+        let event = IcalEventBuilder::tzid("America/Montreal")
+            .uid("19970901T130000Z-123403@example.com")
+            .changed_utc("19970901T130000Z")
+            .start_day("19971102")
+            .repeat_rule("FREQ=YEARLY")
+            .set(ical_property!("SUMMARY", "Our Blissful Anniversary"))
+            .set(ical_property!("TRANSP", "TRANSPARENT"))
+            .set(ical_property!("CLASS", "CONFIDENTIAL"))
+            .set(ical_property!(
+                "CATEGORIES",
+                "ANNIVERSARY,PERSONAL,SPECIAL OCCASION"
+            ))
+            .build();
+        assert_eq!(expect, event.generate());
+    }
 }

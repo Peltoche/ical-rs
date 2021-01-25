@@ -144,11 +144,17 @@ impl Finalizer {
     }
 }
 
-// Example from https://en.wikipedia.org/wiki/VCard
-#[test]
-fn test_ical_event_builder_from() {
-    use generator::Emitter;
-    let expect = "BEGIN:VCARD\n\
+#[allow(unused)]
+mod should {
+    use crate::*;
+    use generator::vcard_builder::IcalVcardBuilder;
+    use property::Property;
+
+    // Example from https://en.wikipedia.org/wiki/VCard
+    #[test]
+    fn build_vcards_wikipedia_example() {
+        use generator::Emitter;
+        let expect = "BEGIN:VCARD\n\
         VERSION:4.0\n\
         N:Gump;Forrest;;Mr.;\n\
         FN:Forrest Gump\n\
@@ -168,75 +174,76 @@ fn test_ical_event_builder_from() {
         END:VCARD\n\
         ";
 
-    let vcard = IcalVcardBuilder::version("4.0")
-        .names(Some("Gump"), Some("Forrest"), None, Some("Mr. "), None)
-        .formated_name("Forrest Gump")
-        .set(ical_property!("ORG", "Bubba Gump Shrimp Co."))
-        .set(ical_property!("TITLE", "Shrimp Man"))
-        .set(ical_property!(
-            "PHOTO",
-            "http://www.example.com/dir_photos/my_photo.gif",
-            ical_param!("MEDIATYPE", "image/gif")
-        ))
-        .set(ical_property!(
-            "TEL",
-            "tel:+1-111-555-1212",
-            ical_param!("TYPE", "work", "voice"),
-            ical_param!("VALUE", "uri")
-        ))
-        .set(ical_property!(
-            "TEL",
-            "tel:+1-404-555-1212",
-            ical_param!("TYPE", "home", "voice"),
-            ical_param!("VALUE", "uri")
-        ))
-        .set(ical_property!(
-            "ADR",
-            ";;100 Waters Edge;Baytown;LA;30314;United States of America",
-            ical_param!("TYPE", "WORK"),
-            ical_param!("PREF", "1"),
-            ical_param!(
-                "LABEL",
-                "\"100 Waters Edge\nBaytown\\, LA 30314\nUnited States of America\""
-            )
-        ))
-        .set(ical_property!(
-            "ADR",
-            ";;42 Plantation St.;Baytown;LA;30314;United States of America",
-            ical_param!("TYPE", "HOME"),
-            ical_param!(
-                "LABEL",
-                "\"42 Plantation St.\nBaytown\\, LA 30314\nUnited States of America\""
-            )
-        ))
-        .set(ical_property!("EMAIL", "forrestgump@example.com"))
-        .set(ical_property!("REV", "20080424T195243Z"))
-        .set(ical_property!("x-qq", "21588891"))
-        .build();
+        let vcard = IcalVcardBuilder::version("4.0")
+            .names(Some("Gump"), Some("Forrest"), None, Some("Mr. "), None)
+            .formated_name("Forrest Gump")
+            .set(ical_property!("ORG", "Bubba Gump Shrimp Co."))
+            .set(ical_property!("TITLE", "Shrimp Man"))
+            .set(ical_property!(
+                "PHOTO",
+                "http://www.example.com/dir_photos/my_photo.gif",
+                ical_param!("MEDIATYPE", "image/gif")
+            ))
+            .set(ical_property!(
+                "TEL",
+                "tel:+1-111-555-1212",
+                ical_param!("TYPE", "work", "voice"),
+                ical_param!("VALUE", "uri")
+            ))
+            .set(ical_property!(
+                "TEL",
+                "tel:+1-404-555-1212",
+                ical_param!("TYPE", "home", "voice"),
+                ical_param!("VALUE", "uri")
+            ))
+            .set(ical_property!(
+                "ADR",
+                ";;100 Waters Edge;Baytown;LA;30314;United States of America",
+                ical_param!("TYPE", "WORK"),
+                ical_param!("PREF", "1"),
+                ical_param!(
+                    "LABEL",
+                    "\"100 Waters Edge\nBaytown\\, LA 30314\nUnited States of America\""
+                )
+            ))
+            .set(ical_property!(
+                "ADR",
+                ";;42 Plantation St.;Baytown;LA;30314;United States of America",
+                ical_param!("TYPE", "HOME"),
+                ical_param!(
+                    "LABEL",
+                    "\"42 Plantation St.\nBaytown\\, LA 30314\nUnited States of America\""
+                )
+            ))
+            .set(ical_property!("EMAIL", "forrestgump@example.com"))
+            .set(ical_property!("REV", "20080424T195243Z"))
+            .set(ical_property!("x-qq", "21588891"))
+            .build();
 
-    assert_eq!(vcard.generate(), expect);
-}
+        assert_eq!(vcard.generate(), expect);
+    }
 
-#[test]
-fn test_ical_event_builder_fn_gen() {
-    use generator::Emitter;
-    let expect = "BEGIN:VCARD\n\
+    #[test]
+    fn build_vcard_with_fn_generated() {
+        use generator::Emitter;
+        let expect = "BEGIN:VCARD\n\
         VERSION:4.0\n\
         N:Marx;Adolph;Arthur;Mr.;\n\
         FN:Mr. Adolph Arthur Marx\n\
         NICKNAME:Harpo Marx\n\
         END:VCARD\n\
         ";
-    let vcard = IcalVcardBuilder::version("4.0")
-        .names(
-            Some("Marx"),
-            Some("Adolph"),
-            Some("Arthur"),
-            Some("Mr."),
-            None,
-        )
-        .generate_fn()
-        .set(ical_property!("NICKNAME", "Harpo Marx"))
-        .build();
-    assert_eq!(vcard.generate(), expect);
+        let vcard = IcalVcardBuilder::version("4.0")
+            .names(
+                Some("Marx"),
+                Some("Adolph"),
+                Some("Arthur"),
+                Some("Mr."),
+                None,
+            )
+            .generate_fn()
+            .set(ical_property!("NICKNAME", "Harpo Marx"))
+            .build();
+        assert_eq!(vcard.generate(), expect);
+    }
 }

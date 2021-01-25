@@ -212,18 +212,18 @@ Code:
 ```rust
 extern crate ical;
 
-use ical::*;
+use crate::ical::{generator::*, *};
 
 fn main() {
   let mut cal = IcalCalendarBuilder::version("2.0")
+          .gregorian()
           .prodid("-//ical-rs//github.com//")
-          .set(ical_property!("CALSCALE", "GREGORIAN"))
           .build();
 
   let event = IcalEventBuilder::tzid("Europe/Berlin")
           .uid("UID for identifying this event.")
-          .changed(CHANGED.clone())
-          .one_day("20210101")
+          .changed("20210115")
+          .one_day("20220101")
           .set(ical_property!("SUMMARY", "New Year"))
           .build();
   cal.events.push(event);
