@@ -133,10 +133,10 @@ impl<B: BufRead> LineRead for LineReader<B> {
 
             if line.is_empty() {
                 self.number += 1;
-            } else if line.starts_with(' ') || line.starts_with("  ") {
+            } else if line.starts_with(' ') || line.starts_with('\t') {
                 // This is a multi-lines attribute.
 
-                // Remove the ' ' charactere and join with the current line.
+                // Remove the whitespace character and join with the current line.
                 line.remove(0);
                 next_line.push_str(line.trim_end());
                 self.number += 1;
