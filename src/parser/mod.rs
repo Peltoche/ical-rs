@@ -24,7 +24,7 @@ pub enum ParserError {
     NotComplete,
     #[error("missing header")]
     MissingHeader,
-    #[error("property error")]
+    #[error("property error: {0}")]
     PropertyError(#[from] PropertyError),
 }
 
