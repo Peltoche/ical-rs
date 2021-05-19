@@ -141,6 +141,26 @@ pub mod parser {
     }
 
     #[test]
+    fn ical_example_1() {
+        let input = BufReader::new(File::open("./tests/ressources/ical_example_1.ics").unwrap());
+
+        let valids = std::fs::read_to_string("./tests/ressources/ical_example_1.res").unwrap().replace('\n', "");
+
+        let reader = ical::IcalParser::new(input);
+
+        for res in reader {
+            let calendar = match res {
+                Ok(res) => res,
+                Err(err) => panic!("{}", err),
+            };
+
+            let output = format!("{:?}", calendar);
+
+            assert_eq!(output, valids);
+        }
+    }
+
+    #[test]
     fn vcard() {
         let input = BufReader::new(File::open("./tests/ressources/vcard_input.vcf").unwrap());
 
