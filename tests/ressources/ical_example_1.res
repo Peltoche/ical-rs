@@ -28,8 +28,8 @@ Property { name: "TRIGGER", params: None, value: Some("-PT15M") },
  Property { name: "DESCRIPTION", params: None, value: Some("Reminder") }] }] }],
  alarms: [], todos: [], journals: [], free_busys: [],
  timezones: [IcalTimeZone { properties: [Property { name: "TZID", params: None, value: Some("W. Europe Standard Time") }],
- transitions: [IcalTimeZoneTransition { properties: [Property { name: "DTSTART", params: None, value: Some("16011028T030000") },
+ transitions: [IcalTimeZoneTransition { transition: STANDARD, properties: [Property { name: "DTSTART", params: None, value: Some("16011028T030000") },
  Property { name: "RRULE", params: None, value: Some("FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10") },
  Property { name: "TZOFFSETFROM", params: None, value: Some("+0200") },
  Property { name: "TZOFFSETTO", params: None, value: Some("+0100") }] },
- IcalTimeZoneTransition { properties: [Property { name: "DTSTART", params: None, value: Some("16010325T020000") }, Property { name: "RRULE", params: None, value: Some("FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3") }, Property { name: "TZOFFSETFROM", params: None, value: Some("+0100") }, Property { name: "TZOFFSETTO", params: None, value: Some("+0200") }] }] }] }
+ IcalTimeZoneTransition { transition: DAYLIGHT, properties: [Property { name: "DTSTART", params: None, value: Some("16010325T020000") }, Property { name: "RRULE", params: None, value: Some("FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3") }, Property { name: "TZOFFSETFROM", params: None, value: Some("+0100") }, Property { name: "TZOFFSETTO", params: None, value: Some("+0200") }] }] }] }
