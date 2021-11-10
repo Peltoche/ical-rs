@@ -2,11 +2,15 @@
 use std::cell::RefCell;
 use std::io::BufRead;
 
+#[cfg(feature = "serde-derive")]
+extern crate serde;
+
 // Internal mods
 use crate::parser::{Component, ParserError};
 use crate::property::{Property, PropertyParser};
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 /// A VCARD contact.
 pub struct VcardContact {
     pub properties: Vec<Property>,
