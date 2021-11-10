@@ -42,6 +42,9 @@ use std::fmt;
 use std::io::BufRead;
 use std::iter::Iterator;
 
+#[cfg(feature = "serde-derive")]
+extern crate serde;
+
 // Internal mods
 use crate::line::{Line, LineReader};
 
@@ -61,6 +64,7 @@ pub enum PropertyError {
 
 /// A VCARD/ICAL property.
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub struct Property {
     /// Property name.
     pub name: String,

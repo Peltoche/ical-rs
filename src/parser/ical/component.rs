@@ -2,12 +2,16 @@
 use std::cell::RefCell;
 use std::io::BufRead;
 
+#[cfg(feature = "serde-derive")]
+extern crate serde;
+
 // Internal mods
 use crate::parser::Component;
 use crate::parser::ParserError;
 use crate::property::{Property, PropertyParser};
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 /// An ICAL calendar.
 pub struct IcalCalendar {
     pub properties: Vec<Property>,
@@ -82,6 +86,7 @@ impl Component for IcalCalendar {
 }
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub struct IcalAlarm {
     pub properties: Vec<Property>,
 }
@@ -109,6 +114,7 @@ impl Component for IcalAlarm {
 }
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub struct IcalEvent {
     pub properties: Vec<Property>,
     pub alarms: Vec<IcalAlarm>,
@@ -147,6 +153,7 @@ impl Component for IcalEvent {
 }
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub struct IcalJournal {
     pub properties: Vec<Property>,
 }
@@ -174,6 +181,7 @@ impl Component for IcalJournal {
 }
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub struct IcalTodo {
     pub properties: Vec<Property>,
     pub alarms: Vec<IcalAlarm>,
@@ -212,6 +220,7 @@ impl Component for IcalTodo {
 }
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub struct IcalTimeZone {
     pub properties: Vec<Property>,
     pub transitions: Vec<IcalTimeZoneTransition>,
@@ -250,6 +259,7 @@ impl Component for IcalTimeZone {
 }
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub struct IcalTimeZoneTransition {
     pub properties: Vec<Property>,
 }
@@ -277,6 +287,7 @@ impl Component for IcalTimeZoneTransition {
 }
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub struct IcalFreeBusy {
     pub properties: Vec<Property>,
 }
