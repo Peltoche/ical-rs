@@ -22,7 +22,7 @@ thiserror = "1.0.20"
 serde = { version = "1.0", features = ["derive"], optional = true }
 
 [features]
-default = ["ical", "vcard"]
+default = ["ical", "vcard", "generator"]
 ical = ["property"]
 line = []
 property = ["line"]
