@@ -42,8 +42,7 @@ mod helper {
     macro_rules! ical_param {
         ($key:literal, $($prop:expr),+) => {
             (String::from($key), {
-                let mut v: Vec<String> = Vec::new();
-                $(v.push(String::from($prop));)+
+                let v: Vec<String> = vec![$(String::from($prop),)+];
                 v
             })
         };
@@ -79,8 +78,7 @@ mod helper {
                 name: String::from($name),
                 value: Some(String::from($value)),
                 params: Some({
-                    let mut v: Vec<(String, Vec<String>)> = Vec::new();
-                    $(v.push($params);)+
+                    let v: Vec<(String, Vec<String>)> = vec![$($params,)+];
                     v
                 })
             }

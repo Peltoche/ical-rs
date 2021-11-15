@@ -268,6 +268,7 @@ impl Component for IcalTimeZone {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub enum IcalTimeZoneTransitionType {
     STANDARD,
     DAYLIGHT,

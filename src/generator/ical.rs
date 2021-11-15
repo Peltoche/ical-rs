@@ -15,7 +15,7 @@ pub trait Emitter {
 }
 
 fn get_value(value: &Option<String>) -> String {
-    VALUE_DELIMITER.to_string() + &value.as_ref().unwrap_or(&String::new())
+    VALUE_DELIMITER.to_string() + value.as_ref().unwrap_or(&String::new())
 }
 
 pub(crate) fn split_line<T: Into<String>>(str: T) -> String {
