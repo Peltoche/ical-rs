@@ -10,8 +10,6 @@ use crate::parser::Component;
 use crate::parser::ParserError;
 use crate::property::{Property, PropertyParser};
 
-use std::fmt::Debug;
-
 #[derive(Debug, Clone, Default)]
 #[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 /// An ICAL calendar.
@@ -268,6 +266,7 @@ impl Component for IcalTimeZone {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub enum IcalTimeZoneTransitionType {
     STANDARD,
     DAYLIGHT,

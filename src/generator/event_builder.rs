@@ -45,7 +45,7 @@ impl DtStamp {
         self.0.event.properties.push(ical_property!(
             "DTSTAMP",
             dtstamp.into(),
-            ical_param!("TZID", &self.0.tzid)
+            ical_param!("TZID", self.0.tzid.as_str())
         ));
         DtStart(self.0)
     }
@@ -66,7 +66,7 @@ impl DtStart {
         self.0.event.properties.push(ical_property!(
             "DTSTART",
             dtstamp.into(),
-            ical_param!("TZID", &self.0.tzid)
+            ical_param!("TZID", self.0.tzid.as_str())
         ));
         DtEnd(self.0)
     }
@@ -119,7 +119,7 @@ impl DtEnd {
         self.0.event.properties.push(ical_property!(
             "DTEND",
             value.into(),
-            ical_param!("TZID", &self.0.tzid)
+            ical_param!("TZID", self.0.tzid.as_str())
         ));
         Finalizer(self.0)
     }
