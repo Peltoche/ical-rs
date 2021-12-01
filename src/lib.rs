@@ -1,4 +1,4 @@
-//! ical-rs 0.4.0
+//! ical-rs 0.7.0
 //!
 //! This is a library to parse the `ICalendar` format defined in
 //! [RFC5545](http://tools.ietf.org/html/rfc5545), as well as similar formats
@@ -21,11 +21,11 @@
 //!
 //! ```toml
 //! [dependencies]
-//! ical = "0.4.*"
+//! ical = "0.7.*"
 //! ```
 //!
 //! There is several ways to use crate::Ical depending on the level of parsing you want. Some new
-//! wrapper/formater could appeare in the next releases.
+//! wrapper/formatter could appear in the next releases.
 //!
 //! By default all the features are included but you can choose to include in you
 //! project only the needed ones.
@@ -58,3 +58,6 @@ pub use crate::property::PropertyParser;
 pub mod line;
 #[cfg(feature = "line")]
 pub use crate::line::LineReader;
+
+#[cfg(feature = "generator")]
+pub mod generator;
