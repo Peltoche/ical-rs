@@ -18,7 +18,7 @@ pub mod property {
         for res in reader {
             let calendar = match res {
                 Ok(res) => res,
-                Err(err) => panic!("Throw errror: {}", err),
+                Err(err) => panic!("Throw error: {}", err),
             };
 
             let output = format!("{:?}", calendar);
@@ -39,7 +39,7 @@ pub mod property {
         for res in reader {
             let contact = match res {
                 Ok(res) => res,
-                Err(err) => panic!("Throw errror: {}", err),
+                Err(err) => panic!("Throw error: {}", err),
             };
 
             let output = format!("{:?}", contact);
@@ -131,7 +131,7 @@ pub mod parser {
         for res in reader {
             let calendar = match res {
                 Ok(res) => res,
-                Err(err) => panic!("Throw errror: {}", err),
+                Err(err) => panic!("Throw error: {}", err),
             };
 
             let output = format!("{:?}", calendar);
@@ -172,7 +172,7 @@ pub mod parser {
         for res in reader {
             let contact = match res {
                 Ok(res) => res,
-                Err(err) => panic!("Throw errror: {}", err),
+                Err(err) => panic!("Throw error: {}", err),
             };
 
             let output = format!("{:?}", contact);
@@ -200,5 +200,46 @@ pub mod parser {
 
             assert_eq!(output, valids.next().unwrap().unwrap());
         }
+    }
+}
+
+#[cfg(all(feature = "ical", feature = "generator"))]
+pub mod generator {
+    extern crate ical;
+    use self::ical::generator::Emitter;
+    use std::fs::File;
+    use std::io::BufRead;
+    use std::io::BufReader;
+
+    #[test]
+    fn generate_o365_test() {
+        let filename = "./tests/ressources/o365_meeting.ics";
+
+        let original = BufReader::new(File::open(filename).unwrap())
+            .lines()
+            .map(|line| line.unwrap() + "\n")
+            .collect::<String>();
+
+        let input = BufReader::new(File::open(filename).unwrap());
+        let mut reader = ical::IcalParser::new(input);
+        let generated = reader.next().unwrap().ok().unwrap().generate();
+
+        assert_eq!(&generated, &original);
+    }
+
+    #[test]
+    fn generate_sabre_test() {
+        let filename = "./tests/ressources/sabre_test.ics";
+
+        let original = BufReader::new(File::open(filename).unwrap())
+            .lines()
+            .map(|line| line.unwrap() + "\n")
+            .collect::<String>();
+
+        let input = BufReader::new(File::open(filename).unwrap());
+        let mut reader = ical::IcalParser::new(input);
+        let generated = reader.next().unwrap().ok().unwrap().generate();
+
+        assert_eq!(&generated, &original);
     }
 }

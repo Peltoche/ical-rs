@@ -245,9 +245,16 @@ impl Component for IcalTimeZone {
         value: &str,
         line_parser: &RefCell<PropertyParser<B>>,
     ) -> Result<(), ParserError> {
+        use self::IcalTimeZoneTransitionType::{DAYLIGHT, STANDARD};
+
         match value {
-            "STANDARD" | "DAYLIGHT" => {
-                let mut transition = IcalTimeZoneTransition::new();
+            "STANDARD" => {
+                let mut transition = IcalTimeZoneTransition::new(STANDARD);
+                transition.parse(line_parser)?;
+                self.transitions.push(transition);
+            }
+            "DAYLIGHT" => {
+                let mut transition = IcalTimeZoneTransition::new(DAYLIGHT);
                 transition.parse(line_parser)?;
                 self.transitions.push(transition);
             }
@@ -258,15 +265,30 @@ impl Component for IcalTimeZone {
     }
 }
 
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
+pub enum IcalTimeZoneTransitionType {
+    STANDARD,
+    DAYLIGHT,
+}
+
+impl Default for IcalTimeZoneTransitionType {
+    fn default() -> Self {
+        IcalTimeZoneTransitionType::STANDARD
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 #[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub struct IcalTimeZoneTransition {
+    pub transition: IcalTimeZoneTransitionType,
     pub properties: Vec<Property>,
 }
 
 impl IcalTimeZoneTransition {
-    pub fn new() -> IcalTimeZoneTransition {
+    pub fn new(transition: IcalTimeZoneTransitionType) -> IcalTimeZoneTransition {
         IcalTimeZoneTransition {
+            transition,
             properties: Vec::new(),
         }
     }
