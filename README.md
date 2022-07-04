@@ -5,16 +5,14 @@
 
 # ical-rs
 
+This library parses the `ICalendar` format defined in [RFC5545](http://tools.ietf.org/html/rfc5545), as well as
+similar formats like `VCard`.
 
-
-This library parse the ICalendar format defined in [RFC5545](http://tools.ietf.org/html/rfc5545), as well asl
-similar formats like VCard.
-
-There are probably some issues to be taken care of, but the library should work for most cases. If you like to help out and
+There are probably some issues to be taken care of, but the library should work for most cases. If you would like to help out and
 would like to discuss any API changes, please [contact me](dev@halium.fr) or create an issue.
 
 The initial goal was to make a port from the [ical.js](https://github.com/mozilla-comm/ical.js) library in JavaScript and
-many code/algorithms was taken from it but in order to but more 'Rusty' a complete rewrite have been made.
+many code/algorithms was taken from it but in order to but more 'Rusty' a complete rewrite has been made.
 
 ## [Documentation](https://peltoche.github.io/ical-rs/ical/)
 
@@ -30,21 +28,21 @@ ical = "0.7.*"
 
 ## Overview
 
-There is several ways to use Ical depending on the level of parsing you want. Some new wrapper/formater could appeare in
+There is several ways to use Ical depending on the level of parsing you want. Some new wrapper/formatter could appear in
 the next releases.
 
-By default all the features are included but you can choose to include in you project only the needed ones.
+By default all the features are included but you can choose to include in your project only the needed ones.
 
 #### Warning
   The parsers (PropertyParser / IcalParser) only parse the content and set to uppercase the case-insensitive fields. No checks
-  are made on the fields validity.
+  are made on the fields' validity.
 
 
 ### IcalParser / VcardParser
 
 Wrap the result of the PropertyParser into components.
 
-Each component can contains properties (ie: Property) or sub-components.
+Each component can contain properties (ie: Property) or sub-components.
 
 * The IcalParser return IcalCalendar
 * The VcardParser return VcardContact
@@ -102,11 +100,11 @@ IcalCalendar {
 
 Parse the result of LineReader into three parts:
 
-- The name of the line attribute formated in uppercase.
-- A vector of `(key/value)` tuple for the parameters. The key is formatted in uppercase and the value is untouched.
-- The value stay untouched.
+- The name of the line attribute formatted in uppercase.
+- A vector of `(key/value)` tuples for the parameters. The key is formatted in uppercase and the value is untouched.
+- The value stays untouched.
 
-It work for both the Vcard and Ical format.
+It works for both the `Vcard` and `Ical` formats.
 
 #### Example:
 
@@ -147,9 +145,9 @@ END:VCALENDAR                             Ok(Property { name: "END", params: Non
 
 ### LineReader
 
-This is a very low level parser. It clean the empty lines and unfold them.
+This is a very low level parser. It cleans the empty lines and unfolds them.
 
-It work for both the Vcard and Ical format.
+It works for both the `Vcard` and `Ical` formats.
 
 #### Example:
 
