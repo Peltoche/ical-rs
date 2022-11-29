@@ -42,6 +42,14 @@ impl Component for IcalCalendar {
         self.properties.push(property);
     }
 
+    fn get_property<'c>(&'c self, name: &str) -> Option<&'c Property> {
+        self.properties.iter().find(|p| p.name == name)
+    }
+
+    fn get_property_mut<'c>(&'c mut self, name: &str) -> Option<&'c mut Property> {
+        self.properties.iter_mut().find(|p| p.name == name)
+    }
+
     fn add_sub_component<B: BufRead>(
         &mut self,
         value: &str,
@@ -104,6 +112,14 @@ impl Component for IcalAlarm {
         self.properties.push(property);
     }
 
+    fn get_property<'c>(&'c self, name: &str) -> Option<&'c Property> {
+        self.properties.iter().find(|p| p.name == name)
+    }
+
+    fn get_property_mut<'c>(&'c mut self, name: &str) -> Option<&'c mut Property> {
+        self.properties.iter_mut().find(|p| p.name == name)
+    }
+
     fn add_sub_component<B: BufRead>(
         &mut self,
         _: &str,
@@ -132,6 +148,14 @@ impl IcalEvent {
 impl Component for IcalEvent {
     fn add_property(&mut self, property: Property) {
         self.properties.push(property);
+    }
+
+    fn get_property<'c>(&'c self, name: &str) -> Option<&'c Property> {
+        self.properties.iter().find(|p| p.name == name)
+    }
+
+    fn get_property_mut<'c>(&'c mut self, name: &str) -> Option<&'c mut Property> {
+        self.properties.iter_mut().find(|p| p.name == name)
     }
 
     fn add_sub_component<B: BufRead>(
@@ -171,6 +195,14 @@ impl Component for IcalJournal {
         self.properties.push(property);
     }
 
+    fn get_property<'c>(&'c self, name: &str) -> Option<&'c Property> {
+        self.properties.iter().find(|p| p.name == name)
+    }
+
+    fn get_property_mut<'c>(&'c mut self, name: &str) -> Option<&'c mut Property> {
+        self.properties.iter_mut().find(|p| p.name == name)
+    }
+
     fn add_sub_component<B: BufRead>(
         &mut self,
         _: &str,
@@ -199,6 +231,14 @@ impl IcalTodo {
 impl Component for IcalTodo {
     fn add_property(&mut self, property: Property) {
         self.properties.push(property);
+    }
+
+    fn get_property<'c>(&'c self, name: &str) -> Option<&'c Property> {
+        self.properties.iter().find(|p| p.name == name)
+    }
+
+    fn get_property_mut<'c>(&'c mut self, name: &str) -> Option<&'c mut Property> {
+        self.properties.iter_mut().find(|p| p.name == name)
     }
 
     fn add_sub_component<B: BufRead>(
@@ -238,6 +278,14 @@ impl IcalTimeZone {
 impl Component for IcalTimeZone {
     fn add_property(&mut self, property: Property) {
         self.properties.push(property);
+    }
+
+    fn get_property<'c>(&'c self, name: &str) -> Option<&'c Property> {
+        self.properties.iter().find(|p| p.name == name)
+    }
+
+    fn get_property_mut<'c>(&'c mut self, name: &str) -> Option<&'c mut Property> {
+        self.properties.iter_mut().find(|p| p.name == name)
     }
 
     fn add_sub_component<B: BufRead>(
@@ -299,6 +347,14 @@ impl Component for IcalTimeZoneTransition {
         self.properties.push(property);
     }
 
+    fn get_property<'c>(&'c self, name: &str) -> Option<&'c Property> {
+        self.properties.iter().find(|p| p.name == name)
+    }
+
+    fn get_property_mut<'c>(&'c mut self, name: &str) -> Option<&'c mut Property> {
+        self.properties.iter_mut().find(|p| p.name == name)
+    }
+
     fn add_sub_component<B: BufRead>(
         &mut self,
         _: &str,
@@ -325,6 +381,14 @@ impl IcalFreeBusy {
 impl Component for IcalFreeBusy {
     fn add_property(&mut self, property: Property) {
         self.properties.push(property);
+    }
+
+    fn get_property<'c>(&'c self, name: &str) -> Option<&'c Property> {
+        self.properties.iter().find(|p| p.name == name)
+    }
+
+    fn get_property_mut<'c>(&'c mut self, name: &str) -> Option<&'c mut Property> {
+        self.properties.iter_mut().find(|p| p.name == name)
     }
 
     fn add_sub_component<B: BufRead>(

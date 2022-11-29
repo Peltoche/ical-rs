@@ -29,6 +29,14 @@ impl Component for VcardContact {
         self.properties.push(property);
     }
 
+    fn get_property<'c>(&'c self, name: &str) -> Option<&'c Property> {
+        self.properties.iter().find(|p| p.name == name)
+    }
+
+    fn get_property_mut<'c>(&'c mut self, name: &str) -> Option<&'c mut Property> {
+        self.properties.iter_mut().find(|p| p.name == name)
+    }
+
     fn add_sub_component<B: BufRead>(
         &mut self,
         _: &str,
