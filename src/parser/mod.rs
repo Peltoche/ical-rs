@@ -43,6 +43,10 @@ pub trait Component {
     /// Add the givent property.
     fn add_property(&mut self, property: Property);
 
+    /// Find a given property.
+    fn get_property<'c>(&'c self, name: &str) -> Option<&'c Property>;
+    fn get_property_mut<'c>(&'c mut self, name: &str) -> Option<&'c mut Property>;
+
     /// Parse the content from `line_parser` and fill the component with.
     fn parse<B: BufRead>(
         &mut self,
