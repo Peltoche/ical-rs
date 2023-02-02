@@ -18,8 +18,8 @@ branch = "master"
 repository = "https://travis-ci.org/Peltoche/ical-rs"
 
 [dependencies]
-thiserror = "1.0.20"
-serde = { version = "1.0", features = ["derive"], optional = true }
+thiserror = "1.0.38"
+serde = { version = "1.0.152", features = ["derive"], optional = true }
 
 [features]
 default = ["vcard", "ical"]
