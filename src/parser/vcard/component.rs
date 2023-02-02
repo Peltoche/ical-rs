@@ -34,6 +34,6 @@ impl Component for VcardContact {
         _: &str,
         _: &RefCell<PropertyParser<B>>,
     ) -> Result<(), ParserError> {
-        Err(ParserError::InvalidComponent.into())
+        Err(ParserError::InvalidComponent)
     }
 }

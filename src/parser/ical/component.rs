@@ -78,7 +78,7 @@ impl Component for IcalCalendar {
                 timezone.parse(line_parser)?;
                 self.timezones.push(timezone);
             }
-            _ => return Err(ParserError::InvalidComponent.into()),
+            _ => return Err(ParserError::InvalidComponent),
         };
 
         Ok(())
@@ -109,7 +109,7 @@ impl Component for IcalAlarm {
         _: &str,
         _: &RefCell<PropertyParser<B>>,
     ) -> Result<(), ParserError> {
-        Err(ParserError::InvalidComponent.into())
+        Err(ParserError::InvalidComponent)
     }
 }
 
@@ -145,7 +145,7 @@ impl Component for IcalEvent {
                 alarm.parse(line_parser)?;
                 self.alarms.push(alarm);
             }
-            _ => return Err(ParserError::InvalidComponent.into()),
+            _ => return Err(ParserError::InvalidComponent),
         };
 
         Ok(())
@@ -176,7 +176,7 @@ impl Component for IcalJournal {
         _: &str,
         _: &RefCell<PropertyParser<B>>,
     ) -> Result<(), ParserError> {
-        Err(ParserError::InvalidComponent.into())
+        Err(ParserError::InvalidComponent)
     }
 }
 
@@ -212,7 +212,7 @@ impl Component for IcalTodo {
                 alarm.parse(line_parser)?;
                 self.alarms.push(alarm);
             }
-            _ => return Err(ParserError::InvalidComponent.into()),
+            _ => return Err(ParserError::InvalidComponent),
         };
 
         Ok(())
@@ -258,7 +258,7 @@ impl Component for IcalTimeZone {
                 transition.parse(line_parser)?;
                 self.transitions.push(transition);
             }
-            _ => return Err(ParserError::InvalidComponent.into()),
+            _ => return Err(ParserError::InvalidComponent),
         };
 
         Ok(())
@@ -304,7 +304,7 @@ impl Component for IcalTimeZoneTransition {
         _: &str,
         _: &RefCell<PropertyParser<B>>,
     ) -> Result<(), ParserError> {
-        Err(ParserError::InvalidComponent.into())
+        Err(ParserError::InvalidComponent)
     }
 }
 
@@ -332,6 +332,6 @@ impl Component for IcalFreeBusy {
         _: &str,
         _: &RefCell<PropertyParser<B>>,
     ) -> Result<(), ParserError> {
-        Err(ParserError::InvalidComponent.into())
+        Err(ParserError::InvalidComponent)
     }
 }

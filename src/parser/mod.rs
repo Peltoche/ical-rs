@@ -53,8 +53,8 @@ pub trait Component {
 
             {
                 line = match line_parser.borrow_mut().next() {
-                    Some(val) => val.map_err(|e| ParserError::PropertyError(e))?,
-                    None => return Err(ParserError::NotComplete.into()),
+                    Some(val) => val.map_err(ParserError::PropertyError)?,
+                    None => return Err(ParserError::NotComplete),
                 };
             }
 
@@ -62,7 +62,7 @@ pub trait Component {
                 "END" => break,
                 "BEGIN" => match line.value {
                     Some(v) => self.add_sub_component(v.as_str(), line_parser)?,
-                    None => return Err(ParserError::NotComplete.into()),
+                    None => return Err(ParserError::NotComplete),
                 },
 
                 _ => self.add_property(line),

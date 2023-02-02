@@ -136,8 +136,7 @@ impl<B: BufRead> PropertyParser<B> {
         } else {
             return Err(PropertyError::MissingName {
                 line: line.number(),
-            })
-            .into();
+            });
         }
 
         {

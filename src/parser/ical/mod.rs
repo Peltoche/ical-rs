@@ -62,16 +62,16 @@ impl<B: BufRead> IcalParser<B> {
     /// Read the next line and check if it's a valid VCALENDAR start.
     fn check_header(&mut self) -> Result<Option<()>, ParserError> {
         let line = match self.line_parser.borrow_mut().next() {
-            Some(val) => val.map_err(|e| ParserError::PropertyError(e))?,
+            Some(val) => val.map_err(ParserError::PropertyError)?,
             None => return Ok(None),
         };
 
         if line.name != "BEGIN"
             || line.value.is_none()
             || line.value.unwrap() != "VCALENDAR"
-            || line.params != None
+            || line.params.is_some()
         {
-            return Err(ParserError::MissingHeader.into());
+            return Err(ParserError::MissingHeader);
         }
 
         Ok(Some(()))
@@ -83,11 +83,7 @@ impl<B: BufRead> Iterator for IcalParser<B> {
 
     fn next(&mut self) -> Option<Result<component::IcalCalendar, ParserError>> {
         match self.check_header() {
-            Ok(res) => {
-                if res == None {
-                    return None;
-                }
-            }
+            Ok(res) =>  res?,
             Err(err) => return Some(Err(err)),
         };
 
