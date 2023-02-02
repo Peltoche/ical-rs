@@ -111,7 +111,7 @@ impl DtStart {
 
 impl DtEndDate {
     /// Sets the `DTEND` of the event. The `end_day` has to be the next day. This
-    /// `value` is **not inclusive**. Analog an event from 9:00 - 10:00 has stoppt
+    /// `value` is **not inclusive**. Analog an event from 9:00 - 10:00 has stopped
     /// at 10 and a new one can start.
     pub fn end_day<S: Into<String>>(mut self, value: S) -> Finalizer {
         self.0.event.properties.push(ical_property!(
