@@ -88,7 +88,7 @@ impl DtStart {
         DtEnd(self.0)
     }
 
-    /// Start of a multi-hole-day event.
+    /// Start of a multi-whole day event.
     pub fn start_day<S: Into<String>>(mut self, dtstamp: S) -> DtEndDate {
         self.0.event.properties.push(ical_property!(
             "DTSTART",
