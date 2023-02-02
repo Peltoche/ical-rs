@@ -1,4 +1,4 @@
-use crate::*;
+use crate::ical_property;
 use parser::vcard::component::VcardContact;
 use property::Property;
 
@@ -6,14 +6,30 @@ pub struct IcalVcardBuilder {
     vcard: VcardContact,
 }
 pub struct Name(IcalVcardBuilder);
-pub struct FormatedName {
+pub struct FormattedName {
     builder: IcalVcardBuilder,
     names: Vec<String>,
 }
 pub struct Finalizer(IcalVcardBuilder);
 
-/// Builds a new vcard-Entry.
-/// https://tools.ietf.org/html/rfc2426
+/// Builds a new [RFC 2426 VCard-Entry](https://tools.ietf.org/html/rfc2426#section-2.4.2).
+///
+/// ```
+/// # use ical::generator::*;
+/// # use ical::ical_property;
+/// #
+/// let vcard = IcalVcardBuilder::version("4.0")
+///     .names(
+///         Some("Marx"),
+///         Some("Adolph"),
+///         Some("Arthur"),
+///         Some("Mr."),
+///         None,
+///     )
+///     .generate_fn()
+///     .set(ical_property!("NICKNAME", "Harpo Marx"))
+///     .build();
+/// ```
 impl IcalVcardBuilder {
     pub fn version<S: Into<String>>(version: S) -> Name {
         let mut me = Self {
@@ -36,33 +52,35 @@ fn clean<S: Into<String>>(t: Option<S>) -> String {
 }
 
 impl Name {
-    /// To specify the components of the name of the object the
-    ///    vCard represents.
-    ///
-    /// Format:
-    ///   `familiy-name;given-name;additional-name;honor-prefix;honor-suffix`
-    ///
-    /// Type example:
-    ///   `Public;John;Quinlan;Mr.;Esq.`
-    ///   `Stevenson;John;Philip,Paul;Dr.;Jr.,M.D.,A.C.P.`
-    ///
-    pub fn name<S: Into<String>>(mut self, n: S) -> FormatedName {
+    //! To specify the components of the name of the object the vCard represents.
+    //!
+    //! Format:
+    //!
+    //!   `familiy-name;given-name;additional-name;honor-prefix;honor-suffix`
+    //!
+    //! Type example:
+    //!
+    //!   `Public;John;Quinlan;Mr.;Esq.`
+    //!
+    //!   `Stevenson;John;Philip,Paul;Dr.;Jr.,M.D.,A.C.P.`
+    //!
+    pub fn name(mut self, n: impl Into<String>) -> FormattedName {
         let na = n.into();
         self.0
             .vcard
             .properties
             .push(ical_property!("N", na.clone()));
 
-        FormatedName {
+        FormattedName {
             builder: self.0,
             names: na.split(';').map(String::from).collect(),
         }
     }
 
-    /// To specify the components of the name of the object the
-    ///    vCard represents.
+    /// To specify the components of the name of the object the vCard represents.
     ///
     /// Format:
+    ///
     ///    `familiy-name, given-name, additional-name, honor-prefix, honor-suffix`
     ///
     pub fn names<S: Into<String>>(
@@ -72,7 +90,7 @@ impl Name {
         additional_name: Option<S>,
         honorific_prefixes: Option<S>,
         honorific_suffixes: Option<S>,
-    ) -> FormatedName {
+    ) -> FormattedName {
         let names: Vec<String> = vec![
             clean(family_name),
             clean(given_name),
@@ -85,20 +103,21 @@ impl Name {
             .vcard
             .properties
             .push(ical_property!("N", names.join(";")));
-        FormatedName {
+        FormattedName {
             builder: self.0,
             names,
         }
     }
 }
 
-impl FormatedName {
+impl FormattedName {
     /// To specify the formatted text corresponding to the name
-    ///    of the object the vCard represents.
+    /// of the object the vCard represents.
     ///
     /// Type example
+    ///
     ///   `Mr. John Q. Public, Esq.`
-    pub fn formated_name<S: Into<String>>(mut self, f_n: S) -> Finalizer {
+    pub fn formatted_name(mut self, f_n: impl Into<String>) -> Finalizer {
         self.builder
             .vcard
             .properties
@@ -121,13 +140,13 @@ impl FormatedName {
                 }
             }
         }
-        let f_n = add_sep(self.names.get(3), " ")
+        let formatted_name = add_sep(self.names.get(3), " ")
             + &add_sep(self.names.get(1), " ")
             + &add_sep(self.names.get(2), " ")
             + &add_sep(self.names.get(0), " ")
             + &add_sep(self.names.get(4), " ");
 
-        Self::formated_name(self, f_n.trim())
+        Self::formatted_name(self, formatted_name.trim())
     }
 }
 
@@ -176,7 +195,7 @@ mod should {
 
         let vcard = IcalVcardBuilder::version("4.0")
             .names(Some("Gump"), Some("Forrest"), None, Some("Mr. "), None)
-            .formated_name("Forrest Gump")
+            .formatted_name("Forrest Gump")
             .set(ical_property!("ORG", "Bubba Gump Shrimp Co."))
             .set(ical_property!("TITLE", "Shrimp Man"))
             .set(ical_property!(

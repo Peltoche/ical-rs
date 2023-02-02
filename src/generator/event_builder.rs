@@ -1,4 +1,4 @@
-use crate::*;
+use {ical_property,ical_param};
 use parser::ical::component::IcalEvent;
 use property::Property;
 
@@ -16,8 +16,22 @@ pub struct DtEnd(IcalEventBuilder);
 pub struct DtEndDate(IcalEventBuilder);
 pub struct Finalizer(IcalEventBuilder);
 
-/// Builds a new Ical-Event.
-/// https://tools.ietf.org/html/rfc5545#section-3.6.1
+/// Builds a new [RFC 5545 - Event Component](https://tools.ietf.org/html/rfc5545#section-3.6.1)
+///
+/// ```
+/// # use ical::generator::*;
+/// # use ical::ical_property;
+/// #
+/// let event = IcalEventBuilder::tzid("Europe/Berlin")
+///     .uid("f9508b86-1a17-4594-b5d3-a87b5e9392a7")
+///     .changed("2022-01-01T000000")
+///     .one_day("1900-12-25")
+///     .repeat_rule("FREQ=YEARLY")
+///     .set(ical_property!("DESCRIPTION","X-mas Day"))
+///     .set(ical_property!("SUMMARY;LANGUAGE=de", "1. Weihnachtstag"))
+///     .build();
+/// ```
+
 impl IcalEventBuilder {
     pub fn tzid<S: Into<String>>(timezone: S) -> Uid {
         Uid(Self {
@@ -38,6 +52,7 @@ impl Uid {
 
 impl DtStamp {
     /// Sets the `DTSTAMP` of the event. Signals the date of the last change in global TZ.
+    ///
     /// Example: "20201231T000000"
     ///          `chrono::Local::now().format("%Y%m%dT%H%M%S").to_string()`
     ///
@@ -62,6 +77,8 @@ impl DtStamp {
 
 impl DtStart {
     /// Sets the `DTSTART` of the event. Signals the date of the begin of the event.
+    ///
+    /// Needs a timestamp (YYYYMMDDTHHmmSS)
     pub fn start<S: Into<String>>(mut self, dtstamp: S) -> DtEnd {
         self.0.event.properties.push(ical_property!(
             "DTSTART",
@@ -71,6 +88,7 @@ impl DtStart {
         DtEnd(self.0)
     }
 
+    /// Start of a multi-hole-day event.
     pub fn start_day<S: Into<String>>(mut self, dtstamp: S) -> DtEndDate {
         self.0.event.properties.push(ical_property!(
             "DTSTART",
@@ -80,6 +98,7 @@ impl DtStart {
         DtEndDate(self.0)
     }
 
+    /// A one-day-event.
     pub fn one_day<S: Into<String>>(mut self, dtstamp: S) -> Finalizer {
         self.0.event.properties.push(ical_property!(
             "DTSTART",
@@ -91,9 +110,9 @@ impl DtStart {
 }
 
 impl DtEndDate {
-    /// Sets the `DTEND` of the event. Since a event from 9:00 - 10:00 has stoppt
-    /// at 10 and a new one can start. The `end_day` has to be the next day. This
-    /// `value` is **not inclusive**.
+    /// Sets the `DTEND` of the event. The `end_day` has to be the next day. This
+    /// `value` is **not inclusive**. Analog an event from 9:00 - 10:00 has stoppt
+    /// at 10 and a new one can start.
     pub fn end_day<S: Into<String>>(mut self, value: S) -> Finalizer {
         self.0.event.properties.push(ical_property!(
             "DTEND",
@@ -102,19 +121,10 @@ impl DtEndDate {
         ));
         Finalizer(self.0)
     }
-
-    /// Rule for the repeating occurrence.
-    pub fn repeat_rule<S: Into<String>>(mut self, value: S) -> Finalizer {
-        self.0
-            .event
-            .properties
-            .push(ical_property!("RRULE", value.into()));
-        Finalizer(self.0)
-    }
 }
 
 impl DtEnd {
-    /// Sets the `DTEND` of the event.
+    /// Sets the `DTEND` a timestamp of the event.
     pub fn end<S: Into<String>>(mut self, value: S) -> Finalizer {
         self.0.event.properties.push(ical_property!(
             "DTEND",
@@ -125,7 +135,9 @@ impl DtEnd {
     }
 
     /// Sets the `DURATION` of the event.
-    ///  https://tools.ietf.org/html/rfc5545#section-3.8.2.5
+    ///
+    /// @see <https://tools.ietf.org/html/rfc5545#section-3.8.2.5>
+    ///
     /// `value` starts with `PT` + duration eg. PT45M
     pub fn duration<S: Into<String>>(mut self, value: S) -> Finalizer {
         self.0
@@ -141,10 +153,24 @@ impl Finalizer {
         self.0.event
     }
 
+    /// Setting arbitrary property.
+    ///
+    /// You can use the [ical_property!-macro](/ical/macro.ical_property.html).
+    ///
     pub fn set(mut self, property: Property) -> Self {
         self.0.event.properties.push(property);
         self
     }
+
+    /// Rule for the repeating occurrence.
+    pub fn repeat_rule<S: Into<String>>(mut self, value: S) -> Self {
+        self.0
+            .event
+            .properties
+            .push(ical_property!("RRULE", value.into()));
+        Finalizer(self.0)
+    }
+
 }
 
 #[allow(unused)]
@@ -217,7 +243,7 @@ mod should {
         let event = IcalEventBuilder::tzid("America/Montreal")
             .uid("19970901T130000Z-123403@example.com")
             .changed_utc("19970901T130000Z")
-            .start_day("19971102")
+            .one_day("19971102")
             .repeat_rule("FREQ=YEARLY")
             .set(ical_property!("SUMMARY", "Our Blissful Anniversary"))
             .set(ical_property!("TRANSP", "TRANSPARENT"))
