@@ -98,7 +98,7 @@ impl DtStart {
         DtEndDate(self.0)
     }
 
-    /// A one-day-event.
+    /// A one-day event.
     pub fn one_day<S: Into<String>>(mut self, dtstamp: S) -> Finalizer {
         self.0.event.properties.push(ical_property!(
             "DTSTART",
