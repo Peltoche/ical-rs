@@ -1,8 +1,12 @@
-//! Emits an ICAL calendar.
+//! Generates iCal- or vCard-output.
 //!
-//! Wraps the result of the `PropertyParser` into components.
+//! A fair knowledge of the iCal/vCard-standards is necessary to create usable files,
+//! even so the [IcalEventBuilder](struct.IcalCalendarBuilder.html) and
+//! [IcalVcardBuilder](struct.IcalVcardBuilder.html) helps to stick to the
+//! formalities.
 //!
-//! Each component contains properties (ie: `Property`) or sub-components.
+//! * iCal: <https://tools.ietf.org/html/rfc5545>
+//! * vCard: <https://tools.ietf.org/html/rfc2426>
 //!
 //!
 
@@ -27,16 +31,13 @@ pub use crate::property::Property;
 
 mod helper {
 
-    /// Creates a param for a `Property`.
+    /// Creates a param for a [`Property`](property/struct.Property.html).
     ///
     /// # Example
     /// ```
     /// # #[macro_use] extern crate ical;
-    ///
-    /// # fn main() {
     /// let param : (String, Vec<String>) = ical_param!("param2", "pvalue1", "pvalue2");
     /// assert_eq!(format!("{:?}", param), "(\"param2\", [\"pvalue1\", \"pvalue2\"])");
-    /// # }
     /// ```
     #[macro_export]
     macro_rules! ical_param {
@@ -45,21 +46,31 @@ mod helper {
         };
     }
 
-    /// Creates a `Property` for `IcalCalendar`, `IcalEvent`, `IcalTodo`, `IcalJournal` ...
+    /// Creates a [`Property`](property/struct.Property.html) for use with
+    /// [IcalCalendarBuilder](generator/struct.IcalCalendarBuilder.html),
+    /// [IcalEventBuilder](generator/struct.IcalEventBuilder.html),
+    /// [IcalVcardBuilder](generator/struct.IcalVcardBuilder.html),
+    /// `IcalTodo`, `IcalJournal` ...
     ///
     /// # Example
     /// ```
     /// # #[macro_use] extern crate ical;
     /// # use ical::property::Property;
-    ///
-    /// # fn main() {
-    /// print!("{:?}", ical_property!(
+    /// let prop = ical_property!(
     ///             "NAME",
     ///             "value",
     ///             ical_param!("param2", "pvalue1", "pvalue2"),
-    ///             ical_param!("param2", "pvalue3")
-    ///         ));
-    /// # }
+    ///             ical_param!("param3", "pvalue3")
+    ///         );
+    /// let debug_output = "Property { \
+    ///     name: \"NAME\", \
+    ///     params: Some([\
+    ///         (\"param2\", [\"pvalue1\", \"pvalue2\"]), \
+    ///         (\"param3\", [\"pvalue3\"])\
+    ///     ]), \
+    ///     value: Some(\"value\") \
+    /// }";
+    /// assert_eq!(debug_output, format!("{:?}", prop));
     /// ```
     #[macro_export]
     macro_rules! ical_property {

@@ -1,4 +1,4 @@
-use crate::*;
+use crate::ical_property;
 use parser::ical::component::{IcalCalendar, IcalEvent, IcalTimeZone};
 use property::Property;
 
@@ -9,8 +9,18 @@ pub struct CalScale(IcalCalendarBuilder);
 pub struct ProdId(IcalCalendarBuilder);
 pub struct Finalizer(IcalCalendarBuilder);
 
-/// Builds a new Ical-Calendar.
-/// https://tools.ietf.org/html/rfc5545#section-3.6.1
+/// Builds a new [RFC 5545 - iCalendar Object](https://tools.ietf.org/html/rfc5545#section-3.4)
+///
+/// ```
+/// # use ical::generator::*;
+/// # use ical::ical_property;
+/// #
+/// let calendar = IcalCalendarBuilder::version("4.0")
+///     .gregorian()
+///     .prodid("my-calender-generator 1.0")
+///     .set(ical_property!("METHOD", "PUBLISH"))
+///     .build();
+/// ```
 impl IcalCalendarBuilder {
     pub fn version<S: Into<String>>(version: S) -> CalScale {
         let mut e = CalScale(Self {
@@ -47,7 +57,8 @@ impl CalScale {
 }
 
 impl ProdId {
-    /// Sets the `PRODID` of the calendar.
+    /// Sets the Product Identifier of the calendar.
+    /// [PRODID](https://www.rfc-editor.org/rfc/rfc5545#section-3.7.3)
     pub fn prodid<S: Into<String>>(mut self, prodid: S) -> Finalizer {
         self.0.cal.properties.push(ical_property!("PRODID", prodid));
 
