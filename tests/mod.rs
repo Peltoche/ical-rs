@@ -144,7 +144,9 @@ pub mod parser {
     fn ical_example_1() {
         let input = BufReader::new(File::open("./tests/ressources/ical_example_1.ics").unwrap());
 
-        let valids = std::fs::read_to_string("./tests/ressources/ical_example_1.res").unwrap().replace('\n', "");
+        let valids = std::fs::read_to_string("./tests/ressources/ical_example_1.res")
+            .unwrap()
+            .replace('\n', "");
 
         let reader = ical::IcalParser::new(input);
 

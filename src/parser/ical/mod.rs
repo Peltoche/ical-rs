@@ -83,7 +83,7 @@ impl<B: BufRead> Iterator for IcalParser<B> {
 
     fn next(&mut self) -> Option<Result<component::IcalCalendar, ParserError>> {
         match self.check_header() {
-            Ok(res) =>  res?,
+            Ok(res) => res?,
             Err(err) => return Some(Err(err)),
         };
 
