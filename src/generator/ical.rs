@@ -22,7 +22,7 @@ pub(crate) fn split_line<T: Into<String>>(str: T) -> String {
     let mut str = str.into();
     let mut x = 75;
     while x < str.len() {
-        str.insert_str(x, "\n ");
+        str.insert_str(x, "\r\n ");
         x += 76;
     }
     str
