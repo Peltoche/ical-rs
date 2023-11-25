@@ -127,7 +127,7 @@ fn get_params(params: &Option<Vec<(String, Vec<String>)>>) -> String {
 
 impl Emitter for Property {
     fn generate(&self) -> String {
-        split_line(self.name.clone() + &get_params(&self.params) + &get_value(&self.value)) + "\n"
+        split_line(self.name.clone() + &get_params(&self.params) + &get_value(&self.value)) + "\r\n"
     }
 }
 
@@ -140,7 +140,7 @@ impl Emitter for IcalTimeZoneTransition {
         };
         String::from("BEGIN:")
             + key
-            + "\n"
+            + "\r\n"
             + &self
                 .properties
                 .iter()
@@ -148,7 +148,7 @@ impl Emitter for IcalTimeZoneTransition {
                 .collect::<String>()
             + "END:"
             + key
-            + "\n"
+            + "\r\n"
     }
 }
 
@@ -156,13 +156,13 @@ macro_rules! generate_emitter {
     ($struct:ident, $key:literal, $($prop:ident),+) => {
         impl Emitter for $struct {
             fn generate(&self) -> String {
-                let mut text = String::from("BEGIN:") + $key + "\n";
+                let mut text = String::from("BEGIN:") + $key + "\r\n";
                 $(text += &self.$prop
                 .iter()
                 .map(Emitter::generate)
                 .collect::<String>();)+
 
-                text + "END:" + $key + "\n"
+                text + "END:" + $key + "\r\n"
             }
         }
     };
