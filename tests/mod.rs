@@ -219,7 +219,7 @@ pub mod generator {
 
         let original = BufReader::new(File::open(filename).unwrap())
             .lines()
-            .map(|line| line.unwrap() + "\n")
+            .map(|line| line.unwrap() + "\r\n")
             .collect::<String>();
 
         let input = BufReader::new(File::open(filename).unwrap());
@@ -235,7 +235,7 @@ pub mod generator {
 
         let original = BufReader::new(File::open(filename).unwrap())
             .lines()
-            .map(|line| line.unwrap() + "\n")
+            .map(|line| line.unwrap() + "\r\n")
             .collect::<String>();
 
         let input = BufReader::new(File::open(filename).unwrap());
