@@ -21,7 +21,7 @@ Put this in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ical = "0.8"
+ical = "0.9"
 ```
 
 
@@ -49,7 +49,7 @@ Each component can contains properties (ie: `Property`) or sub-components.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.8"
+version = "0.9"
 default-features = false
 features = ["ical", "vcard"]
 ```
@@ -112,7 +112,7 @@ It work for both the vCard and iCal formats.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.8"
+version = "0.9"
 default-features = false
 features = ["property"]
 ```
@@ -155,7 +155,7 @@ It work for both the vCard and iCal formats.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.8"
+version = "0.9"
 default-features = false
 features = ["line"]
 ```
@@ -202,7 +202,7 @@ formalities.
 Cargo.toml:
 ```toml
 [dependencies.ical]
-version = "0.8"
+version = "0.9"
 default-features = false
 features = ["ical", "vcard", "generator"]
 ```
