@@ -118,7 +118,7 @@ impl<B: BufRead> LineRead for LineReader<B> {
         } else {
             // This is the first iteration, next_start isn't been filled yet.
             for line in self.reader.by_ref().lines() {
-                let line = line.unwrap();
+                let line = line.ok()?;
                 self.number += 1;
 
                 if !line.is_empty() {
@@ -130,7 +130,7 @@ impl<B: BufRead> LineRead for LineReader<B> {
         }
 
         for line in self.reader.by_ref().lines() {
-            let mut line = line.unwrap();
+            let mut line = line.ok()?;
 
             if line.is_empty() {
                 self.number += 1;
