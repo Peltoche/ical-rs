@@ -1,6 +1,6 @@
-use {ical_property,ical_param};
 use parser::ical::component::IcalEvent;
 use property::Property;
+use {ical_param, ical_property};
 
 #[allow(dead_code)]
 pub const ICAL_DATE_FORMAT: &str = "%Y%m%dT%H%M%S";
@@ -170,7 +170,6 @@ impl Finalizer {
             .push(ical_property!("RRULE", value.into()));
         Finalizer(self.0)
     }
-
 }
 
 #[allow(unused)]
