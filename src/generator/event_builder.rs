@@ -192,23 +192,26 @@ mod should {
         //let e = start.format(ICAL_DATE_FORMAT).to_string();
         assert_eq!(
             e,
-            "BEGIN:VEVENT\nUID:UID_@_test\nDTSTAMP;TZID=Europe/Berlin:20201201T120423\n\
-            DTSTART;TZID=Europe/Berlin:20201206T170000\n\
-            DURATION:PT2H45M0S\nEND:VEVENT\n"
+            "BEGIN:VEVENT\r\n\
+            UID:UID_@_test\r\n\
+            DTSTAMP;TZID=Europe/Berlin:20201201T120423\r\n\
+            DTSTART;TZID=Europe/Berlin:20201206T170000\r\n\
+            DURATION:PT2H45M0S\r\n\
+            END:VEVENT\r\n"
         );
     }
 
     #[test]
     fn build_whole_day_event() {
         use generator::Emitter;
-        let expect = "BEGIN:VEVENT\n\
-       UID:20070423T123432Z-541111@example.com\n\
-       DTSTAMP:20070423T123432Z\n\
-       DTSTART;VALUE=DATE:20070628\n\
-       DTEND;VALUE=DATE:20070709\n\
-       SUMMARY:Festival International de Jazz de Montreal\n\
-       TRANSP:TRANSPARENT\n\
-       END:VEVENT\n\
+        let expect = "BEGIN:VEVENT\r\n\
+       UID:20070423T123432Z-541111@example.com\r\n\
+       DTSTAMP:20070423T123432Z\r\n\
+       DTSTART;VALUE=DATE:20070628\r\n\
+       DTEND;VALUE=DATE:20070709\r\n\
+       SUMMARY:Festival International de Jazz de Montreal\r\n\
+       TRANSP:TRANSPARENT\r\n\
+       END:VEVENT\r\n\
       ";
         let event = IcalEventBuilder::tzid("America/Montreal")
             .uid("20070423T123432Z-541111@example.com")
@@ -228,16 +231,16 @@ mod should {
     #[test]
     fn build_frequent_ical_event() {
         use generator::Emitter;
-        let expect = "BEGIN:VEVENT\n\
-       UID:19970901T130000Z-123403@example.com\n\
-       DTSTAMP:19970901T130000Z\n\
-       DTSTART;VALUE=DATE:19971102\n\
-       RRULE:FREQ=YEARLY\n\
-       SUMMARY:Our Blissful Anniversary\n\
-       TRANSP:TRANSPARENT\n\
-       CLASS:CONFIDENTIAL\n\
-       CATEGORIES:ANNIVERSARY,PERSONAL,SPECIAL OCCASION\n\
-       END:VEVENT\n\
+        let expect = "BEGIN:VEVENT\r\n\
+       UID:19970901T130000Z-123403@example.com\r\n\
+       DTSTAMP:19970901T130000Z\r\n\
+       DTSTART;VALUE=DATE:19971102\r\n\
+       RRULE:FREQ=YEARLY\r\n\
+       SUMMARY:Our Blissful Anniversary\r\n\
+       TRANSP:TRANSPARENT\r\n\
+       CLASS:CONFIDENTIAL\r\n\
+       CATEGORIES:ANNIVERSARY,PERSONAL,SPECIAL OCCASION\r\n\
+       END:VEVENT\r\n\
       ";
         let event = IcalEventBuilder::tzid("America/Montreal")
             .uid("19970901T130000Z-123403@example.com")

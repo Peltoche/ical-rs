@@ -1,7 +1,7 @@
 extern crate ical;
 
-use std::fs::File;
-use std::io::BufReader;
+#[cfg(all(feature = "ical", feature = "generator"))]
+use std::{fs::File, io::BufReader};
 
 #[cfg(all(feature = "ical", feature = "generator"))]
 fn main() {
