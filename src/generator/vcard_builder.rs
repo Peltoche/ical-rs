@@ -173,24 +173,24 @@ mod should {
     #[test]
     fn build_vcards_wikipedia_example() {
         use generator::Emitter;
-        let expect = "BEGIN:VCARD\n\
-        VERSION:4.0\n\
-        N:Gump;Forrest;;Mr.;\n\
-        FN:Forrest Gump\n\
-        ORG:Bubba Gump Shrimp Co.\n\
-        TITLE:Shrimp Man\n\
-        PHOTO;MEDIATYPE=image/gif:http://www.example.com/dir_photos/my_photo.gif\n\
-        TEL;TYPE=work,voice;VALUE=uri:tel:+1-111-555-1212\n\
-        TEL;TYPE=home,voice;VALUE=uri:tel:+1-404-555-1212\n\
-        ADR;TYPE=WORK;PREF=1;LABEL=\"100 Waters Edge\\nBaytown\\, LA 30314\\nUnited Sta\n \
-         tes of America\":;;100 Waters Edge;Baytown;LA;30314;United States of Americ\n \
-         a\n\
-        ADR;TYPE=HOME;LABEL=\"42 Plantation St.\\nBaytown\\, LA 30314\\nUnited States o\n f \
-         America\":;;42 Plantation St.;Baytown;LA;30314;United States of America\n\
-        EMAIL:forrestgump@example.com\n\
-        REV:20080424T195243Z\n\
-        x-qq:21588891\n\
-        END:VCARD\n\
+        let expect = "BEGIN:VCARD\r\n\
+        VERSION:4.0\r\n\
+        N:Gump;Forrest;;Mr.;\r\n\
+        FN:Forrest Gump\r\n\
+        ORG:Bubba Gump Shrimp Co.\r\n\
+        TITLE:Shrimp Man\r\n\
+        PHOTO;MEDIATYPE=image/gif:http://www.example.com/dir_photos/my_photo.gif\r\n\
+        TEL;TYPE=work,voice;VALUE=uri:tel:+1-111-555-1212\r\n\
+        TEL;TYPE=home,voice;VALUE=uri:tel:+1-404-555-1212\r\n\
+        ADR;TYPE=WORK;PREF=1;LABEL=\"100 Waters Edge\\nBaytown\\, LA 30314\\nUnited Sta\r\n \
+         tes of America\":;;100 Waters Edge;Baytown;LA;30314;United States of Americ\r\n \
+         a\r\n\
+        ADR;TYPE=HOME;LABEL=\"42 Plantation St.\\nBaytown\\, LA 30314\\nUnited States o\r\n f \
+         America\":;;42 Plantation St.;Baytown;LA;30314;United States of America\r\n\
+        EMAIL:forrestgump@example.com\r\n\
+        REV:20080424T195243Z\r\n\
+        x-qq:21588891\r\n\
+        END:VCARD\r\n\
         ";
 
         let vcard = IcalVcardBuilder::version("4.0")
@@ -245,12 +245,12 @@ mod should {
     #[test]
     fn build_vcard_with_fn_generated() {
         use generator::Emitter;
-        let expect = "BEGIN:VCARD\n\
-        VERSION:4.0\n\
-        N:Marx;Adolph;Arthur;Mr.;\n\
-        FN:Mr. Adolph Arthur Marx\n\
-        NICKNAME:Harpo Marx\n\
-        END:VCARD\n\
+        let expect = "BEGIN:VCARD\r\n\
+        VERSION:4.0\r\n\
+        N:Marx;Adolph;Arthur;Mr.;\r\n\
+        FN:Mr. Adolph Arthur Marx\r\n\
+        NICKNAME:Harpo Marx\r\n\
+        END:VCARD\r\n\
         ";
         let vcard = IcalVcardBuilder::version("4.0")
             .names(

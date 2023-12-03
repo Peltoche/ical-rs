@@ -23,7 +23,7 @@ pub(crate) fn split_line<T: Into<String>>(str: T) -> String {
     let mut x = 75;
     while x < str.len() {
         str.insert_str(x, "\r\n ");
-        x += 76;
+        x += 77;
     }
     str
 }
@@ -78,11 +78,11 @@ mod should {
 
     #[test]
     fn split_long_line() {
-        let text = "The ability to return a type that is only specified by the trait it impleme\n \
-                     nts is especially useful in the context closures and iterators, which we c\n \
-                     over in Chapter 13. Closures and iterators create types that only the comp\n \
+        let text = "The ability to return a type that is only specified by the trait it impleme\r\n \
+                     nts is especially useful in the context closures and iterators, which we c\r\n \
+                     over in Chapter 13. Closures and iterators create types that only the comp\r\n \
                      iler knows or types that are very long to specify.";
-        assert_eq!(text, split_line(text.replace("\n ", "")));
+        assert_eq!(text, split_line(text.replace("\r\n ", "")));
     }
 
     #[test]
