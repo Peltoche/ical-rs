@@ -19,13 +19,13 @@ fn get_value(value: &Option<String>) -> String {
 }
 
 pub(crate) fn split_line<T: Into<String>>(str: T) -> String {
-    let mut str = str.into();
-    let mut x = 75;
-    while x < str.len() {
-        str.insert_str(x, "\r\n ");
-        x += 77;
-    }
-    str
+    let str = str.into();
+    let mut chars = str.chars();
+    let sub_string = (0..)
+        .map(|_| chars.by_ref().take(75).collect::<String>())
+        .take_while(|s| !s.is_empty())
+        .collect::<Vec<_>>();
+    sub_string.join("\r\n ")
 }
 
 //
