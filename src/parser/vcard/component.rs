@@ -9,7 +9,7 @@ extern crate serde;
 use crate::parser::{Component, ParserError};
 use crate::property::{Property, PropertyParser};
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 /// A VCARD contact.
 pub struct VcardContact {

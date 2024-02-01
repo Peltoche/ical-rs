@@ -63,7 +63,7 @@ pub enum PropertyError {
 }
 
 /// A VCARD/ICAL property.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "serde-derive", derive(serde::Serialize, serde::Deserialize))]
 pub struct Property {
     /// Property name.
