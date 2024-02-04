@@ -87,6 +87,14 @@ mod should {
     }
 
     #[test]
+    fn split_long_line_multibyte() {
+        // the following text includes multibyte characters (UTF-8) at strategic places to ensure
+        // split_line would panic if not multibyte aware
+        let text = "DESCRIPTION:ABCDEFGHIJ\\n\\nKLMNOPQRSTUVWXYZ123456789üABCDEFGHIJKLMNOPQRS\\n\\nTUVWXYZ123456ä7890ABCDEFGHIJKLM\\n\\nNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTUVWXöYZ1234567890ABCDEFGHIJKLMNOPQRSTUVWX\\n\\nYZ1234567890abcdefghiÜjklm\\nnopqrstuvwx";
+        assert_eq!(text, split_line(text.replace("\r\n ", "")));
+    }
+
+    #[test]
     fn protect_chars_in_params() {
         assert_eq!(
             protect_params(&String::from("\"value: in quotes;\"")),
