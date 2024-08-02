@@ -11,7 +11,7 @@ There are probably some issues to be taken care of, but the library should work 
 If you like to help out and would like to discuss any API changes, please [contact me](dev@halium.fr) or create an issue.
 
 Initially, the goal was to port the JavaScript [ical.js](https://github.com/mozilla-comm/ical.js) library.
-Many code/algorithms were taken from it at first; but in order to but more “Rusty”, a complete rewrite was made.
+Many code/algorithms were taken from it at first; but in order to be more “Rusty”, a complete rewrite was made.
 
 ## [Documentation](https://peltoche.github.io/ical-rs/ical/)
 
@@ -21,9 +21,14 @@ Put this in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ical = "0.10"
+ical = "0.11"
 ```
 
+Or just run:
+
+```shell
+cargo add ical
+```
 
 ## Overview
 
@@ -105,7 +110,7 @@ Parse the result of `LineReader` into three parts:
     - The param value is untouched.
 - The property value is untouched.
 
-It work for both the vCard and iCal formats.
+It works for both the vCard and iCal formats.
 
 #### Example:
 
